@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>BlackSuperman Jr Training Level 11 Final Mobile</title>
+<title>BlackSuperman Jr Training Level 13 Motivation Hub</title>
 <style>
 :root{--bg:#07070a;--card:#15151b;--card2:#0d0d12;--line:#2a2a34;--gold:#facc15;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--text:#fff;--muted:#b8b8c4;--soft:#1f1f29}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -235,26 +235,25 @@ function renderExercise(item,i){return `<div class="exercise"><div class="exerci
 function renderBlock(b,idx=0){const count=b.items.length;return `<details class="blockDetails"><summary><span class="blockTitleWrap"><span>${b.title}</span><span class="blockTime">${b.time} • ${count} drills</span></span></summary><div class="blockBody">${b.items.map(renderExercise).join('')}</div></details>`}
 
 function renderMotivation(){
- const active = allMotivationVideos.find(v=>v.id===state.motivation) || allMotivationVideos[0];
- let groups = motivationGroups.map((g,gi)=>{
-   let vids = g.videos.map(v=>`<button class="${v.id===state.motivation?'active':''}" onclick="playMotivation('${v.id}')"><span>${v.title}</span><small>${v.time}</small></button>`).join('');
-   return `<details class="blockDetails motivationChoice"><summary><span class="blockTitleWrap"><span>${g.name}</span><span class="blockTime">${g.videos.length} long videos</span></span></summary><div class="motivationGrid longGrid">${vids}</div><p class="small">${g.note}</p></details>`;
- }).join('');
+ const playlistEmbed = 'https://www.youtube.com/embed/videoseries?list=PLTaMkgKv5vlz8k8-_2Fz92HfP5u-cjR_d&rel=0&playsinline=1';
+ const motivationSearch = 'https://www.youtube.com/results?search_query=' + encodeURIComponent('best football workout motivation David Goggins Eric Thomas CT Fletcher Jocko Motiversity 30 minutes');
  document.getElementById('motivationCard').innerHTML = `
   <details class="sessionDetails">
-    <summary><span><span>Motivation Player</span><div class="sessionSub">Long videos play inside the app while the screen stays open</div></span></summary>
+    <summary><span><span>Motivation Player</span><div class="sessionSub">One clean YouTube motivation hub inside the app</div></span></summary>
     <div class="sessionBody">
-      <p class="small">Now playing: <b style="color:var(--gold)">${active.group}</b> • ${active.title} • ${active.time}</p>
+      <p class="small">Tap play and let the playlist run while the screen stays open. This keeps it simple instead of loading a huge speaker library.</p>
       <div class="motivationPlayer motivationMini">
-        <iframe class="motivationFrame" src="${videoEmbed(state.motivation)}" title="Motivation video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe class="motivationFrame" src="${playlistEmbed}" title="Motivation playlist" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
       </div>
-      <p class="small">Pick a speaker, then choose one of the longer videos. If a YouTube owner blocks in app playback, tap Watch on YouTube from the video window.</p>
-      ${groups}
-      <p class="small">Phone note: YouTube normally will not keep playing if the phone locks or Safari/Chrome fully leaves the page. Keep the app open while he trains.</p>
+      <div class="motivationGrid">
+        <a class="btn blue full" target="_blank" href="${motivationSearch}">Search More Motivation on YouTube</a>
+        <button class="full" onclick="loadMotivationHub()">Reload Player</button>
+      </div>
+      <p class="small">YouTube does not allow a full search page to run inside an embedded player anymore, so the in app player uses a long motivation playlist. The search button opens YouTube results if he wants to pick something himself.</p>
     </div>
   </details>`;
 }
-function playMotivation(id){state.motivation=id;save();renderMotivation();setTimeout(()=>document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'}),50)}
+function loadMotivationHub(){renderMotivation();setTimeout(()=>document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'}),50)}
 function scrollToMotivation(){document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'})}
 
 function renderTraining(){
