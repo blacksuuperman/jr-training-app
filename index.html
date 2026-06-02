@@ -33,7 +33,7 @@ textarea,input,select{width:100%;background:#09090d;color:#fff;border:1px solid 
 .motivationFrame{width:100%;aspect-ratio:16/9;border:0;border-radius:15px;background:#000}
 .motivationMini{position:sticky;top:8px;z-index:40}
 .motivationGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.motivationGrid button{min-height:42px;font-size:12px}
+.motivationGrid button{min-height:42px;font-size:12px}.longGrid{grid-template-columns:1fr}.longGrid button{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left}.longGrid small{color:#111;background:rgba(255,255,255,.5);border-radius:999px;padding:3px 7px;font-weight:900;white-space:nowrap}
 
 @media(max-width:560px){body{padding:10px;padding-bottom:166px}h1{font-size:25px}.grid,.grid3{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.rx div{padding:8px 5px}.card{padding:12px;border-radius:20px}.exercise{padding:11px;margin:9px 0}.exerciseHead{gap:8px}button,a.btn{font-size:13px;padding:11px 10px}.hero{padding:15px;border-radius:22px}.bottomNav{grid-template-columns:1fr 1fr 1fr 1.25fr}.bottomNav button{font-size:11px}.bottomNav #bottomComplete{font-size:12px}}
 </style>
@@ -140,16 +140,45 @@ recovery:'youth athlete recovery mobility routine football'
 };
 function link(k){return k && k.startsWith('http') ? k : yt(video[k]||k)}
 
-const motivationPlaylists = [
- {name:'David Goggins', list:'PLiZj-Ik9MmM05bFRcyGMj4bHRtRnvK-t_', note:'Mental toughness and discipline'},
- {name:'Eric Thomas', list:'PLTaMkgKv5vlx-2GWJHv0oza4NaBixVYMi', note:'Effort, school, hunger, purpose'},
- {name:'CT Fletcher', list:'PLDvqvD8VBfMgFFMQXpZevNmBFNYwYKZGF', note:'Gym intensity and no excuses'},
- {name:'Neil deGrasse Tyson', list:'PLkkH49sLgyqpLKiL7975whjfDL7kvPjyk', note:'Mindset, curiosity, big picture'},
- {name:'Motiversity', list:'PLr5CENbugJAiLJ2_YrxN-GodI0flUUu8V', note:'General athlete motivation'},
- {name:'Workout Motivation', list:'PLAjSApTtyumSxx-Cl6qr6wBMjKX0mhYgP', note:'Workout energy mix'}
+const motivationGroups = [
+ {name:'David Goggins', note:'Long mental toughness videos for discipline and grit', videos:[
+  {title:'30 Minutes For The Next 30 Years', id:'yErh67ls9XA', time:'30 min'},
+  {title:'30 Minutes Changing Your Life', id:'fFs7LUtLBT4', time:'30 min'},
+  {title:'43 Minutes of Goggins Motivation', id:'nyYPgvDmQrs', time:'43 min'},
+  {title:'Life Advice Will Leave You Speechless', id:'6MGK6pj2vr0', time:'30 min'}
+ ]},
+ {name:'Eric Thomas', note:'Effort, purpose, school, hunger, and finishing what you start', videos:[
+  {title:'Best of Eric Thomas Beast Mentality', id:'S7kaqkBRKoQ', time:'30 min'},
+  {title:'Eric Thomas 1 Hour Motivation', id:'u9rgHrRVYF0', time:'1 hour'},
+  {title:'Guru Motivation Compilation', id:'CUzia6hNuWA', time:'30 min'},
+  {title:'Unleash Your Inner Lion', id:'PgwXEWtafCg', time:'31 min'}
+ ]},
+ {name:'CT Fletcher', note:'Gym intensity, willpower, and no excuses energy', videos:[
+  {title:'Obsession Motivational Speech', id:'dWuGqdsQCm4', time:'Long'},
+  {title:'Training The Will Revamped', id:'Uq3oRqti3QU', time:'Long'},
+  {title:'You Are Not Overtraining', id:'3zLeOJ8CUXQ', time:'Long'},
+  {title:'I Am The One', id:'xTy0BSVrkrI', time:'Long'}
+ ]},
+ {name:'Neil deGrasse Tyson', note:'Mindset, curiosity, intelligence, and seeing the bigger picture', videos:[
+  {title:'How To Succeed When Others Hold You Back', id:'p8EkQ88UShU', time:'Long'},
+  {title:'Life Advice Will Change Your Future', id:'ANPSz97Olkg', time:'Long'},
+  {title:'A Conversation With Neil deGrasse Tyson', id:'0FMGTVCIDbU', time:'1 hr 30 min'},
+  {title:'Mindset of a Genius', id:'Iu36w899z4I', time:'Long'}
+ ]},
+ {name:'Motiversity', note:'General athlete motivation compilations that can run through a session', videos:[
+  {title:'30 Minutes For The Next 30 Years', id:'BHYOjpEW0jM', time:'30 min'},
+  {title:'Against All Odds Compilation', id:'om-0VCB0oAc', time:'30 min'},
+  {title:'Mentality Compilation', id:'2H8r1loNf2o', time:'30 min'},
+  {title:'Get To Work', id:'tBKfGiKfen8', time:'Long'}
+ ]},
+ {name:'Jocko Willink', note:'Discipline, ownership, standards, and leadership', videos:[
+  {title:'Jocko Discipline Motivation', id:'IdTMDpizis8', time:'Long'},
+  {title:'Good', id:'IdTMDpizis8', time:'Long'},
+  {title:'Extreme Ownership Motivation', id:'ljqra3BcqWM', time:'Long'}
+ ]}
 ];
-function playlistEmbed(list){return 'https://www.youtube.com/embed/videoseries?list='+encodeURIComponent(list)+'&rel=0&modestbranding=1'}
-
+const allMotivationVideos = motivationGroups.flatMap(g=>g.videos.map(v=>({...v, group:g.name, note:g.note})));
+function videoEmbed(id){return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?rel=0&modestbranding=1&playsinline=1'}
 
 const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const weeks = ['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6','Week 7','Week 8','Week 9'];
@@ -165,7 +194,7 @@ const weekNames = {
 'Week 9':'Taper, polish, recovery, August 7 readiness'};
 const multipliers = {light:.75,standard:1,hard:1.18};
 let state = JSON.parse(localStorage.getItem('jr_level9_state') || '{}');
-state.week = state.week || 'Week 1'; state.day = state.day || 'Monday'; state.mode = state.mode || 'outdoor'; state.level = state.level || 'standard'; state.done = state.done || {}; state.reflect = state.reflect || {}; state.tests = state.tests || {}; state.motivation = state.motivation || motivationPlaylists[0].list;
+state.week = state.week || 'Week 1'; state.day = state.day || 'Monday'; state.mode = state.mode || 'outdoor'; state.level = state.level || 'standard'; state.done = state.done || {}; state.reflect = state.reflect || {}; state.tests = state.tests || {}; state.motivation = state.motivation || allMotivationVideos[0].id;
 function save(){localStorage.setItem('jr_level9_state',JSON.stringify(state))}
 function dayKey(w,d){return w+'|'+d}
 function isDayDone(w,d){return !!state.done[dayKey(w,d)]}
@@ -206,22 +235,26 @@ function renderExercise(item,i){return `<div class="exercise"><div class="exerci
 function renderBlock(b,idx=0){const count=b.items.length;return `<details class="blockDetails"><summary><span class="blockTitleWrap"><span>${b.title}</span><span class="blockTime">${b.time} • ${count} drills</span></span></summary><div class="blockBody">${b.items.map(renderExercise).join('')}</div></details>`}
 
 function renderMotivation(){
- const active = motivationPlaylists.find(p=>p.list===state.motivation) || motivationPlaylists[0];
- let buttons = motivationPlaylists.map(p=>`<button class="${p.list===state.motivation?'active':''}" onclick="playMotivation('${p.list}')">${p.name}</button>`).join('');
+ const active = allMotivationVideos.find(v=>v.id===state.motivation) || allMotivationVideos[0];
+ let groups = motivationGroups.map((g,gi)=>{
+   let vids = g.videos.map(v=>`<button class="${v.id===state.motivation?'active':''}" onclick="playMotivation('${v.id}')"><span>${v.title}</span><small>${v.time}</small></button>`).join('');
+   return `<details class="blockDetails motivationChoice"><summary><span class="blockTitleWrap"><span>${g.name}</span><span class="blockTime">${g.videos.length} long videos</span></span></summary><div class="motivationGrid longGrid">${vids}</div><p class="small">${g.note}</p></details>`;
+ }).join('');
  document.getElementById('motivationCard').innerHTML = `
   <details class="sessionDetails">
-    <summary><span><span>Motivation Player</span><div class="sessionSub">Plays inside the app while the screen stays open</div></span></summary>
+    <summary><span><span>Motivation Player</span><div class="sessionSub">Long videos play inside the app while the screen stays open</div></span></summary>
     <div class="sessionBody">
-      <p class="small">Current playlist: <b style="color:var(--gold)">${active.name}</b> • ${active.note}</p>
+      <p class="small">Now playing: <b style="color:var(--gold)">${active.group}</b> • ${active.title} • ${active.time}</p>
       <div class="motivationPlayer motivationMini">
-        <iframe class="motivationFrame" src="${playlistEmbed(state.motivation)}" title="Motivation playlist" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe class="motivationFrame" src="${videoEmbed(state.motivation)}" title="Motivation video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
       </div>
-      <div class="motivationGrid">${buttons}</div>
+      <p class="small">Pick a speaker, then choose one of the longer videos. If a YouTube owner blocks in app playback, tap Watch on YouTube from the video window.</p>
+      ${groups}
       <p class="small">Phone note: YouTube normally will not keep playing if the phone locks or Safari/Chrome fully leaves the page. Keep the app open while he trains.</p>
     </div>
   </details>`;
 }
-function playMotivation(list){state.motivation=list;save();renderMotivation();setTimeout(()=>document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'}),50)}
+function playMotivation(id){state.motivation=id;save();renderMotivation();setTimeout(()=>document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'}),50)}
 function scrollToMotivation(){document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'})}
 
 function renderTraining(){
