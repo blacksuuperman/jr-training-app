@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>BlackSuperman Jr Training Level 10 Collapsible Mobile</title>
+<title>BlackSuperman Jr Training Level 11 Final Mobile</title>
 <style>
 :root{--bg:#07070a;--card:#15151b;--card2:#0d0d12;--line:#2a2a34;--gold:#facc15;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--text:#fff;--muted:#b8b8c4;--soft:#1f1f29}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -28,6 +28,12 @@ textarea,input,select{width:100%;background:#09090d;color:#fff;border:1px solid 
 .blockTitleWrap{display:flex;flex-direction:column}
 .blockTime{font-size:12px;color:var(--muted);font-weight:700;margin-top:3px}
 .compactCoach{padding:12px}
+
+.motivationPlayer{background:#050507;border:1px solid var(--line);border-radius:18px;padding:10px;margin-top:10px}
+.motivationFrame{width:100%;aspect-ratio:16/9;border:0;border-radius:15px;background:#000}
+.motivationMini{position:sticky;top:8px;z-index:40}
+.motivationGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.motivationGrid button{min-height:42px;font-size:12px}
 
 @media(max-width:560px){body{padding:10px;padding-bottom:166px}h1{font-size:25px}.grid,.grid3{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.rx div{padding:8px 5px}.card{padding:12px;border-radius:20px}.exercise{padding:11px;margin:9px 0}.exerciseHead{gap:8px}button,a.btn{font-size:13px;padding:11px 10px}.hero{padding:15px;border-radius:22px}.bottomNav{grid-template-columns:1fr 1fr 1fr 1.25fr}.bottomNav button{font-size:11px}.bottomNav #bottomComplete{font-size:12px}}
 </style>
@@ -61,6 +67,7 @@ textarea,input,select{width:100%;background:#09090d;color:#fff;border:1px solid 
     <div class="grid3" id="dayButtons"></div>
   </div>
 
+  <div id="motivationCard" class="card"></div>
   <div id="trainingCard" class="card"></div>
   <div id="reflectionCard" class="card"></div>
   <div id="testingCard" class="card hidden"></div>
@@ -77,7 +84,7 @@ textarea,input,select{width:100%;background:#09090d;color:#fff;border:1px solid 
 
 const yt = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
 const video = {
-motivation:'https://www.youtube.com/results?search_query=David+Goggins+Eric+Thomas+CT+Fletcher+motivational+workout+playlist+long',
+
 warm:'youth football dynamic warm up high knees butt kicks leg swings tutorial',
 ankle:'ankle pogo jumps plyometric tutorial youth athlete',
 pogo:'pogo jumps plyometric tutorial football speed',
@@ -133,6 +140,17 @@ recovery:'youth athlete recovery mobility routine football'
 };
 function link(k){return k && k.startsWith('http') ? k : yt(video[k]||k)}
 
+const motivationPlaylists = [
+ {name:'David Goggins', list:'PLiZj-Ik9MmM05bFRcyGMj4bHRtRnvK-t_', note:'Mental toughness and discipline'},
+ {name:'Eric Thomas', list:'PLTaMkgKv5vlx-2GWJHv0oza4NaBixVYMi', note:'Effort, school, hunger, purpose'},
+ {name:'CT Fletcher', list:'PLDvqvD8VBfMgFFMQXpZevNmBFNYwYKZGF', note:'Gym intensity and no excuses'},
+ {name:'Neil deGrasse Tyson', list:'PLkkH49sLgyqpLKiL7975whjfDL7kvPjyk', note:'Mindset, curiosity, big picture'},
+ {name:'Motiversity', list:'PLr5CENbugJAiLJ2_YrxN-GodI0flUUu8V', note:'General athlete motivation'},
+ {name:'Workout Motivation', list:'PLAjSApTtyumSxx-Cl6qr6wBMjKX0mhYgP', note:'Workout energy mix'}
+];
+function playlistEmbed(list){return 'https://www.youtube.com/embed/videoseries?list='+encodeURIComponent(list)+'&rel=0&modestbranding=1'}
+
+
 const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const weeks = ['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6','Week 7','Week 8','Week 9'];
 const weekNames = {
@@ -147,7 +165,7 @@ const weekNames = {
 'Week 9':'Taper, polish, recovery, August 7 readiness'};
 const multipliers = {light:.75,standard:1,hard:1.18};
 let state = JSON.parse(localStorage.getItem('jr_level9_state') || '{}');
-state.week = state.week || 'Week 1'; state.day = state.day || 'Monday'; state.mode = state.mode || 'outdoor'; state.level = state.level || 'standard'; state.done = state.done || {}; state.reflect = state.reflect || {}; state.tests = state.tests || {};
+state.week = state.week || 'Week 1'; state.day = state.day || 'Monday'; state.mode = state.mode || 'outdoor'; state.level = state.level || 'standard'; state.done = state.done || {}; state.reflect = state.reflect || {}; state.tests = state.tests || {}; state.motivation = state.motivation || motivationPlaylists[0].list;
 function save(){localStorage.setItem('jr_level9_state',JSON.stringify(state))}
 function dayKey(w,d){return w+'|'+d}
 function isDayDone(w,d){return !!state.done[dayKey(w,d)]}
@@ -185,13 +203,33 @@ function morning(day,w){if(state.mode==='indoor')return indoorMorning(day,w); if
 function theme(day,w){const map={Monday:'Acceleration and Lower Body Power',Tuesday:'Agility, Footwork, Upper Strength',Wednesday:'Plyometric Power and Recovery Strength',Thursday:'RB, LB, DE Technique and Total Body Power',Friday:'Lateral Reaction, Conditioning, Recovery Lift',Saturday:'Testing, Mobility, Film Review',Sunday:'Full Rest'};return map[day];}
 function dailyPlan(w,d){return {theme:theme(d,w),morning:morning(d,w),evening:evening(d,w)}};
 function renderExercise(item,i){return `<div class="exercise"><div class="exerciseHead"><div class="num">${i+1}</div><div style="flex:1"><h3>${item.name}</h3><div class="rx"><div><b>${typeof item.sets==='number'?rx(item.sets):item.sets}</b><span>Sets</span></div><div><b>${item.reps}</b><span>Reps</span></div><div><b>${item.rest}</b><span>Rest</span></div></div><p class="cue">${item.cue}</p><a class="btn videoLink" target="_blank" href="${link(item.vid)}">Watch ${item.name}</a></div></div></div>`}
-function renderBlock(b,idx=0){const count=b.items.length;return `<details class="blockDetails" ${idx===0?'open':''}><summary><span class="blockTitleWrap"><span>${b.title}</span><span class="blockTime">${b.time} • ${count} drills</span></span></summary><div class="blockBody">${b.items.map(renderExercise).join('')}</div></details>`}
+function renderBlock(b,idx=0){const count=b.items.length;return `<details class="blockDetails"><summary><span class="blockTitleWrap"><span>${b.title}</span><span class="blockTime">${b.time} • ${count} drills</span></span></summary><div class="blockBody">${b.items.map(renderExercise).join('')}</div></details>`}
+
+function renderMotivation(){
+ const active = motivationPlaylists.find(p=>p.list===state.motivation) || motivationPlaylists[0];
+ let buttons = motivationPlaylists.map(p=>`<button class="${p.list===state.motivation?'active':''}" onclick="playMotivation('${p.list}')">${p.name}</button>`).join('');
+ document.getElementById('motivationCard').innerHTML = `
+  <details class="sessionDetails">
+    <summary><span><span>Motivation Player</span><div class="sessionSub">Plays inside the app while the screen stays open</div></span></summary>
+    <div class="sessionBody">
+      <p class="small">Current playlist: <b style="color:var(--gold)">${active.name}</b> • ${active.note}</p>
+      <div class="motivationPlayer motivationMini">
+        <iframe class="motivationFrame" src="${playlistEmbed(state.motivation)}" title="Motivation playlist" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      <div class="motivationGrid">${buttons}</div>
+      <p class="small">Phone note: YouTube normally will not keep playing if the phone locks or Safari/Chrome fully leaves the page. Keep the app open while he trains.</p>
+    </div>
+  </details>`;
+}
+function playMotivation(list){state.motivation=list;save();renderMotivation();setTimeout(()=>document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'}),50)}
+function scrollToMotivation(){document.getElementById('motivationCard').scrollIntoView({behavior:'smooth',block:'start'})}
+
 function renderTraining(){
  const unlocked=isDayUnlocked(state.week,state.day); const plan=dailyPlan(state.week,state.day); let html=`<div class="small">${state.week} • ${weekNames[state.week]}</div><h2>${state.day}: ${plan.theme}</h2>`;
  if(!unlocked){html+=`<p class="lockedMsg">This day is locked. Complete the previous day first.</p>`;document.getElementById('trainingCard').innerHTML=html;renderReflection();return;}
  if(state.day==='Saturday'){html+=testingHTML(false)+`<div class="inner"><h3>Saturday Recovery</h3><p>After testing, he should walk, stretch, hydrate, and review what improved. No hard training today.</p><a class="btn blue full" target="_blank" href="${link('recovery')}">Watch Recovery Mobility</a></div>`}
  else if(state.day==='Sunday'){html+=`<div class="inner"><h3>Full Rest Day</h3><p>No training. Eat, hydrate, sleep, and get ready for the next week. This keeps him fresh enough to actually get faster.</p></div>`}
- else {html+=`<details class="sessionDetails" open><summary><span><span>Coach Instructions</span><div class="sessionSub">Read this before training</div></span></summary><div class="sessionBody compactCoach"><p>${sessionNote(state.week)} Morning should take 25 to 30 minutes. Evening should take 45 to 55 minutes. Quality comes before speed. If shin pain is above 3 out of 10, switch to indoor mode.</p><a class="btn blue full" target="_blank" href="${video.motivation}">Open Motivation Playlist</a></div></details>`;html+=`<details class="sessionDetails" open><summary><span><span>Morning Session</span><div class="sessionSub">25 to 30 min • speed, plyos, agility, skill, or conditioning</div></span></summary><div class="sessionBody">${plan.morning.map(renderBlock).join('')}</div></details>`;html+=`<details class="sessionDetails"><summary><span><span>Evening Gym Session</span><div class="sessionSub">45 to 55 min • explosive strength, core, mobility, recovery</div></span></summary><div class="sessionBody">${plan.evening.map(renderBlock).join('')}</div></details>`;}
+ else {html+=`<details class="sessionDetails"><summary><span><span>Coach Instructions</span><div class="sessionSub">Read this before training</div></span></summary><div class="sessionBody compactCoach"><p>${sessionNote(state.week)} Morning should take 25 to 30 minutes. Evening should take 45 to 55 minutes. Quality comes before speed. If shin pain is above 3 out of 10, switch to indoor mode.</p><button class="blue full" onclick="scrollToMotivation()">Open Motivation Player</button></div></details>`;html+=`<details class="sessionDetails"><summary><span><span>Morning Session</span><div class="sessionSub">25 to 30 min • speed, plyos, agility, skill, or conditioning</div></span></summary><div class="sessionBody">${plan.morning.map(renderBlock).join('')}</div></details>`;html+=`<details class="sessionDetails"><summary><span><span>Evening Gym Session</span><div class="sessionSub">45 to 55 min • explosive strength, core, mobility, recovery</div></span></summary><div class="sessionBody">${plan.evening.map(renderBlock).join('')}</div></details>`;}
  html+=`<button class="green" onclick="completeDay()">${isDayDone(state.week,state.day)?'Day Complete':'Mark '+state.day+' Complete'}</button>`;document.getElementById('trainingCard').innerHTML=html;renderReflection();renderTesting();}
 function renderReflection(){ const k=dayKey(state.week,state.day); const r=state.reflect[k]||{}; const unlocked=isDayUnlocked(state.week,state.day); let html=`<h3>${state.day} Reflection</h3><p class="small">This saves under ${state.week} ${state.day}, so you can compare his mindset and growth week to week.</p>`; if(!unlocked){html+=`<p class="lockedMsg">Reflection unlocks when the day unlocks.</p>`; document.getElementById('reflectionCard').innerHTML=html;return;} html+=`<div class="grid"><div><div class="small">Energy 1 to 10</div><input id="energy" type="number" min="1" max="10" value="${r.energy||''}" placeholder="Example 7"></div><div><div class="small">Effort 1 to 10</div><input id="effort" type="number" min="1" max="10" value="${r.effort||''}" placeholder="Example 8"></div></div><div class="small">What did you like today?</div><textarea id="liked">${r.liked||''}</textarea><div class="small">What was hard or frustrating?</div><textarea id="hardpart">${r.hardpart||''}</textarea><div class="small">What do you want to improve tomorrow?</div><textarea id="improve">${r.improve||''}</textarea><button class="blue full" onclick="saveReflection()">Save ${state.day} Reflection</button>`; document.getElementById('reflectionCard').innerHTML=html;}
 function testingHTML(){ const w=state.week; const t=state.tests[w]||{}; return `<div class="inner"><h3>Weekly Testing</h3><p>Test once on Saturday. Use the same shoes, surface, warm up, and phone timing method every week.</p><div class="grid"><input id="t10" placeholder="10 yard dash" value="${t.t10||''}"><input id="t20" placeholder="20 yard dash" value="${t.t20||''}"><input id="t505" placeholder="5 10 5 shuttle" value="${t.t505||''}"><input id="tbroad" placeholder="Broad jump inches" value="${t.tbroad||''}"><input id="tvert" placeholder="Vertical jump inches" value="${t.tvert||''}"><input id="tplank" placeholder="Plank time" value="${t.tplank||''}"></div><textarea id="tnotes" placeholder="Testing notes, what improved, what looked better">${t.tnotes||''}</textarea><button class="blue full" onclick="saveTests()">Save ${w} Test Results</button></div>`; }
@@ -200,7 +238,7 @@ function renderWeeks(){let html='';weeks.forEach(w=>{const unlocked=isWeekUnlock
 function renderDays(){let html='';days.forEach(d=>{const unlocked=isDayUnlocked(state.week,d);const complete=isDayDone(state.week,d);html+=`<button ${unlocked?'':'disabled'} class="${state.day===d?'active ':''}${complete?'complete ':''}" onclick="selectDay('${d}')">${d}${complete?' ✓':unlocked?'':' 🔒'}</button>`});document.getElementById('dayButtons').innerHTML=html;}
 function updateProgress(){const done=days.filter(d=>isDayDone(state.week,d)).length;const pct=Math.round(done/days.length*100);document.getElementById('weekPct').textContent=pct+'%';document.getElementById('weekFill').style.width=pct+'%';document.getElementById('currentLabel').textContent=state.week+' • '+state.day;}
 function updateBottomBar(){const b=document.getElementById('bottomComplete');if(!b)return;const unlocked=isDayUnlocked(state.week,state.day);const done=isDayDone(state.week,state.day);b.disabled=!unlocked||done;b.textContent=done?'Done ✓':unlocked?'Complete Day':'Locked';}
-function render(){document.getElementById('outdoorBtn').className=state.mode==='outdoor'?'active':'';document.getElementById('indoorBtn').className=state.mode==='indoor'?'active':'';['light','standard','hard'].forEach(l=>document.getElementById(l+'Btn').className=state.level===l?'active':'');renderWeeks();renderDays();updateProgress();renderTraining();updateBottomBar();save();}
+function render(){document.getElementById('outdoorBtn').className=state.mode==='outdoor'?'active':'';document.getElementById('indoorBtn').className=state.mode==='indoor'?'active':'';['light','standard','hard'].forEach(l=>document.getElementById(l+'Btn').className=state.level===l?'active':'');renderWeeks();renderDays();updateProgress();renderMotivation();renderTraining();updateBottomBar();save();}
 function selectWeek(w){if(isWeekUnlocked(w)){state.week=w;state.day='Monday';render();window.scrollTo(0,0)}}
 function selectDay(d){if(isDayUnlocked(state.week,d)){state.day=d;render();window.scrollTo(0,0)}}
 function completeDay(){if(!isDayUnlocked(state.week,state.day) || isDayDone(state.week,state.day)) return; state.done[dayKey(state.week,state.day)]=true; const i=days.indexOf(state.day); if(i<days.length-1){state.day=days[i+1];} else {const wi=weekIndex(state.week); if(wi<weeks.length-1) {state.week=weeks[wi+1]; state.day='Monday';}} render();}
