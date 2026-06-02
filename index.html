@@ -1,176 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>BlackSuperman Jr Training Level 8 Mobile Final</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlackSuperman Jr Elite System</title>
+
 <style>
-:root{--bg:#07070a;--card:#15151b;--card2:#0d0d12;--line:#2a2a34;--gold:#facc15;--green:#22c55e;--red:#ef4444;--blue:#38bdf8;--text:#fff;--muted:#b8b8c4;--soft:#1f1f29}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100%;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
-body{padding:12px;padding-bottom:156px;overflow-x:hidden}
-.app{max-width:820px;margin:0 auto}
-.hero{background:radial-gradient(circle at top left,#2f2500,#09090c 50%,#000);border:1px solid var(--line);border-radius:26px;padding:18px;margin-bottom:12px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
-.tag{color:var(--gold);font-size:11px;text-transform:uppercase;letter-spacing:.18em;font-weight:900;margin-bottom:8px}
-h1{font-size:30px;line-height:1;margin:0 0 8px}h2{font-size:22px;margin:0 0 6px}h3{font-size:18px;margin:0 0 8px}p,li{color:#d8d8e0;line-height:1.42}.small{font-size:12px;color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px;margin-bottom:12px;scroll-margin-bottom:170px}.inner{background:var(--card2);border:1px solid var(--line);border-radius:17px;padding:12px;margin:9px 0}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-button,a.btn{border:0;border-radius:16px;padding:12px 13px;font-weight:900;background:var(--soft);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:45px;cursor:pointer;font-size:14px;touch-action:manipulation}button.active,a.active{background:var(--gold);color:#000}button.green{background:var(--green);color:#061006;width:100%;font-size:16px;box-shadow:0 10px 24px rgba(34,197,94,.18)}button.red{background:#651919;color:#fff}button.blue,a.blue{background:#0c4a6e;color:#fff}button:disabled{opacity:.35;cursor:not-allowed}.full{width:100%}
-.bar{height:13px;background:#292934;border-radius:99px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--gold),#fff3a1);width:0%}.pill{border:1px solid var(--line);background:#0d0d12;border-radius:999px;padding:7px 10px;font-size:12px;color:#ddd;font-weight:800}.lock{opacity:.42}.complete{border-color:rgba(34,197,94,.7);background:rgba(34,197,94,.12)}.current{border-color:rgba(250,204,21,.7)}
-.exercise{background:#0b0b10;border:1px solid #30303a;border-radius:18px;padding:12px;margin:10px 0}.exerciseHead{display:flex;gap:9px;align-items:flex-start}.num{height:28px;width:28px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}.rx{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:9px 0}.rx div{background:#181820;border:1px solid #2b2b35;border-radius:14px;padding:9px;text-align:center}.rx b{display:block;color:var(--gold);font-size:15px}.rx span{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.cue{border-left:4px solid var(--gold);padding-left:10px;color:#e5e5e5}.videoLink{width:100%;background:#dc2626;margin-top:7px}.modeCard{border:1px solid #2c2c36;background:#101015;border-radius:18px;padding:10px}.lockedMsg{color:#fca5a5;font-weight:800}.success{color:#86efac;font-weight:900}.warning{border-color:#ca8a04;background:rgba(202,138,4,.12)}
-textarea,input,select{width:100%;background:#09090d;color:#fff;border:1px solid #343442;border-radius:15px;padding:12px;font-size:16px}textarea{min-height:96px;resize:vertical}.bottomNav{position:fixed;bottom:0;left:0;right:0;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:9px 10px calc(9px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr 1.4fr;gap:7px;z-index:99}.bottomNav button{font-size:12px;padding:9px 7px;min-height:43px;border-radius:14px}.bottomNav #bottomComplete{background:var(--green);color:#061006;font-size:13px}.bottomNav #bottomComplete:disabled{background:#2a2a31;color:#777}.hidden{display:none}
-@media(max-width:560px){body{padding:10px;padding-bottom:166px}h1{font-size:25px}.grid,.grid3{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.rx div{padding:8px 5px}.card{padding:12px;border-radius:20px}.exercise{padding:11px;margin:9px 0}.exerciseHead{gap:8px}button,a.btn{font-size:13px;padding:11px 10px}.hero{padding:15px;border-radius:22px}.bottomNav{grid-template-columns:1fr 1fr 1fr 1.25fr}.bottomNav button{font-size:11px}.bottomNav #bottomComplete{font-size:12px}}
+body{margin:0;background:#0a0a0a;color:#fff;font-family:Arial;padding:12px}
+.app{max-width:700px;margin:auto}
+.card{background:#18181c;border-radius:18px;padding:16px;margin-bottom:12px}
+h1{font-size:26px}
+h2{margin:6px 0}
+button{width:100%;padding:16px;border:0;border-radius:12px;background:#facc15;color:#000;font-weight:900;margin-top:10px}
+.small{color:#aaa;font-size:13px}
+a{color:#4ade80;display:block;margin:6px 0}
 </style>
+
 </head>
 <body>
+
 <div class="app">
-  <div class="hero">
-    <div class="tag">BlackSuperman Youth Performance</div>
-    <h1>Jr Elite Football Training</h1>
-    <p>June 1 to August 7 performance block. Morning speed and plyos. Evening explosive strength and mobility. Use the green bottom button to complete the day from anywhere on the phone.</p>
-    <div class="inner">
-      <div class="row" style="justify-content:space-between"><div><div class="small">Current Block</div><h2 id="currentLabel">Week 1 • Monday</h2></div><div style="text-align:right"><div class="small">Week Progress</div><h2 id="weekPct">0%</h2></div></div>
-      <div class="bar"><div class="fill" id="weekFill"></div></div>
-    </div>
-  </div>
 
-  <div id="setup" class="card">
-    <h3>Training Settings</h3>
-    <div class="grid">
-      <div><div class="small">Training Mode</div><div class="row"><button id="outdoorBtn" onclick="setMode('outdoor')">Outdoor</button><button id="indoorBtn" onclick="setMode('indoor')">Indoor</button></div></div>
-      <div><div class="small">Difficulty</div><div class="row"><button onclick="setLevel('light')" id="lightBtn">Light</button><button onclick="setLevel('standard')" id="standardBtn">Standard</button><button onclick="setLevel('hard')" id="hardBtn">Hard</button></div></div>
-    </div>
-  </div>
+<h1>Jr Elite Training System</h1>
 
-  <div class="card">
-    <h3>Weeks</h3>
-    <div class="grid3" id="weekButtons"></div>
-  </div>
-  <div class="card">
-    <h3>Days</h3>
-    <div class="grid3" id="dayButtons"></div>
-  </div>
-
-  <div id="trainingCard" class="card"></div>
-  <div id="reflectionCard" class="card"></div>
-  <div id="testingCard" class="card hidden"></div>
+<div class="card">
+<h2 id="dayTitle"></h2>
+<p id="focus"></p>
 </div>
 
-<div class="bottomNav">
-  <button onclick="scrollToTop()">Top</button>
-  <button onclick="showToday()">Today</button>
-  <button onclick="showTesting()">Testing</button>
-  <button id="bottomComplete" onclick="completeDay()">Complete</button>
+<div class="card">
+<h2>Morning Session (25–30 min)</h2>
+<div id="morning"></div>
+</div>
+
+<div class="card">
+<h2>Evening Session (45–55 min)</h2>
+<div id="evening"></div>
+</div>
+
+<div class="card">
+<h2>Daily Reflection</h2>
+<textarea id="notes" placeholder="What felt good? What needs work?" style="width:100%;height:80px;border-radius:10px;padding:10px"></textarea>
+<button onclick="saveNote()">Save Reflection</button>
+</div>
+
+<button onclick="completeDay()">Complete Day</button>
+
 </div>
 
 <script>
-const yt = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
-const video = {
-motivation:'https://www.youtube.com/results?search_query=David+Goggins+Eric+Thomas+CT+Fletcher+motivation+workout+playlist',
-warm:'youth football dynamic warm up high knees butt kicks leg swings',
-pogo:'pogo jumps plyometric tutorial ankle stiffness football speed',
-broad:'standing broad jump plyometric tutorial football athletes',
-singleLegBound:'single leg bounds plyometric drill tutorial football speed',
-lateralBound:'lateral bounds skater jumps plyometric tutorial football agility',
-pushupStart:'push up start sprint acceleration drill football',
-wallDrive:'wall drive sprint drill hip flexor hold football acceleration',
-ladderIcky:'icky shuffle ladder drill football tutorial',
-ladderInOut:'in in out out agility ladder drill tutorial',
-zigzag:'zig zag cone drill football running back cutting tutorial',
-shuttle:'5 10 5 shuttle drill football pro agility tutorial',
-lbShuffle:'linebacker shuffle read react drill youth football',
-rbCut:'running back jump cut drill youth football tutorial',
-deRush:'defensive end pass rush get off drill youth football',
-treadSprint:'treadmill sprint intervals football speed training',
-stairs:'stair hops plyometric workout for athletes tutorial',
-hallwayFoot:'indoor footwork drills football athletes hallway',
-splitSquat:'rear foot elevated split squat athlete tutorial bodyweight dumbbell',
-goblet:'goblet squat proper form young athlete',
-rdl:'single leg rdl bodyweight dumbbell athlete tutorial',
-medball:'medicine ball slam throw explosive power football athletes',
-pushup:'perfect push up form young athlete',
-row:'resistance band row proper form athlete',
-plank:'front plank proper form athlete',
-mobility:'football hip mobility routine youth athletes calves hamstrings hips',
-calf:'calf stretch wall soleus stretch shin splints athletes'
-};
-function link(k){return yt(video[k]||k)}
 
-const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-const weeks = ['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6','Week 7','Week 8','Week 9'];
-const weekNames = {
-'Week 1':'Foundation and Landing Mechanics','Week 2':'Acceleration and Quick Feet','Week 3':'Lateral Power and Cutting','Week 4':'Football Position Skill','Week 5':'Power Progression','Week 6':'Speed Endurance','Week 7':'Combine Prep','Week 8':'Peak Speed and Sharpness','Week 9':'Taper and August 7 Readiness'};
-const multipliers = {light:.75,standard:1,hard:1.18};
-let state = JSON.parse(localStorage.getItem('jr_level7_state') || '{}');
-state.week = state.week || 'Week 1'; state.day = state.day || 'Monday'; state.mode = state.mode || 'outdoor'; state.level = state.level || 'standard'; state.done = state.done || {}; state.reflect = state.reflect || {}; state.tests = state.tests || {};
-function save(){localStorage.setItem('jr_level7_state',JSON.stringify(state))}
-function dayKey(w,d){return w+'|'+d}
-function isDayDone(w,d){return !!state.done[dayKey(w,d)]}
-function weekIndex(w){return weeks.indexOf(w)}
-function isWeekUnlocked(w){ if(w==='Week 1') return true; const prev=weeks[weekIndex(w)-1]; return weekComplete(prev); }
-function weekComplete(w){ return days.every(d=>isDayDone(w,d)); }
-function isDayUnlocked(w,d){ if(!isWeekUnlocked(w)) return false; const i=days.indexOf(d); if(i===0) return true; return isDayDone(w,days[i-1]); }
-function rx(n){return Math.max(1,Math.round(n*multipliers[state.level]));}
-function makeExercise(name,sets,reps,rest,cue,vid){return {name,sets,reps,rest,cue,vid}}
-function plyoBase(type){
- const foundation=[makeExercise('Pogo Jumps',3,'15 seconds','45 sec','Bounce through the ankles. Knees soft. Stay tall like a spring.', 'pogo'),makeExercise('Broad Jumps',4,'3 jumps','60 sec','Stick the landing. Knees track over toes. Reset before every jump.', 'broad'),makeExercise('Wall Hip Flexor Holds',3,'15 sec each leg','30 sec','Knee up, toe up, core tight. This teaches sprint position.', 'wallDrive')];
- const speed=[makeExercise('Push Up Starts',5,'1 sprint start','60 sec','Pop up fast, first three steps violent, stay low.', 'pushupStart'),makeExercise('Single Leg Bounds',3,'5 each leg','60 sec','Cover ground. Land quiet. Do not rush the next bound.', 'singleLegBound'),makeExercise('Pogo Jumps Forward',3,'10 yards','45 sec','Quick ground contact. Feet under hips. No heavy stomping.', 'pogo')];
- const lateral=[makeExercise('Lateral Bounds',4,'4 each side','60 sec','Push side to side. Stick each landing before returning.', 'lateralBound'),makeExercise('Skater Jumps',3,'8 each side','45 sec','Stay low and athletic. Control before speed.', 'lateralBound'),makeExercise('Zig Zag Cut Jumps',3,'5 cuts','60 sec','Plant outside foot and explode to the next cone.', 'zigzag')];
- const indoor=[makeExercise('Treadmill Sprint Intervals',6,'10 sec sprint','60 sec walk','Fast but safe. Do not hold the rails. Step off only when treadmill is slow.', 'treadSprint'),makeExercise('Stair Pogo Hops',3,'8 steps','60 sec','Use stairs only if safe. Quick feet, soft landing.', 'stairs'),makeExercise('Hallway Push Up Starts',5,'1 start into 5 yards','45 sec','Pop up and accelerate without slipping.', 'pushupStart')];
- if(state.mode==='indoor') return indoor;
- return type==='speed'?speed:type==='lateral'?lateral:foundation;
+const days = [
+
+{
+name:"Monday",
+focus:"Acceleration + Lower Body Explosive Strength",
+
+morning:[
+["Dynamic Warmup 5 min","https://www.youtube.com/results?search_query=dynamic+warmup+youth+athletes"],
+["Sprint Starts 6x10yd","https://www.youtube.com/results?search_query=10+yard+sprint+start+football"],
+["Wall Drive Drill 3x15","https://www.youtube.com/results?search_query=wall+drive+drill+sprint"],
+["Pogo Jumps 3x20","https://www.youtube.com/results?search_query=pogo+jumps+athlete"],
+["Broad Jumps 4x5","https://www.youtube.com/results?search_query=broad+jumps+football"]
+],
+
+evening:[
+["Split Squats 3x10","https://www.youtube.com/results?search_query=split+squat+proper+form"],
+["Step Ups 3x10","https://www.youtube.com/results?search_query=step+ups+athlete"],
+["Glute Bridges 3x15","https://www.youtube.com/results?search_query=glute+bridge"],
+["Plank 3x45s","https://www.youtube.com/results?search_query=plank+form"],
+["Stretch + Mobility 10 min","https://www.youtube.com/results?search_query=athlete+mobility+routine"]
+]
+},
+
+{
+name:"Tuesday",
+focus:"Agility + Upper Body Strength",
+
+morning:[
+["Ladder Drills 10 min","https://www.youtube.com/results?search_query=agility+ladder+football"],
+["5-10-5 Shuttle 5 reps","https://www.youtube.com/results?search_query=5-10-5+shuttle"],
+["Cone Zig Zag 5 reps","https://www.youtube.com/results?search_query=zig+zag+cone+drill"],
+["Reaction Drill 6 reps","https://www.youtube.com/results?search_query=reaction+drills+football"]
+],
+
+evening:[
+["Push Ups 4x12","https://www.youtube.com/results?search_query=push+ups+proper+form"],
+["Band Rows 3x12","https://www.youtube.com/results?search_query=resistance+band+rows"],
+["Shoulder Taps 3x20","https://www.youtube.com/results?search_query=shoulder+taps+core"],
+["Core Circuit 10 min","https://www.youtube.com/results?search_query=core+workout+athletes"]
+]
+},
+
+{
+name:"Wednesday",
+focus:"Plyometric Power + Recovery",
+
+morning:[
+["Warmup","https://www.youtube.com/results?search_query=dynamic+warmup"],
+["Single Leg Bounds 4x5 each","https://www.youtube.com/results?search_query=single+leg+bounds"],
+["Skater Jumps 3x12","https://www.youtube.com/results?search_query=skater+jumps"],
+["Box or Stair Jumps 4x6","https://www.youtube.com/results?search_query=box+jumps"],
+["Push Up Starts 5 reps","https://www.youtube.com/results?search_query=push+up+start+drill"]
+],
+
+evening:[
+["Light Mobility","https://www.youtube.com/results?search_query=mobility+routine"],
+["Stretching 15 min","https://www.youtube.com/results?search_query=stretching+athletes"]
+]
+},
+
+{
+name:"Thursday",
+focus:"Lateral Movement + Total Body",
+
+morning:[
+["Lateral Shuffle 5x","https://www.youtube.com/results?search_query=lateral+shuffle+football"],
+["Mirror Drill 6 reps","https://www.youtube.com/results?search_query=mirror+drill+football"],
+["LB Reaction Drill","https://www.youtube.com/results?search_query=linebacker+reaction+drill"]
+],
+
+evening:[
+["Bodyweight Circuit","https://www.youtube.com/results?search_query=bodyweight+workout+athletes"],
+["Core + Balance","https://www.youtube.com/results?search_query=balance+training+athletes"]
+]
+},
+
+{
+name:"Friday",
+focus:"Conditioning + Competition",
+
+morning:[
+["Sprint Intervals","https://www.youtube.com/results?search_query=sprint+intervals"],
+["Cone Suicides","https://www.youtube.com/results?search_query=cone+suicides"],
+["Shuttle Races","https://www.youtube.com/results?search_query=shuttle+run+football"]
+],
+
+evening:[
+["Light Recovery","https://www.youtube.com/results?search_query=recovery+workout"],
+["Stretch + Hydrate","https://www.youtube.com/results?search_query=stretching"]
+]
+},
+
+{
+name:"Saturday",
+focus:"Recovery Day",
+morning:[["Walk + Stretch","https://www.youtube.com/results?search_query=light+stretching"]],
+evening:[["Rest",""]]
+},
+
+{
+name:"Sunday",
+focus:"Full Rest",
+morning:[["Rest",""]],
+evening:[["Rest",""]]
 }
-function agility(type){
- if(state.mode==='indoor') return [makeExercise('Hallway Fast Feet',4,'20 sec','40 sec','Feet quick. Chest up. Stay light.', 'hallwayFoot'),makeExercise('Tape Ladder In In Out Out',4,'2 trips','45 sec','Use tape or floor lines. Clean feet before speed.', 'ladderInOut'),makeExercise('Treadmill Incline Power Walk',1,'10 min','none','Incline 6 to 10. Strong posture. Build conditioning without pounding.', 'treadSprint')];
- if(type==='position') return [makeExercise('Running Back Start and Cut',4,'4 each direction','60 sec','Press the line then one cut and go.', 'rbCut'),makeExercise('Linebacker Shuffle and React',5,'5 reps','45 sec','Low hips, eyes forward, do not cross feet.', 'lbShuffle'),makeExercise('Defensive End Get Off',5,'3 reps each side','60 sec','Explode off the ball. Rip through with violent hands.', 'deRush')];
- return [makeExercise('Icky Shuffle Ladder',4,'2 trips','45 sec','Eyes up. Do not stare at feet the whole time.', 'ladderIcky'),makeExercise('5 10 5 Shuttle',5,'1 rep','75 sec','Touch the line. Plant hard. Accelerate back.', 'shuttle'),makeExercise('Zig Zag Cone Cuts',4,'1 full run','60 sec','Sink hips. Plant outside foot. One cut and go.', 'zigzag')];
+
+]
+
+let current = Number(localStorage.getItem("day")||0)
+
+function render(){
+let d = days[current]
+document.getElementById("dayTitle").innerText = d.name
+document.getElementById("focus").innerText = d.focus
+
+let m = d.morning.map(x=>`<p>${x[0]}</p><a href="${x[1]}" target="_blank">Watch</a>`).join("")
+let e = d.evening.map(x=>`<p>${x[0]}</p><a href="${x[1]}" target="_blank">Watch</a>`).join("")
+
+document.getElementById("morning").innerHTML = m
+document.getElementById("evening").innerHTML = e
 }
-function strength(type){
- const base=[makeExercise('Goblet Squat',3,'8 reps','75 sec','Strength posture. Chest tall. Move fast up, controlled down.', 'goblet'),makeExercise('Split Squat',3,'6 each leg','75 sec','Front foot flat. Drive through the floor. No knee cave.', 'splitSquat'),makeExercise('Push Ups',3,'8 to 12','60 sec','Perfect reps only. Stop before ugly reps.', 'pushup'),makeExercise('Band Row or Dumbbell Row',3,'10 reps','60 sec','Squeeze shoulder blades. Control the weight.', 'row')];
- const power=[makeExercise('Med Ball Slams or Fast Floor Taps',4,'5 reps','60 sec','Explode hard. Reset every rep. Power over fatigue.', 'medball'),makeExercise('Single Leg RDL',3,'6 each leg','75 sec','Hips back. Balance and hamstring control.', 'rdl'),makeExercise('Goblet Squat Jump Pattern',3,'5 bodyweight jumps','75 sec','No heavy load. Jump tall. Land soft.', 'broad'),makeExercise('Plank',3,'30 to 45 sec','45 sec','Ribs down. Glutes tight. No sagging.', 'plank')];
- return type==='power'?power:base;
+
+function completeDay(){
+current++
+if(current>=days.length) current=0
+localStorage.setItem("day",current)
+render()
 }
-function mobility(){return [makeExercise('Hip Mobility Flow',1,'8 min','none','Open hips, calves, hamstrings, quads. Move slow.', 'mobility'),makeExercise('Calf and Soleus Stretch',3,'30 sec each','15 sec','Straight knee and bent knee. Protect the shins.', 'calf'),makeExercise('Breathing Reset',1,'2 min','none','Breathe through the nose. Let the body calm down.', 'mobility')];}
-function dailyPlan(w,d){
- const wi=weekIndex(w)+1; let type='foundation'; if(wi%3===2)type='speed'; if(wi%3===0)type='lateral'; if(d==='Thursday')type='position';
- if(d==='Saturday'||d==='Sunday') return {theme:d==='Saturday'?'Weekly Testing and Film Review':'Recovery and Reset',morning:[],evening:[]};
- return {theme:d==='Thursday'?'RB LB DE Technique Day':(type==='speed'?'Acceleration and Quickness':type==='lateral'?'Lateral Power and Cutting':'Plyometric Foundation'),
- morning:[...plyoBase(type),...agility(type)],
- evening:[...strength(type==='position'?'base':'power'),...mobility()]};
+
+function saveNote(){
+localStorage.setItem("note_"+current,document.getElementById("notes").value)
+alert("Saved")
 }
-function renderExercise(ex,i){return `<div class="exercise"><div class="exerciseHead"><div class="num">${i+1}</div><div style="flex:1"><h3>${ex.name}</h3><div class="rx"><div><b>${typeof ex.sets==='number'?rx(ex.sets):ex.sets}</b><span>Sets</span></div><div><b>${ex.reps}</b><span>Reps</span></div><div><b>${ex.rest}</b><span>Rest</span></div></div><p class="cue">${ex.cue}</p><a class="btn videoLink" target="_blank" href="${link(ex.vid)}">Watch ${ex.name} Video</a></div></div></div>`}
-function renderTraining(){
- const unlocked=isDayUnlocked(state.week,state.day); const plan=dailyPlan(state.week,state.day); let html=`<div class="small">${state.week} • ${weekNames[state.week]}</div><h2>${state.day}: ${plan.theme}</h2>`;
- if(!unlocked){html+=`<p class="lockedMsg">This day is locked. Complete the previous day first.</p>`;document.getElementById('trainingCard').innerHTML=html;renderReflection();return;}
- if(state.day==='Saturday'){html+=testingHTML(false)} else if(state.day==='Sunday'){html+=`<div class="inner"><h3>Recovery Day</h3><p>Walk 20 to 30 minutes, stretch, hydrate, and review the week. If he missed a day, use Sunday to make up the most important session only.</p><a class="btn blue full" target="_blank" href="${link('football recovery mobility routine youth athlete')}" >Watch Recovery Video</a></div>`} else {
- html+=`<div class="inner warning"><h3>Coach Instructions</h3><p>Morning is speed, plyometrics, agility, and explosiveness. Evening is strength, power, mobility, and recovery. Quality beats rushing. If pain is sharp or shin pain is above 3 out of 10, switch to indoor low impact mode.</p><a class="btn blue full" target="_blank" href="${video.motivation}">Motivation Playlist for Workout</a></div>`;
- html+=`<div class="modeCard"><h2>Morning Session</h2><p class="small">Cardio, plyometrics, agility, speed mechanics</p>${plan.morning.map(renderExercise).join('')}</div>`;
- html+=`<div class="modeCard"><h2>Evening Session</h2><p class="small">Explosive strength, power control, stretching</p>${plan.evening.map(renderExercise).join('')}</div>`;
- }
- html+=`<button class="green" onclick="completeDay()">${isDayDone(state.week,state.day)?'Day Complete':'Mark '+state.day+' Complete'}</button>`;
- document.getElementById('trainingCard').innerHTML=html;
- renderReflection(); renderTesting();
-}
-function renderReflection(){
- const k=dayKey(state.week,state.day); const r=state.reflect[k]||{}; const unlocked=isDayUnlocked(state.week,state.day); let html=`<h3>${state.day} Reflection</h3><p class="small">This saves under ${state.week} ${state.day}, so you can compare his mindset and growth week to week.</p>`;
- if(!unlocked){html+=`<p class="lockedMsg">Reflection unlocks when the day unlocks.</p>`; document.getElementById('reflectionCard').innerHTML=html;return;}
- html+=`<div class="grid"><div><div class="small">Energy 1 to 10</div><input id="energy" type="number" min="1" max="10" value="${r.energy||''}" placeholder="Example 7"></div><div><div class="small">Effort 1 to 10</div><input id="effort" type="number" min="1" max="10" value="${r.effort||''}" placeholder="Example 8"></div></div><div class="small">What did you like today?</div><textarea id="liked">${r.liked||''}</textarea><div class="small">What was hard or frustrating?</div><textarea id="hardpart">${r.hardpart||''}</textarea><div class="small">What do you want to improve tomorrow?</div><textarea id="improve">${r.improve||''}</textarea><button class="blue full" onclick="saveReflection()">Save ${state.day} Reflection</button>`;
- document.getElementById('reflectionCard').innerHTML=html;
-}
-function testingHTML(innerOnly=true){ const w=state.week; const t=state.tests[w]||{}; return `<div class="inner"><h3>Weekly Testing</h3><p>Test once on Saturday. If Saturday is impossible, test Sunday. Use the same shoes, surface, and warm up each week.</p><div class="grid"><input id="t10" placeholder="10 yard dash" value="${t.t10||''}"><input id="t20" placeholder="20 yard dash" value="${t.t20||''}"><input id="t505" placeholder="5 10 5 shuttle" value="${t.t505||''}"><input id="tbroad" placeholder="Broad jump inches" value="${t.tbroad||''}"><input id="tvert" placeholder="Vertical jump inches" value="${t.tvert||''}"><input id="tplank" placeholder="Plank time" value="${t.tplank||''}"></div><textarea id="tnotes" placeholder="Testing notes, what improved, what looked better">${t.tnotes||''}</textarea><button class="blue full" onclick="saveTests()">Save ${w} Test Results</button></div>`; }
-function renderTesting(){document.getElementById('testingCard').innerHTML=testingHTML();}
-function renderWeeks(){let html='';weeks.forEach(w=>{const unlocked=isWeekUnlocked(w);const complete=weekComplete(w);html+=`<button ${unlocked?'':'disabled'} class="${state.week===w?'active ':''}${complete?'complete ':''}" onclick="selectWeek('${w}')">${w}${complete?' ✓':unlocked?'':' 🔒'}</button>`});document.getElementById('weekButtons').innerHTML=html;}
-function renderDays(){let html='';days.forEach(d=>{const unlocked=isDayUnlocked(state.week,d);const complete=isDayDone(state.week,d);html+=`<button ${unlocked?'':'disabled'} class="${state.day===d?'active ':''}${complete?'complete ':''}" onclick="selectDay('${d}')">${d}${complete?' ✓':unlocked?'':' 🔒'}</button>`});document.getElementById('dayButtons').innerHTML=html;}
-function updateProgress(){const done=days.filter(d=>isDayDone(state.week,d)).length;const pct=Math.round(done/days.length*100);document.getElementById('weekPct').textContent=pct+'%';document.getElementById('weekFill').style.width=pct+'%';document.getElementById('currentLabel').textContent=state.week+' • '+state.day;}
-function updateBottomBar(){const b=document.getElementById('bottomComplete');if(!b)return;const unlocked=isDayUnlocked(state.week,state.day);const done=isDayDone(state.week,state.day);b.disabled=!unlocked||done;b.textContent=done?'Done ✓':unlocked?'Complete Day':'Locked';}
-function render(){document.getElementById('outdoorBtn').className=state.mode==='outdoor'?'active':'';document.getElementById('indoorBtn').className=state.mode==='indoor'?'active':'';['light','standard','hard'].forEach(l=>document.getElementById(l+'Btn').className=state.level===l?'active':'');renderWeeks();renderDays();updateProgress();renderTraining();updateBottomBar();save();}
-function selectWeek(w){if(isWeekUnlocked(w)){state.week=w;state.day='Monday';render();window.scrollTo(0,0)}}
-function selectDay(d){if(isDayUnlocked(state.week,d)){state.day=d;render();window.scrollTo(0,0)}}
-function completeDay(){if(!isDayUnlocked(state.week,state.day) || isDayDone(state.week,state.day)) return; state.done[dayKey(state.week,state.day)]=true; const i=days.indexOf(state.day); if(i<days.length-1){state.day=days[i+1];} else {const wi=weekIndex(state.week); if(wi<weeks.length-1) {state.week=weeks[wi+1]; state.day='Monday';}} render();}
-function setMode(m){state.mode=m;render()} function setLevel(l){state.level=l;render()}
-function saveReflection(){const k=dayKey(state.week,state.day);state.reflect[k]={energy:document.getElementById('energy').value,effort:document.getElementById('effort').value,liked:document.getElementById('liked').value,hardpart:document.getElementById('hardpart').value,improve:document.getElementById('improve').value};save();alert('Reflection saved for '+state.week+' '+state.day)}
-function saveTests(){state.tests[state.week]={t10:document.getElementById('t10').value,t20:document.getElementById('t20').value,t505:document.getElementById('t505').value,tbroad:document.getElementById('tbroad').value,tvert:document.getElementById('tvert').value,tplank:document.getElementById('tplank').value,tnotes:document.getElementById('tnotes').value};save();alert('Testing saved for '+state.week)}
-function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'})} function showToday(){document.getElementById('trainingCard').scrollIntoView({behavior:'smooth'})} function showTesting(){document.getElementById('testingCard').classList.toggle('hidden');document.getElementById('testingCard').scrollIntoView({behavior:'smooth'})}
-render();
+
+render()
+
 </script>
+
 </body>
 </html>
