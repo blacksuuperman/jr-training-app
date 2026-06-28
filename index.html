@@ -261,7 +261,765 @@ function renderTraining(){
  if(!unlocked){html+=`<p class="lockedMsg">This day is locked. Complete the previous day first.</p>`;document.getElementById('trainingCard').innerHTML=html;renderReflection();return;}
  if(state.day==='Saturday'){html+=testingHTML(false)+`<div class="inner"><h3>Saturday Recovery</h3><p>After testing, he should walk, stretch, hydrate, and review what improved. No hard training today.</p><a class="btn blue full" target="_blank" href="${link('recovery')}">Watch Recovery Mobility</a></div>`}
  else if(state.day==='Sunday'){html+=`<div class="inner"><h3>Full Rest Day</h3><p>No training. Eat, hydrate, sleep, and get ready for the next week. This keeps him fresh enough to actually get faster.</p></div>`}
- else {html+=`<details class="sessionDetails"><summary><span><span>Coach Instructions</span><div class="sessionSub">Read this before training</div></span></summary><div class="sessionBody compactCoach"><p>${sessionNote(state.week)} Morning should take 25 to 30 minutes. Evening should take 45 to 55 minutes. Quality comes before speed. If shin pain is above 3 out of 10, switch to indoor mode.</p><button class="blue full" onclick="scrollToMotivation()">Open Motivation Player</button></div></details>`;html+=`<details class="sessionDetails"><summary><span><span>Morning Session</span><div class="sessionSub">25 to 30 min • speed, plyos, agility, skill, or conditioning</div></span></summary><div class="sessionBody">${plan.morning.map(renderBlock).join('')}</div></details>`;html+=`<details class="sessionDetails"><summary><span><span>Evening Gym Session</span><div class="sessionSub">45 to 55 min • explosive strength, core, mobility, recovery</div></span></summary><div class="sessionBody">${plan.evening.map(renderBlock).join('')}</div></details>`;}
+ else {html+=`<details class="sessionDetails"><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>BlackSuperman Jr Level 13 Earned Day Athlete Hub</title>
+<style>
+:root{
+  --bg:#050507;
+  --panel:#111118;
+  --panel2:#171722;
+  --panel3:#0c0c11;
+  --line:#2f303b;
+  --soft:#222230;
+  --text:#ffffff;
+  --muted:#b9b9c6;
+  --accent:#facc15;
+  --accent2:#fff3a3;
+  --green:#22c55e;
+  --red:#ef4444;
+  --orange:#fb923c;
+  --blue:#38bdf8;
+  --purple:#a78bfa;
+  --buttonText:#050507;
+  --themeGlow:#3a3207;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100%;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+body{padding:10px 10px 128px;overflow-x:hidden;background:radial-gradient(circle at top left,var(--themeGlow),var(--bg) 360px,var(--bg) 100%)}
+.app{max-width:920px;margin:0 auto}.hidden{display:none!important}
+h1,h2,h3{margin:0;color:var(--text)}h1{font-size:25px;line-height:1}h2{font-size:22px}h3{font-size:17px}
+p,li{color:var(--text);line-height:1.42}.small{font-size:12px;color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}
+.musicDock{position:sticky;top:0;z-index:90;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:20px;padding:8px;margin-bottom:10px;box-shadow:0 10px 26px rgba(0,0,0,.32);backdrop-filter:blur(14px)}
+.musicTop{display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center}
+.musicTop input{min-height:40px}.playerWrap{display:grid;grid-template-columns:132px 1fr;gap:8px;align-items:center;margin-top:8px}.ytFrame{width:132px;height:74px;border:0;border-radius:14px;background:#000}.musicHelp{font-size:11px;color:var(--muted);line-height:1.35}.quickChips{display:flex;gap:6px;overflow:auto;padding-top:7px}.quickChips button{white-space:nowrap;min-height:32px;font-size:11px;border-radius:999px;padding:7px 10px}
+.hero{border:1px solid var(--line);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 17%,transparent),rgba(17,17,24,.96));border-radius:27px;padding:14px;box-shadow:0 22px 42px rgba(0,0,0,.35);margin-bottom:12px}
+.topLine{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:900;margin-bottom:8px}
+.status{background:#07070b;border:1px solid var(--line);border-radius:18px;padding:10px;min-width:105px;text-align:center}
+.status b{display:block;font-size:20px;color:var(--accent)}
+.card{background:rgba(17,17,24,.97);border:1px solid var(--line);border-radius:24px;padding:14px;margin-bottom:12px}
+.inner{background:var(--panel3);border:1px solid var(--line);border-radius:19px;padding:12px;margin:10px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.tileGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tile{border:1px solid var(--line);background:linear-gradient(180deg,#181824,#0b0b10);border-radius:23px;padding:12px 8px;min-height:96px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;box-shadow:0 12px 22px rgba(0,0,0,.18);cursor:pointer}
+.tileIcon{font-size:27px}.tile b{font-size:13px}.tile small{color:var(--muted);font-size:10.5px}.tile.active{border-color:color-mix(in srgb,var(--accent) 80%,#fff);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 22%,transparent)}
+button,a.btn{border:0;border-radius:16px;padding:12px 13px;font-weight:900;background:var(--soft);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:45px;cursor:pointer;font-size:14px;touch-action:manipulation}
+button.active,a.active,.gold{background:var(--accent);color:#050507}.green{background:var(--green);color:#041206}.blue{background:#0c4a6e;color:#fff}.red{background:#5d1515;color:#fff}.orange{background:#713f12;color:#fff}.full{width:100%}button:disabled{opacity:.38;cursor:not-allowed}
+input,textarea,select{width:100%;background:#08080d;color:#fff;border:1px solid #393a48;border-radius:16px;padding:12px;font-size:16px}textarea{min-height:96px;resize:vertical}.miniInput{min-height:40px;padding:9px 10px}.label{font-size:12px;color:var(--muted);font-weight:900;margin:8px 0 5px;text-transform:uppercase;letter-spacing:.04em}
+.bar{height:12px;background:#292934;border-radius:99px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%}.badge{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#0d0d12;border-radius:999px;padding:7px 10px;font-size:12px;color:#ddd;font-weight:900}
+.badge.good{color:#86efac;border-color:rgba(34,197,94,.55)}.badge.warn{color:#fed7aa;border-color:rgba(251,146,60,.55)}.badge.bad{color:#fca5a5;border-color:rgba(239,68,68,.55)}.badge.goldTxt{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.screen{display:none}.screen.active{display:block}
+.workoutBox{border:1px solid #30303b;background:#0a0a0f;border-radius:20px;padding:11px;margin:10px 0}
+.exercise{display:grid;grid-template-columns:auto 1fr;gap:9px;border:1px solid var(--line);background:var(--panel3);border-radius:18px;padding:11px;margin:9px 0}.num{height:29px;width:29px;border-radius:50%;background:var(--accent);color:var(--buttonText);display:flex;align-items:center;justify-content:center;font-weight:900}
+.rx{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}.rx div{background:#191923;border:1px solid #30303b;border-radius:13px;padding:8px;text-align:center}.rx b{display:block;color:var(--accent);font-size:14px}.rx span{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase}
+.cue{border-left:4px solid var(--accent);padding-left:9px;color:#e8e8ef;font-size:13px}.videoLink{width:100%;background:#b91c1c;margin-top:6px;min-height:38px;font-size:12px}
+.logGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.setLog{display:grid;grid-template-columns:.7fr 1fr 1fr;gap:6px;margin-top:7px;align-items:center}.setLog span{font-size:11px;color:var(--muted);font-weight:900}.setLog input{min-height:40px}.logGrid input{min-height:40px;padding:9px 10px;font-size:15px}
+details.clean{border:1px solid var(--line);background:#0b0b10;border-radius:20px;margin:10px 0;overflow:hidden}details.clean>summary{list-style:none;cursor:pointer;padding:14px 13px;font-weight:900;display:flex;justify-content:space-between;gap:10px;align-items:center}details.clean>summary::-webkit-details-marker{display:none}details.clean>summary:after{content:'+';height:26px;width:26px;border-radius:50%;background:var(--accent);color:#050507;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}details.clean[open]>summary:after{content:'×'}.detailBody{padding:0 11px 11px}
+.coachBubble{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 17%,transparent),rgba(34,197,94,.08));border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:22px;padding:13px;margin-top:10px}.coachBubble strong{color:var(--accent)}
+.dataTable{width:100%;border-collapse:separate;border-spacing:0 7px}.dataTable td{background:#101018;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px;font-size:13px}.dataTable td:first-child{border-left:1px solid var(--line);border-radius:13px 0 0 13px;color:var(--muted);font-weight:800}.dataTable td:last-child{border-right:1px solid var(--line);border-radius:0 13px 13px 0;text-align:right;font-weight:900}
+.statCards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#0a0a0f;border:1px solid var(--line);border-radius:18px;padding:10px;text-align:center}.stat b{font-size:18px;color:var(--accent);display:block}.stat span{font-size:11px;color:var(--muted);font-weight:800}
+.completionList{display:grid;gap:7px;margin-top:9px}.checkItem{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0d0d12;border:1px solid var(--line);border-radius:15px;padding:9px 10px;font-size:13px;font-weight:800}.checkItem span:last-child{font-size:12px}
+.dadOrb{min-height:160px;width:min(92vw,360px);border-radius:32px;margin:10px auto;background:radial-gradient(circle at 20% 12%,#fff,var(--accent) 18%,var(--panel) 70%);box-shadow:0 0 30px color-mix(in srgb,var(--accent) 42%,transparent);display:flex;align-items:center;justify-content:center;color:var(--text);font-weight:900;font-size:18px;text-align:center;padding:22px;line-height:1.25}.dadOrb small{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+.colorDot{height:36px;width:36px;border-radius:50%;border:2px solid rgba(255,255,255,.25);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+
+#heroSub{display:inline-block;margin-top:7px;padding:8px 10px;border-radius:14px;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.14);color:var(--heroText);font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.card{background:color-mix(in srgb,var(--panel) 94%,#000 6%)}
+.inner,.workoutBox,details.clean,.stat,.checkItem,.status{background:color-mix(in srgb,var(--panel3) 92%,#000 8%)}
+.tile{background:linear-gradient(180deg,var(--panel2),var(--panel3))}
+.rx div,.dataTable td{background:color-mix(in srgb,var(--panel3) 88%,#000 12%)}
+input,textarea,select{background:color-mix(in srgb,var(--panel3) 86%,#000 14%);color:var(--text)}
+.cue{color:var(--text)}
+button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
+.badge{background:color-mix(in srgb,var(--panel3) 88%,#000 12%);color:var(--text)}
+.bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr 1.25fr;gap:7px}.bottomNav button{min-height:43px;border-radius:14px;font-size:12px}.bottomNav .green{font-size:13px}
+@media(max-width:640px){
+  body{padding:9px 9px 126px}h1{font-size:22px}.hero{border-radius:23px;padding:13px}.topLine{align-items:center}.status{min-width:88px;padding:8px}
+  .musicTop{grid-template-columns:1fr auto}.musicTop .hideSmall{display:none}.playerWrap{grid-template-columns:120px 1fr}.ytFrame{width:120px;height:68px}
+  .tileGrid{grid-template-columns:repeat(3,1fr);gap:8px}.tile{min-height:88px;border-radius:21px;padding:10px 6px}.tileIcon{font-size:24px}.tile b{font-size:12px}.tile small{font-size:10px}
+  .grid,.grid3,.logGrid{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.statCards{grid-template-columns:1fr 1fr}.card{border-radius:22px;padding:12px}.exercise{grid-template-columns:1fr}.num{margin-bottom:-3px}
+  .bottomNav{grid-template-columns:1fr 1fr 1fr 1.1fr}.bottomNav button{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="musicDock">
+    <div class="musicTop">
+      <input id="musicSearch" class="miniInput" placeholder="Paste a YouTube video or playlist link, or type clean hype music" />
+      <button class="gold" onclick="playMusic()">Play</button>
+      <button class="hideSmall" onclick="toggleMusic()">Hide</button>
+    </div>
+    <div class="playerWrap" id="playerWrap">
+      <iframe id="musicFrame" class="ytFrame" src="https://www.youtube.com/embed/videoseries?list=PL4fGSI1pDJn5kI81J1fYWK5eZRl1zJ5kM&playsinline=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <div>
+        <div class="quickChips" id="quickChips"></div>
+        <div class="musicHelp">Mini player stays small so he can train while music runs. Paste links for the cleanest inside app playback.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="topLine">
+      <div>
+        <div class="tag">BlackSuperman Youth Performance</div>
+        <h1>Jr Level 13 Athlete Hub</h1>
+        <p class="small" id="heroSub">Earn each day. Train twice. Log the work. Let Dad Talk update the next mission.</p>
+      </div>
+      <div class="status"><b id="dayLabel">Day 1</b><span class="small" id="readinessLabel">Green Light</span></div>
+    </div>
+    <div class="inner">
+      <div class="row" style="justify-content:space-between">
+        <div><div class="small">Today Focus</div><h3 id="focusLabel">Speed</h3></div>
+        <div style="text-align:right"><div class="small">Program</div><h3 id="programPct">0%</h3></div>
+      </div>
+      <div class="bar"><div id="programFill" class="fill"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tileGrid" id="tiles"></div>
+  </div>
+
+  <div id="screen_home" class="card screen"></div>
+  <div id="screen_morning" class="card screen"></div>
+  <div id="screen_strength" class="card screen"></div>
+  <div id="screen_touches" class="card screen"></div>
+  <div id="screen_nutrition" class="card screen"></div>
+  <div id="screen_dadtalk" class="card screen"></div>
+  <div id="screen_data" class="card screen"></div>
+  <div id="screen_settings" class="card screen"></div>
+</div>
+
+<div class="bottomNav">
+  <button onclick="showScreen('home')">Home</button>
+  <button onclick="showScreen('dadtalk')">Dad Talk</button>
+  <button onclick="showScreen('data')">Data</button>
+  <button id="completeBtn" class="green" onclick="completeDay()">Complete</button>
+</div>
+
+<script>
+const STORE='jr_level13_earned_day_v3';
+const OLD_STORES=['jr_level13_earned_day_v2','jr_level13_earned_day_v1','jr_level13_day_cycle_v1','jr_level13_simplified_v1','jr_level13_ai_v1','jr_level9_state'];
+const DAYS_TOTAL=63;
+const baseWeight=0;
+
+const vids={
+warm:'https://www.youtube.com/watch?v=82WVFmw8R2I',
+wallDrive:'https://www.youtube.com/watch?v=aowHaKFuc3c',
+falling:'https://www.youtube.com/watch?v=xzJ96zkv3TI',
+tenYard:'https://www.youtube.com/watch?v=AMEYMn5S0TE',
+pogo:'https://www.youtube.com/watch?v=j0nl5dWuqN4',
+broad:'https://www.youtube.com/watch?v=GTjndpflm_I',
+singleLeg:'https://www.youtube.com/watch?v=I7ChaipZVM4',
+lateralBound:'https://www.youtube.com/watch?v=usZgF8TBWcA',
+hurdleHop:'https://www.youtube.com/watch?v=SuddHMMcK5I',
+pushStart:'https://www.youtube.com/watch?v=JBaNFVQCzkk',
+shuttle:'https://www.youtube.com/watch?v=GZOo12gmVsQ',
+lDrill:'https://www.youtube.com/watch?v=_KtUvR2zcNU',
+icky:'https://www.youtube.com/watch?v=MHNkuGBZ9YQ',
+shuffleSprint:'https://www.youtube.com/watch?v=Vu-2wL-dt7Q',
+dbBackpedal:'https://www.youtube.com/watch?v=YI7b26LyPqQ',
+dbW:'https://www.youtube.com/watch?v=aK-raQmAO68',
+goblet:'https://www.youtube.com/watch?v=6mf0oa2GGUc',
+split:'https://www.youtube.com/watch?v=SGHnCftrZkA',
+singleRdl:'https://www.youtube.com/watch?v=Zfr6wizR8rs',
+floorPress:'https://www.youtube.com/watch?v=uUGDRwge4F8',
+farmer:'https://www.youtube.com/watch?v=lLAw6fUccKA',
+plank:'https://www.youtube.com/watch?v=ASdvN_XEl_c',
+deadbug:'https://www.youtube.com/watch?v=g_BYB0R-4Ws',
+medball:'https://www.youtube.com/watch?v=EsAhU1jHpiQ',
+wallBall:'https://www.youtube.com/shorts/LswuOclvDNg',
+tennisWall:'https://www.youtube.com/shorts/D_PEe6TDiBA',
+handEye:'https://www.youtube.com/shorts/D_PEe6TDiBA',
+overShoulder:'https://www.youtube.com/shorts/UJaRAxXKb-o',
+overShoulderFlag:'https://www.youtube.com/shorts/UJaRAxXKb-o',
+lateHands:'https://www.youtube.com/shorts/AjfUTo2-Kow',
+catchFootball:'https://www.youtube.com/shorts/AjfUTo2-Kow',
+badHands:'https://www.youtube.com/shorts/D_PEe6TDiBA',
+rbBall:'https://www.youtube.com/shorts/LswuOclvDNg',
+rbJump:'https://www.youtube.com/shorts/LswuOclvDNg',
+deGetoff:'https://www.youtube.com/watch?v=U3w9GuypQgU',
+handFight:'https://www.youtube.com/shorts/NSx86zEi1Vg',
+oneHandTwoHands:'https://www.youtube.com/shorts/AjfUTo2-Kow',
+tossUpsGrip:'https://www.youtube.com/shorts/LswuOclvDNg',
+circleDrops:'https://www.youtube.com/shorts/D_PEe6TDiBA',
+deHands:'https://www.youtube.com/shorts/NSx86zEi1Vg'
+};
+
+const musicPresets=[
+ {key:'clean',label:'Clean Hype',src:'https://www.youtube.com/embed/videoseries?list=PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI&playsinline=1'},
+ {key:'workout',label:'Workout Mix',src:'https://www.youtube.com/embed/videoseries?list=PL4fGSI1pDJn5kI81J1fYWK5eZRl1zJ5kM&playsinline=1'},
+ {key:'goggins',label:'Goggins',src:'https://www.youtube.com/embed/yErh67ls9XA?playsinline=1'},
+ {key:'motivation',label:'Motivation',src:'https://www.youtube.com/embed/videoseries?list=PLTaMkgKv5vlz8k8-_2Fz92HfP5u-cjR_d&playsinline=1'}
+];
+
+const tiles=[
+ ['home','🏠','Today','Mission card'],
+ ['morning','⚡','Morning','Speed and plyos'],
+ ['strength','🏋️','Strength','Core and power'],
+ ['touches','🏈','Touches','Hands and ball skill'],
+ ['nutrition','🍽️','Nutrition','Fuel and water'],
+ ['dadtalk','🎱','Dad Talk','Earn tomorrow'],
+ ['data','📊','Data','Trends and weak spots'],
+ ['settings','🎨','Settings','Mode and color']
+];
+
+const levelData={
+ foundation:{name:'Foundation',mult:.85,sets:-1,extra:'Technique pace'},
+ varsity:{name:'Varsity',mult:1,sets:0,extra:'Game pace'},
+ savage:{name:'Savage',mult:1.18,sets:1,extra:'High school body challenge'}
+};
+
+function defaultState(){
+ return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',screen:'home',musicOpen:true,logs:{},completed:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0};
+}
+function migrateOld(){
+ let raw=localStorage.getItem(STORE);
+ if(raw) return JSON.parse(raw);
+ let s=defaultState();
+ for(const k of OLD_STORES){
+   try{
+     let old=JSON.parse(localStorage.getItem(k)||'null');
+     if(old){
+       if(old.mode)s.mode=old.mode;
+       if(old.level){
+         if(old.level==='hard')s.level='savage';
+         else if(old.level==='light')s.level='foundation';
+         else s.level='varsity';
+       }
+       if(old.day && Number(old.day))s.day=Number(old.day);
+       break;
+     }
+   }catch(e){}
+ }
+ return s;
+}
+let state=migrateOld();
+state.profileWeight = state.profileWeight || (state.logs && state.logs.day1 && state.logs.day1.weight && state.logs.day1.weight !== '145' ? state.logs.day1.weight : '');
+
+function save(){localStorage.setItem(STORE,JSON.stringify(state));}
+function clamp(n,min,max){return Math.max(min,Math.min(max,Number(n)||min));}
+function currentKey(){return 'day'+state.day;}
+function logFor(day=state.day){const k='day'+day; if(!state.logs[k])state.logs[k]={}; return state.logs[k];}
+function prevLog(){return state.logs['day'+(state.day-1)]||{}}
+function todayAdapt(){return state.adapt[currentKey()]||state.adapt['day'+(state.day-1)]||{status:'Green Light',mult:1,note:'Move with quality.'};}
+
+function hexToRgb(hex){
+ hex=(hex||'#facc15').replace('#','');
+ if(hex.length===3)hex=hex.split('').map(x=>x+x).join('');
+ const n=parseInt(hex,16);return {r:(n>>16)&255,g:(n>>8)&255,b:n&255};
+}
+function rgbToHex(r,g,b){return '#'+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('');}
+function mix(hex,hex2,p){const a=hexToRgb(hex),b=hexToRgb(hex2);return rgbToHex(a.r*(1-p)+b.r*p,a.g*(1-p)+b.g*p,a.b*(1-p)+b.b*p)}
+function luminance(hex){const c=hexToRgb(hex);return (0.2126*c.r+0.7152*c.g+0.0722*c.b)/255;}
+function applyTheme(){
+ const accent=state.accent||'#facc15';
+ const bg=mix(accent,'#020204',.82);
+ const panel=mix(accent,'#101018',.78);
+ const panel2=mix(accent,'#181824',.72);
+ const panel3=mix(accent,'#07070b',.84);
+ document.documentElement.style.setProperty('--accent',accent);
+ document.documentElement.style.setProperty('--accent2',mix(accent,'#ffffff',.42));
+ document.documentElement.style.setProperty('--bg',bg);
+ document.documentElement.style.setProperty('--panel',panel);
+ document.documentElement.style.setProperty('--panel2',panel2);
+ document.documentElement.style.setProperty('--panel3',panel3);
+ document.documentElement.style.setProperty('--text','#ffffff');
+ document.documentElement.style.setProperty('--muted','#f1f5f9');
+ document.documentElement.style.setProperty('--buttonText',luminance(accent)>.58?'#050507':'#ffffff');
+ document.documentElement.style.setProperty('--heroText','#ffffff');
+ document.documentElement.style.setProperty('--themeGlow',mix(accent,'#030305',.45));
+}
+
+
+function readinessFromLog(l){
+ const pain=Number(l.pain||0), sore=Number(l.soreness||0), energy=Number(l.energy||7), sleep=Number(l.sleep||8), hydration=Number(l.hydrationFeel||7);
+ if(pain>=6 || sleep<5) return {status:'Red Light',mult:.65,note:'Protect the body. Mobility, clean touches, low impact work, no ego today.'};
+ if(pain>=4 || sore>=8 || energy<=4 || hydration<=4) return {status:'Yellow Light',mult:.82,note:'Work smart. Cut volume, keep technique sharp, and finish better than you started.'};
+ if(energy>=8 && sleep>=8 && sore<=4 && pain<=2) return {status:'Attack Day',mult:1.08,note:'You earned pressure. Move fast, stay clean, and finish with intent.'};
+ return {status:'Green Light',mult:1,note:'Full work. Quality reps, clean logs, no shortcuts.'};
+}
+function readinessClass(status){return status==='Red Light'?'bad':status==='Yellow Light'?'warn':'good';}
+
+function focusForDay(d){
+ const names=['Acceleration and ankle stiffness','Agility and route footwork','Plyo power and grip','Position skill and total body power','Reaction, conditioning and trunk strength','Recovery strength and clean touch volume','Testing polish and mobility'];
+ return names[(d-1)%7];
+}
+function phaseForDay(d){
+ if(d<=14)return 'Build the base';
+ if(d<=28)return 'Add power';
+ if(d<=42)return 'Game speed';
+ if(d<=56)return 'Peak and compete';
+ return 'Polish and taper';
+}
+
+function adjusted(n,kind='reps'){
+ const level=levelData[state.level]||levelData.varsity;
+ const adapt=todayAdapt();
+ let val=Math.round(n*level.mult*(adapt.mult||1));
+ if(kind==='sets') val=Math.max(1,Math.round(n+(level.sets||0)+((adapt.mult||1)-1)));
+ return Math.max(1,val);
+}
+function adjustedSets(base){return Math.max(2,Math.min(5,adjusted(base,'sets')));}
+function targetText(reps){
+ if(typeof reps!=='string')return reps;
+ if(state.level==='foundation')return reps+' clean';
+ if(state.level==='savage')return reps+' plus finish strong';
+ return reps;
+}
+
+function ex(id,name,sets,reps,rest,cue,vidKey,metric='done'){
+ return {id,name,sets,reps,rest,cue,video:vids[vidKey]||vids.warm,metric};
+}
+function touch(id,name,target,cue,vidKey,metric='count'){
+ return {id,name,target,cue,video:vids[vidKey]||vids.wallBall,metric};
+}
+
+
+function modeNotice(){
+ return state.mode==='indoor'?'Indoor mode swaps long sprints for wall drives, tape ladder work, hallway starts, low impact hops, and footwork that fits small spaces.':'Outdoor mode uses more true acceleration, shuttle work, field cutting, and full space sprint patterns.';
+}
+function levelNotice(){
+ const name=levelData[state.level].name;
+ if(state.level==='foundation')return name+' keeps the work technical and controlled.';
+ if(state.level==='savage')return name+' adds volume and finishers, but form still rules everything.';
+ return name+' is the normal high school style challenge.';
+}
+function morningPlan(){
+ const d=state.day, cycle=(d-1)%7, indoor=state.mode==='indoor';
+ const warm=[ex('warm','Dynamic Warm Up',1,'6 minutes','none','High knees, butt kicks, skips, leg swings, hip openers, and ankle pops. Wake the body up before speed.', 'warm')];
+ if(indoor){
+   const indoorPlans=[
+    [ex('wallDrive','Wall Drive Switches',3,'12 seconds each leg','35 sec','Knee up, toe up, punch the ground. Sprint posture without needing space.','wallDrive'),ex('pogo','Pogo Jumps',3,'20 seconds','45 sec','Quick off the floor. Ankles like springs. Stop if shin pain shows up.','pogo'),ex('pushStart','Push Up Start To 5 Yards',5,'1 start','60 sec','Explode from the floor, first step violent but controlled.','pushStart'),ex('hurdleHop','Line Hops Forward And Back',3,'15 seconds','40 sec','Use a floor line. Quiet feet and quick contacts.','hurdleHop'),ex('shuffleSprint','Hallway Shuffle To Burst',4,'1 each side','45 sec','Low hips, open the hip, burst safely.','shuffleSprint')],
+    [ex('icky','Tape Ladder Icky Shuffle',4,'2 trips','30 sec','Use tape or tile lines. Rhythm first, then speed.','icky'),ex('shuffleSprint','Side Shuffle To Sprint',5,'1 each side','45 sec','Low hips, open and go.','shuffleSprint'),ex('dbBack','DB Backpedal Break',4,'3 breaks each side','45 sec','Smooth pedal, snap downhill on the break.','dbBackpedal'),ex('wallDrive','Wall Drive Holds',3,'20 seconds each leg','35 sec','Posture strength and hip flexor control.','wallDrive'),ex('pogo','Low Pogo Reset',3,'15 seconds','40 sec','Stay springy without getting sloppy.','pogo')],
+    [ex('singleLeg','Single Leg Bound Stick',3,'5 each leg','60 sec','Cover ground and stick the landing. No sloppy knees.','singleLeg'),ex('lateralBound','Lateral Skater Bound',4,'5 each side','55 sec','Push side to side and land balanced like a corner breaking downhill.','lateralBound'),ex('hurdleHop','Line Hurdle Hops',3,'12 hops','45 sec','Use a line if no hurdle. Fast contacts.','hurdleHop'),ex('pushStart','Kneeling Start To Burst',5,'1 start','55 sec','Pop the hips and go. Safe hallway distance only.','pushStart'),ex('icky','Fast Feet Tape Ladder',4,'2 trips','30 sec','Clean feet, eyes up, arms working.','icky')]
+   ];
+   return warm.concat(indoorPlans[cycle%3]);
+ }
+ const outdoorPlans=[
+  [ex('wallDrive','Wall Drive Sprint Posture',3,'12 seconds each leg','35 sec','Knee up, toe up, core tight. This sets the sprint angles.','wallDrive'),ex('falling','Falling Starts',6,'1 sprint for 10 yards','60 sec','Fall as one piece, catch the ground, drive out low.','falling'),ex('tenYard','10 Yard Explosive Starts',6,'1 timed sprint','75 sec','Full rest. First three steps win the rep.','tenYard'),ex('pogo','Pogo Jump Series',3,'20 seconds','45 sec','Elastic ankles, tall body, quick contact.','pogo'),ex('broad','Broad Jump Stick',4,'2 jumps','70 sec','Explode forward and land quiet.','broad')],
+  [ex('icky','Icky Shuffle Ladder',4,'2 trips','30 sec','Fast feet, clean rhythm, arms active.','icky'),ex('shuttle','5 10 5 Shuttle Technique',5,'1 rep','90 sec','Touch lines, low hips, explode out of cuts.','shuttle'),ex('lDrill','3 Cone L Drill',4,'1 rep','90 sec','Tight turns, eyes lead the body.','lDrill'),ex('shuffleSprint','Shuffle To Sprint Finish',5,'1 each side','50 sec','Win the transition from lateral to vertical.','shuffleSprint'),ex('lateralBound','Lateral Bound Stick',3,'4 each side','55 sec','Cut power and knee control.','lateralBound')],
+  [ex('pogo','Pogo Jumps',3,'25 seconds','45 sec','Bounce tall and quick. Ground contact must be fast.','pogo'),ex('broad','Broad Jump Stick Landing',5,'3 jumps','65 sec','Jump far, land quiet, stick for two seconds.','broad'),ex('singleLeg','Single Leg Bounds',4,'5 each leg','75 sec','Explode horizontal. Land under control.','singleLeg'),ex('hurdleHop','Low Hurdle Hops',4,'8 hops','60 sec','Snap off the ground, do not collapse.','hurdleHop'),ex('pushStart','Push Up Starts',5,'1 start for 10 yards','60 sec','Pop up and attack the first step.','pushStart')],
+  [ex('pushStart','Push Up Starts',6,'1 start for 10 yards','60 sec','Pop up and go. No wasted steps.','pushStart'),ex('shuffleSprint','Lateral Shuffle To Sprint',5,'1 each side','50 sec','Shuffle low, open hip, finish fast.','shuffleSprint'),ex('dbW','DB W Drill Backpedal Break',4,'1 full W','75 sec','For cornerback feet. Pedal, plant, drive.','dbW'),ex('falling','Falling Start Reaction',5,'1 sprint','65 sec','React and drive with violent first steps.','falling'),ex('lDrill','Short L Drill',3,'1 rep','80 sec','Low hips and smooth turn.','lDrill')],
+  [ex('tenYard','10 Yard Start Test Reps',5,'1 timed sprint','90 sec','Record best clean rep. Quality over volume.','tenYard'),ex('shuttle','5 10 5 Pro Agility',4,'1 timed rep','100 sec','Win the plant foot and shoulder angle.','shuttle'),ex('lateralBound','Lateral Bounds',4,'5 each side','60 sec','Cornerback and RB cut power. Stick each landing.','lateralBound'),ex('broad','Broad Jump Power',4,'2 jumps','75 sec','Explode without sloppy landings.','broad'),ex('wallDrive','Wall Drive Finisher',3,'15 seconds each','40 sec','Reset sprint posture after fatigue.','wallDrive')],
+  [ex('pogo','Low Impact Pogo Series',3,'18 seconds','45 sec','Stay springy and fresh. This is not conditioning.','pogo'),ex('broad','Broad Jump Easy Singles',4,'2 jumps','75 sec','Explosive but low volume. Leave pop in the legs.','broad'),ex('wallDrive','Wall Drive Holds',3,'20 seconds each leg','40 sec','Posture reset and hip flexor strength.','wallDrive'),ex('singleLeg','Single Leg Balance Bound',3,'4 each leg','60 sec','Recovery power and balance.','singleLeg'),ex('shuffleSprint','Controlled Shuffle Burst',3,'1 each side','45 sec','Move clean, not reckless.','shuffleSprint')],
+  [ex('warm','Extended Mobility Warm Up',1,'8 minutes','none','Open hips, ankles, hamstrings, calves, and shoulders before testing.','warm'),ex('tenYard','Best 10 Yard Dash',4,'1 timed rep','120 sec','Only count clean starts. Write the best number.','tenYard'),ex('shuttle','Best 5 10 5 Shuttle',3,'1 timed rep','120 sec','Do not over test. Great reps only.','shuttle'),ex('broad','Best Broad Jump',3,'2 attempts','120 sec','Measure from the start line to heel.','broad'),ex('pogo','Pogo Rhythm Reset',2,'15 seconds','45 sec','Keep the lower legs springy after testing.','pogo')]
+ ];
+ return warm.concat(outdoorPlans[cycle]);
+}
+
+function strengthPlan(){
+ const d=state.day, cycle=(d-1)%9;
+ const plans=[
+  [ex('goblet','Goblet Squat',3,'6 to 8 reps','80 sec','Chest tall, knees out, powerful up.','goblet','weight'),ex('split','Split Squat',3,'6 each leg','75 sec','Front foot flat, control down, drive up.','split','weight'),ex('singleRdl','Single Leg RDL',3,'6 each leg','70 sec','Hinge, balance, hamstring control.','singleRdl','weight'),ex('floorPress','Push Up Or Floor Press',3,'8 to 12 reps','60 sec','Perfect reps only. If bodyweight, log body weight.','floorPress','reps'),ex('farmer','Farmer Carry',3,'25 yards','60 sec','Tall posture, grip tight, no lean.','farmer','weight'),ex('plank','Plank',3,'40 seconds','45 sec','Ribs down, glutes tight, straight line.','plank','seconds')],
+  [ex('floorPress','Dumbbell Floor Press',3,'8 reps','75 sec','Elbows controlled, press strong, protect shoulders.','floorPress','weight'),ex('farmer','Farmer Carry',3,'30 yards','60 sec','Tall posture, strong grip, no leaning.','farmer','weight'),ex('deadbug','Dead Bug',3,'8 each side','35 sec','Low back stays down. Slow and clean.','deadbug','done'),ex('medball','Med Ball Slam',3,'5 reps','60 sec','Explode down, brace, reset every rep.','medball','done'),ex('split','Reverse Lunge',3,'8 each leg','70 sec','Control the knee and own the ground.','split','weight'),ex('plank','Side Plank',3,'25 seconds each side','40 sec','Hips high and body straight.','plank','seconds')],
+  [ex('split','Rear Foot Elevated Split Squat',3,'6 each leg','90 sec','Only if form is clean. Front leg owns the rep.','split','weight'),ex('goblet','Tempo Goblet Squat',3,'5 reps slow down','90 sec','Three seconds down, explode up.','goblet','weight'),ex('farmer','Suitcase Carry',3,'25 yards each side','60 sec','Anti lean core. Walk tall.','farmer','weight'),ex('singleRdl','Single Leg RDL',3,'6 each leg','70 sec','Balance and hamstring control.','singleRdl','weight'),ex('floorPress','Push Up Strength Set',3,'max clean minus two','70 sec','Stop before ugly reps.','floorPress','reps'),ex('plank','Side Plank',3,'25 sec each side','35 sec','Hips high, body straight.','plank','seconds')],
+  [ex('medball','Med Ball Slam Power',3,'5 reps','75 sec','Power not fatigue. Violent intent, full reset.','medball','done'),ex('floorPress','Push Up Or Floor Press',3,'8 to 12 reps','60 sec','Perfect reps only. Stop before ugly reps.','floorPress','reps'),ex('singleRdl','Single Leg RDL Reach',3,'6 each leg','70 sec','Reach long, square hips.','singleRdl','weight'),ex('deadbug','Dead Bug Iso',3,'30 seconds','45 sec','Brace and breathe.','deadbug','seconds'),ex('goblet','Goblet Squat Fast Up',3,'5 reps','80 sec','Controlled down, explosive up.','goblet','weight'),ex('farmer','Farmer Carry Grip Finish',3,'20 yards','60 sec','Grip stays locked until the end.','farmer','weight')],
+  [ex('goblet','Goblet Squat Heavy Quality',3,'5 reps','100 sec','If he has load, challenge him. If not, slow the tempo.','goblet','weight'),ex('split','Walking Split Squat',3,'8 each leg','75 sec','Smooth steps, knee tracks clean.','split','reps'),ex('farmer','Farmer Carry Heavy',3,'20 yards','75 sec','Grip and trunk like armor.','farmer','weight'),ex('plank','Plank Shoulder Tap',3,'16 taps','45 sec','Hips quiet. Control beats speed.','plank','reps'),ex('singleRdl','Single Leg RDL',3,'5 each leg','75 sec','Balance under fatigue.','singleRdl','weight'),ex('medball','Med Ball Slam',3,'5 reps','60 sec','Explode and reset.','medball','done')],
+  [ex('singleRdl','Light Single Leg RDL',3,'8 each leg','60 sec','Recovery strength. Own positions.','singleRdl','weight'),ex('deadbug','Dead Bug Recovery Core',3,'8 each side','30 sec','Slow breathing and control.','deadbug','done'),ex('plank','Easy Plank',3,'30 seconds','40 sec','Clean core only.','plank','seconds'),ex('farmer','Easy Carry',3,'20 yards','45 sec','Blood flow and posture.','farmer','weight'),ex('goblet','Light Goblet Squat',3,'8 reps','60 sec','Pattern quality.','goblet','weight'),ex('floorPress','Easy Push Up',3,'8 clean reps','45 sec','Move blood without grinding.','floorPress','reps')],
+  [ex('goblet','Goblet Squat Test Set',3,'Max clean reps at safe load','120 sec','Record clean reps only. No grinder reps.','goblet','reps'),ex('floorPress','Push Up Test Set',3,'Max clean reps','120 sec','Chest close to floor, lockout clean.','floorPress','reps'),ex('plank','Plank Test',3,'Max clean seconds','none','Stop when form breaks.','plank','seconds'),ex('farmer','Carry Challenge',3,'Max clean distance','90 sec','Tall posture until finish.','farmer','distance'),ex('singleRdl','Single Leg RDL Control',3,'5 each leg','70 sec','Symmetry check.','singleRdl','weight'),ex('deadbug','Dead Bug Reset',3,'8 each side','35 sec','Core control after testing.','deadbug','done')],
+  [ex('medball','Med Ball Slam',3,'6 reps','60 sec','Explosive power day.','medball','done'),ex('split','Split Squat Iso Hold',3,'25 sec each leg','60 sec','Tendon strength and control.','split','seconds'),ex('floorPress','Floor Press',3,'6 to 8 reps','85 sec','Strength lockout.','floorPress','weight'),ex('deadbug','Dead Bug',3,'10 each side','35 sec','Core stays locked.','deadbug','done'),ex('goblet','Goblet Squat',3,'6 reps','80 sec','Strength with clean depth.','goblet','weight'),ex('farmer','Suitcase Carry',3,'25 yards each side','65 sec','Anti rotation trunk strength.','farmer','weight')],
+  [ex('goblet','Squat To Jump Pattern',3,'5 controlled reps','75 sec','Do not jump with weight. Pattern control only.','goblet','done'),ex('singleRdl','Single Leg RDL',3,'5 each leg','75 sec','Athletic hinge and balance.','singleRdl','weight'),ex('farmer','Farmer Carry',3,'35 yards','60 sec','Grip, trunk, posture.','farmer','weight'),ex('plank','Plank',3,'45 seconds','45 sec','No sagging.','plank','seconds'),ex('split','Split Squat',3,'6 each leg','75 sec','Leg strength and control.','split','weight'),ex('floorPress','Push Up Or Floor Press',3,'10 reps','60 sec','Clean upper body strength.','floorPress','reps')]
+ ];
+ return plans[cycle];
+}
+
+function touchPlan(){
+ const d=state.day, cycle=(d-1)%7;
+ const base=[
+  touch('handFight','Hand Fighting Drill',adjusted(40),'Solo hands like DE, TE, WR release work. Fast strikes, reset, stay violent but clean.','handFight'),
+  touch('oneHandTwoHands','One Hand Two Hands Catch Series',adjusted(35),'Catch one hand, catch two hands, switch sides, eyes through the catch.','oneHandTwoHands'),
+  touch('tossUpsGrip','Toss Ups Grip Checks Hand To Hand',adjusted(50),'Toss, squeeze, switch hand to hand, finish every rep with control.','tossUpsGrip'),
+  touch('circleDrops','Circle Ball Drops And Tiny Catches',adjusted(40),'Circle drops, alternating hand drops, tiny catches. Finger speed and focus.','circleDrops'),
+  touch('fingerTips','Fingertip Push Up Progression',adjusted(12),'Only pain free. Use wall or knees if wrists are stressed. Strong fingers help strong hands.','circleDrops','reps')
+ ];
+ const extras=[
+  [touch('overShoulder','Over The Shoulder Catch',adjusted(25),'Track over both shoulders. Late eyes, soft hands, clean finish.','overShoulder'),touch('wallBall','Wall Ball Quick Hands',adjusted(45),'Quick bounce against the wall. Catch, release, stay athletic.','tossUpsGrip')],
+  [touch('lateHands','Late Hands Catch Drill',adjusted(30),'Do not show hands early. Flash late and snatch the ball.','oneHandTwoHands'),touch('tennisWall','Tennis Ball Wall Reaction',adjusted(40),'Small ball focus. Catch clean with both hands alternating.','circleDrops')],
+  [touch('rbSecurity','RB Ball Security Grip Checks',adjusted(45),'Five points of pressure. Switch arms and finish high and tight.','tossUpsGrip'),touch('rbJumpCut','RB Jump Cut With Tuck',adjusted(24),'Jump cut, burst, cover ball. Two sides.','tossUpsGrip')],
+  [touch('dbHands','CB Backpedal Break Catch',adjusted(24),'Pedal, plant, break downhill, finish catch.','oneHandTwoHands'),touch('dbWBall','CB W Drill With Ball Finish',adjusted(18),'W pattern with catch at the break. Stay low.','oneHandTwoHands')],
+  [touch('deHands','DE Hand Strike Reaction',adjusted(30),'Strike fast like hand fighting at the line. Hands win the rep.','handFight'),touch('deGetoff','DE Get Off Reaction',adjusted(25),'Explode on movement or sound. First step wins.','deGetoff')],
+  [touch('tightEnd','TE High Catch And Tuck',adjusted(30),'Big body hands. High catch, squeeze, tuck through contact.','oneHandTwoHands'),touch('overShoulder','Over The Shoulder Catch',adjusted(20),'Both shoulders. Smooth run, late eyes, soft hands.','overShoulder')],
+  [touch('cleanTuck','Clean Tuck Finishes',adjusted(50),'Every catch ends high and tight. Catch means nothing if he does not secure it.','tossUpsGrip'),touch('dropReset','Drop Reset Tiny Catch Work',adjusted(25),'For every drop, add a perfect tiny catch. Correct the mistake immediately.','circleDrops')]
+ ];
+ return base.concat(extras[cycle]);
+}
+function athleteWeight(){
+ const l=logFor();
+ const w=Number(l.weight||state.profileWeight||0);
+ return w>0?w:0;
+}
+function saveProfileWeight(){
+ const input=document.getElementById('profileWeightInput');
+ const weight=Number(input && input.value);
+ if(!weight || weight<60 || weight>350){alert('Enter a realistic athlete weight first.');return;}
+ state.profileWeight=String(weight);
+ logFor().weight=String(weight);
+ save();
+ render();
+}
+function nutritionTargets(){
+ const weight=athleteWeight();
+ if(!weight)return null;
+ const adapt=todayAdapt();
+ let calLow=Math.round(weight*(adapt.status==='Red Light'?16:adapt.status==='Yellow Light'?17:adapt.status==='Attack Day'?20:18));
+ let calHigh=Math.round(weight*(adapt.status==='Red Light'?18:adapt.status==='Yellow Light'?20:adapt.status==='Attack Day'?24:22));
+ let proteinLow=Math.round(weight*.55), proteinHigh=Math.round(weight*.75);
+ let fatLow=Math.round(weight*.30), fatHigh=Math.round(weight*.45);
+ let carbLow=Math.round((calLow-(proteinHigh*4)-(fatHigh*9))/4);
+ let carbHigh=Math.round((calHigh-(proteinLow*4)-(fatLow*9))/4);
+ carbLow=Math.max(Math.round(weight*1.6),carbLow);
+ carbHigh=Math.max(carbLow+25,carbHigh);
+ let water=Math.round(weight*.65 + (adapt.status==='Attack Day'?28:adapt.status==='Red Light'?8:18));
+ let addedSugarMax=Math.round((calHigh*.10)/4);
+ return {weight,calLow,calHigh,proteinLow,proteinHigh,carbLow,carbHigh,fatLow,fatHigh,water,addedSugarMax};
+}
+
+function reqWorkoutComplete(type){
+ const l=logFor();
+ const plan=type==='morning'?morningPlan():strengthPlan();
+ if(type==='strength'){
+   return plan.every(e=>{
+     const sets=adjustedSets(e.sets);
+     for(let n=1;n<=Math.min(3,sets);n++){
+       if(String(l[`${type}_${e.id}_s${n}_reps`]||'').trim()==='')return false;
+     }
+     return true;
+   });
+ }
+ return plan.every(e=>String(l[type+'_'+e.id]||'').trim()!=='');
+}
+
+function reqTouchesComplete(){
+ const l=logFor();
+ return touchPlan().every(t=>String(l['touch_'+t.id]||'').trim()!=='');
+}
+function reqNutritionComplete(){
+ const l=logFor();
+ return athleteWeight()>0 && ['weight','waterOz','protein','carbs','fat','calories','addedSugar'].every(k=>String(l[k]||'').trim()!=='');
+}
+function reqDadComplete(){
+ const l=logFor();
+ return !!l.dadComplete;
+}
+function dayRequirements(){
+ return [
+  ['Morning speed and plyos', reqWorkoutComplete('morning')],
+  ['Strength and core', reqWorkoutComplete('strength')],
+  ['Football touches', reqTouchesComplete()],
+  ['Nutrition and water', reqNutritionComplete()],
+  ['Dad Talk check in', reqDadComplete()]
+ ];
+}
+function canComplete(){return dayRequirements().every(x=>x[1]);}
+
+function showScreen(id){state.screen=id;save();render();}
+function renderTiles(){
+ document.getElementById('tiles').innerHTML=tiles.map(t=>`<div class="tile ${state.screen===t[0]?'active':''}" onclick="showScreen('${t[0]}')"><div class="tileIcon">${t[1]}</div><b>${t[2]}</b><small>${t[3]}</small></div>`).join('');
+}
+
+function setLogHTML(e,type){
+ const l=logFor(), sets=adjustedSets(e.sets), body=athleteWeight();
+ if(type==='strength'){
+   let rows='';
+   for(let n=1;n<=sets;n++){
+     const rk=`${type}_${e.id}_s${n}_reps`, wk=`${type}_${e.id}_s${n}_weight`;
+     const wv=l[wk]||((e.metric==='reps'||e.metric==='done'||e.metric==='seconds')?body:'');
+     rows+=`<div class="setLog"><span>Set ${n}</span><input value="${l[rk]||''}" data-log="${rk}" placeholder="reps or time" oninput="stageInput(this)"><input value="${wv}" data-log="${wk}" placeholder="weight or bodyweight" oninput="stageInput(this)"></div>`;
+   }
+   return `<div class="inner"><div class="small">Log each set. Bodyweight work should use his body weight as the weight.</div>${rows}</div>`;
+ }
+ const key=type+'_'+e.id;
+ let placeholder=e.metric==='weight'?'weight used or completed':e.metric==='seconds'?'seconds completed':e.metric==='reps'?'reps completed':e.metric==='distance'?'distance completed':'time, reps, or completed';
+ return `<div class="logGrid"><input value="${l[key]||''}" data-log="${key}" placeholder="${placeholder}" oninput="stageInput(this)"><input value="${l[key+'_note']||''}" data-log="${key+'_note'}" placeholder="quick note optional" oninput="stageInput(this)"></div>`;
+}
+function renderExercise(e,i,type){
+ const sets=adjustedSets(e.sets);
+ return `<div class="exercise">
+  <div class="num">${i+1}</div>
+  <div>
+    <h3>${e.name}</h3>
+    <div class="rx"><div><b>${sets}</b><span>Sets</span></div><div><b>${targetText(e.reps)}</b><span>Target</span></div><div><b>${e.rest}</b><span>Rest</span></div></div>
+    <p class="cue">${e.cue}</p>
+    <a class="btn videoLink" target="_blank" href="${e.video}">Watch exact drill</a>
+    ${setLogHTML(e,type)}
+  </div>
+ </div>`
+}
+function renderTouch(t,i){
+ const l=logFor(); const key='touch_'+t.id;
+ return `<div class="exercise">
+  <div class="num">${i+1}</div>
+  <div>
+    <h3>${t.name}</h3>
+    <div class="rx"><div><b>${t.target}</b><span>Target</span></div><div><b>${t.metric==='reps'?'reps':'catches'}</b><span>Log</span></div><div><b>Clean</b><span>Finish</span></div></div>
+    <p class="cue">${t.cue}</p>
+    <a class="btn videoLink" target="_blank" href="${t.video}">Watch exact drill</a>
+    <div class="logGrid"><input type="number" value="${l[key]||''}" data-log="${key}" placeholder="how many completed" oninput="stageInput(this)"><input type="number" value="${l[key+'_drops']||''}" data-log="${key+'_drops'}" placeholder="drops or misses" oninput="stageInput(this)"></div>
+  </div>
+ </div>`;
+}
+function stageInput(el){logFor()[el.dataset.log]=el.value; save(); renderHomeOnly();}
+function saveSection(name){save(); alert(name+' saved for Day '+state.day); render();}
+function renderHomeOnly(){
+ document.getElementById('completeBtn').disabled=!canComplete();
+}
+function completionHTML(){
+ const req=dayRequirements();
+ return `<div class="completionList">${req.map(r=>`<div class="checkItem"><span>${r[0]}</span><span class="${r[1]?'badge good':'badge bad'}">${r[1]?'Saved':'Needed'}</span></div>`).join('')}</div>`;
+}
+function renderHome(){
+ const a=todayAdapt(), nt=nutritionTargets(), done=Object.keys(state.completed).length;
+ document.getElementById('screen_home').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Mission</div><h2>Day ${state.day}</h2></div><span class="badge ${readinessClass(a.status)}">${a.status}</span></div>
+ <div class="coachBubble"><strong>Today’s Dad Coach Note</strong><p>${a.note}</p></div>
+ <div class="statCards">
+   <div class="stat"><b>${state.mode}</b><span>Mode</span></div>
+   <div class="stat"><b>${levelData[state.level].name}</b><span>Level</span></div>
+   <div class="stat"><b>${done}/${DAYS_TOTAL}</b><span>Days earned</span></div>
+ </div>
+ <div class="inner"><h3>Today targets</h3><p class="small">Morning speed and plyos, second workout strength and core, football touches, nutrition, then Dad Talk. No next day until the work is logged.</p>
+ ${nt?`<table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz target</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table>`:`<p class="small">Nutrition targets unlock after his athlete weight is saved in the Nutrition tile.</p><button class="gold full" onclick="showScreen('nutrition')">Enter Athlete Weight</button>`}</div>
+ <div class="inner"><h3>Earn Day ${state.day+1}</h3>${completionHTML()}</div>`;
+}
+function renderMorning(){
+ document.getElementById('screen_morning').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Morning Speed and Plyos</h2></div><span class="badge goldTxt">${state.mode}</span></div>
+ <p class="small">This is the first workout. ${modeNotice()} ${levelNotice()} Log each drill so the app knows he actually did it.</p>
+ ${morningPlan().map((e,i)=>renderExercise(e,i,'morning')).join('')}
+ <button class="green full" onclick="saveSection('Morning work')">Save Morning Work</button>`;
+}
+function renderStrength(){
+ document.getElementById('screen_strength').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout</div><h2>Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
+ <p class="small">This is the second workout. Strength, trunk control, grip, tendon strength, and power. ${levelNotice()} Log reps and weight for each set. Bodyweight work should use his body weight.</p>
+ ${strengthPlan().map((e,i)=>renderExercise(e,i,'strength')).join('')}
+ <button class="green full" onclick="saveSection('Strength work')">Save Strength Work</button>`;
+}
+function renderTouches(){
+ document.getElementById('screen_touches').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Solo football skill</div><h2>Football Touches</h2></div><span class="badge goldTxt">WR RB TE DE CB</span></div>
+ <p class="small">These are not random touches. This blends receiver hands, running back security, tight end high catches, cornerback ball skills, and defensive end hand reaction.</p>
+ ${touchPlan().map(renderTouch).join('')}
+ <button class="green full" onclick="saveSection('Football touches')">Save Football Touches</button>`;
+}
+function renderNutrition(){
+ const l=logFor(), nt=nutritionTargets();
+ if(!nt){
+   document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Required setup</div><h2>Enter Athlete Weight</h2></div><span class="badge bad">Locked</span></div>
+   <div class="coachBubble"><strong>Fuel starts with body weight</strong><p>Before the app recommends calories, carbs, protein, fat, added sugar, and water, save his current body weight. This keeps the numbers based on him instead of a random default.</p></div>
+   <div class="inner"><div class="label">Current body weight in pounds</div><input id="profileWeightInput" type="number" min="60" max="350" placeholder="Example 145"><button class="green full" style="margin-top:10px" onclick="saveProfileWeight()">Save Athlete Weight</button></div>`;
+   return;
+ }
+ document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Fuel for performance</div><h2>Nutrition and Water</h2></div><span class="badge goldTxt">${nt.weight} lb</span></div>
+ <div class="inner"><h3>Today’s target</h3><table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table><p class="small">These are training targets, not a medical diet. Hard days push calories and carbs higher. Red or yellow days still protect recovery without overdoing it.</p></div>
+ <div class="grid"><div><div class="label">Today body weight</div><input type="number" data-log="weight" value="${l.weight||state.profileWeight||''}" oninput="stageInput(this)"></div><div><div class="label">Water drank oz</div><input type="number" data-log="waterOz" value="${l.waterOz||''}" oninput="stageInput(this)"></div><div><div class="label">Calories eaten</div><input type="number" data-log="calories" value="${l.calories||''}" oninput="stageInput(this)"></div><div><div class="label">Protein grams</div><input type="number" data-log="protein" value="${l.protein||''}" oninput="stageInput(this)"></div><div><div class="label">Carbs grams</div><input type="number" data-log="carbs" value="${l.carbs||''}" oninput="stageInput(this)"></div><div><div class="label">Fat grams</div><input type="number" data-log="fat" value="${l.fat||''}" oninput="stageInput(this)"></div><div><div class="label">Added sugar grams</div><input type="number" data-log="addedSugar" value="${l.addedSugar||''}" oninput="stageInput(this)"></div><div><div class="label">Fruit or natural sugar notes</div><input data-log="naturalSugarNotes" value="${l.naturalSugarNotes||''}" oninput="stageInput(this)" placeholder="fruit, milk, smoothie, etc"></div></div>
+ <div class="label">Meals eaten and appetite</div><textarea data-log="mealNotes" oninput="stageInput(this)" placeholder="What did you eat today?">${l.mealNotes||''}</textarea>
+ <button class="green full" onclick="saveNutrition()">Save Nutrition</button>`;
+}
+function saveNutrition(){
+ const l=logFor();
+ if(l.weight)state.profileWeight=String(l.weight);
+ save();
+ alert('Nutrition saved for Day '+state.day);
+ render();
+}
+
+const dadQuestions=[
+ {key:'energy',q:'Energy check. How much juice do you have today from 1 to 10?',type:'number',min:1,max:10},
+ {key:'effort',q:'Effort check. How hard did you truly work from 1 to 10?',type:'number',min:1,max:10},
+ {key:'sleep',q:'How many hours did you sleep?',type:'number',min:0,max:14},
+ {key:'hydrationFeel',q:'Hydration feel from 1 to 10. Did your body feel watered or dry?',type:'number',min:1,max:10},
+ {key:'soreness',q:'Soreness from 1 to 10. Be honest, not tough.',type:'number',min:1,max:10},
+ {key:'pain',q:'Pain from 0 to 10. Zero means no pain. Six plus means we protect the body.',type:'number',min:0,max:10},
+ {key:'focus',q:'Focus from 1 to 10. Were you locked in or drifting?',type:'number',min:1,max:10},
+ {key:'confidence',q:'Confidence from 1 to 10. How much did you believe in yourself today?',type:'number',min:1,max:10},
+ {key:'discipline',q:'Discipline from 1 to 10. Did you do what was required even when you did not feel like it?',type:'number',min:1,max:10},
+ {key:'attitude',q:'Attitude check. Did you respond like a leader today or did frustration control you?',type:'text'},
+ {key:'mood',q:'What was your mood today? Locked in, tired, mad, confident, distracted, calm, or something else?',type:'text'},
+ {key:'proud',q:'What are you proud of from today? Give yourself one honest win.',type:'text'},
+ {key:'hardPart',q:'What was the hardest part today?',type:'text'},
+ {key:'mistake',q:'What mistake do you need to correct tomorrow?',type:'text'},
+ {key:'teamMindset',q:'How did you carry yourself as a teammate, son, and young man today?',type:'text'},
+ {key:'dadInput',q:'What do you need Dad to know before the app updates tomorrow?',type:'text'}
+];
+
+function renderDadTalk(){
+ const l=logFor(), step=state.dadStep||0;
+ if(l.dadComplete){
+   document.getElementById('screen_dadtalk').innerHTML=`<div class="dadOrb"><div><small>Dad Talk complete</small>Tomorrow is updated</div></div><h2 style="text-align:center">Saved</h2><div class="coachBubble"><strong>Message for Jr</strong><p>${l.dadMessage||dadMessage(l)}</p></div><button class="blue full" onclick="restartDadTalk()">Redo Dad Talk</button>`;
+   return;
+ }
+ const q=dadQuestions[Math.min(step,dadQuestions.length-1)];
+ let val=l[q.key]||'';
+ document.getElementById('screen_dadtalk').innerHTML=`<div class="dadOrb"><div><small>Question ${step+1} of ${dadQuestions.length}</small>${q.q}</div></div><div style="text-align:center"><h2>Dad Talk</h2><p class="small">Answer honest. This is how tomorrow adapts.</p></div>
+ <div class="inner">
+   <input id="dadAnswer" type="${q.type}" ${q.min!=null?'min="'+q.min+'"':''} ${q.max!=null?'max="'+q.max+'"':''} value="${val}" placeholder="Type answer here">
+   <div class="grid" style="margin-top:10px"><button ${step<=0?'disabled':''} onclick="dadBack()">Back</button><button class="gold" onclick="dadNext()">${step===dadQuestions.length-1?'Finish Dad Talk':'Save and Next'}</button></div>
+ </div>
+ <p class="small">The next day stays locked until this is finished. Honest answers make the workout smarter.</p>`;
+}
+function dadBack(){state.dadStep=Math.max(0,(state.dadStep||0)-1);save();render();}
+function dadNext(){
+ const step=state.dadStep||0, q=dadQuestions[step], input=document.getElementById('dadAnswer');
+ let val=(input.value||'').trim();
+ if(!val){alert('Answer this first. No empty reps.'); return;}
+ if(q.type==='number'){let n=clamp(Number(val),q.min??0,q.max??99); val=String(n);}
+ let l=logFor(); l[q.key]=val;
+ if(step<dadQuestions.length-1){state.dadStep=step+1;}
+ else{
+   const ready=readinessFromLog(l);
+   l.dadComplete=true;
+   l.dadMessage=dadMessage(l);
+   state.adapt['day'+(state.day+1)]={status:ready.status,mult:ready.mult,note:ready.note};
+   state.dadStep=0;
+ }
+ save(); render();
+}
+function restartDadTalk(){logFor().dadComplete=false; state.dadStep=0; save(); render();}
+
+function dadMessage(l){
+ const r=readinessFromLog(l);
+ const energy=Number(l.energy||0), pain=Number(l.pain||0), focus=Number(l.focus||0), discipline=Number(l.discipline||0), confidence=Number(l.confidence||0);
+ let opener='';
+ if(r.status==='Red Light') opener='Listen to me for real. Toughness is not ignoring your body. Toughness is having enough discipline to protect it, recover it, and come back dangerous.';
+ else if(r.status==='Yellow Light') opener='I like that you kept it honest. Today is not a soft day, it is a smart day. Smart athletes last longer and get better faster.';
+ else if(r.status==='Attack Day') opener='That is the energy. When your sleep, focus, and body line up, you do not waste it. You attack, but you still move with control.';
+ else opener='Good work stacking another day. Great athletes are not built by one crazy workout. They are built by doing the right things over and over until it becomes who they are.';
+ let listen=[];
+ if(l.proud)listen.push(`I hear what you are proud of: ${l.proud}. Keep noticing your wins because confidence comes from evidence.`);
+ if(l.hardPart)listen.push(`I also hear the hard part: ${l.hardPart}. We do not run from that, we train it calmly until it becomes normal.`);
+ if(l.mistake)listen.push(`Tomorrow, clean up this mistake: ${l.mistake}. Do not be embarrassed by correction. Correction is how dogs get made.`);
+ if(l.teamMindset)listen.push(`As a young man, remember this: how you carry yourself matters too. You said: ${l.teamMindset}. Keep building character with the same energy you build speed.`);
+ let advice=[];
+ if(pain>=5) advice.push('Pain is too loud, so tomorrow drops impact and keeps technique clean. No ego reps.');
+ if(energy<=4) advice.push('Energy is low, so food, water, and sleep become part of the assignment, not extra credit.');
+ if(focus<=5) advice.push('Focus has to tighten up. Put the phone down, breathe, and win one rep at a time.');
+ if(confidence<=5) advice.push('Confidence is not magic. Confidence is promises kept to yourself. Finish the small things and your mind will believe you.');
+ if(discipline<=6) advice.push('Discipline is the separator. Anybody can work when they feel good. Leaders work when nobody is clapping.');
+ if(!advice.length) advice.push('Your challenge is standards. Clean feet, strong hands, good body language, and no shortcuts.');
+ const closer='I love you. I am proud of you. Now act like the version of you that your future self is counting on.';
+ return [opener].concat(listen).concat(advice).concat([closer]).join(' ');
+}
+function renderData(){
+ const logs=state.logs;
+ const days=Object.keys(logs).map(k=>Number(k.replace('day',''))).filter(Boolean).sort((a,b)=>a-b);
+ const bestLower=(field)=>{let best=null,day=null;days.forEach(d=>{let v=parseFloat(logs['day'+d][field]);if(!isNaN(v)&&(best===null||v<best)){best=v;day=d}});return best===null?'No data':best+' on Day '+day}
+ const bestHigher=(field)=>{let best=null,day=null;days.forEach(d=>{let v=parseFloat(logs['day'+d][field]);if(!isNaN(v)&&(best===null||v>best)){best=v;day=d}});return best===null?'No data':best+' on Day '+day}
+ const total=(prefix,exact=false)=>days.reduce((a,d)=>{const l=logs['day'+d];return a+Object.keys(l).filter(k=>exact?k===prefix:k.startsWith(prefix)).reduce((s,k)=>s+(Number(l[k])||0),0)},0);
+ const touchCounts=days.reduce((a,d)=>a+Object.keys(logs['day'+d]).filter(k=>k.startsWith('touch_')&&!k.includes('_drops')).reduce((s,k)=>s+(Number(logs['day'+d][k])||0),0),0);
+ const catches=touchCounts;
+ const drops=days.reduce((a,d)=>a+Object.keys(logs['day'+d]).filter(k=>k.includes('_drops')).reduce((s,k)=>s+(Number(logs['day'+d][k])||0),0),0);
+ const catchRate=(catches+drops)>0?Math.round(catches/(catches+drops)*100)+'%':'No data';
+ document.getElementById('screen_data').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Progress</div><h2>Data Lab</h2></div><span class="badge goldTxt">${days.length} logged days</span></div>
+ <table class="dataTable"><tr><td>Best 10 yard</td><td>${bestLower('best10')}</td></tr><tr><td>Best 20 yard</td><td>${bestLower('best20')}</td></tr><tr><td>Best 5 10 5</td><td>${bestLower('best505')}</td></tr><tr><td>Best broad jump</td><td>${bestHigher('bestBroad')}</td></tr><tr><td>Best vertical</td><td>${bestHigher('bestVertical')}</td></tr><tr><td>Total touch reps</td><td>${touchCounts}</td></tr><tr><td>Estimated catch rate</td><td>${catchRate}</td></tr><tr><td>Total drops or misses</td><td>${drops}</td></tr></table>
+ <details class="clean" open><summary>Testing Numbers</summary><div class="detailBody">${testingInputs()}</div></details>
+ <div class="coachBubble"><strong>Strong and Weak Read</strong><p>${dataCoach(days,logs)}</p></div>
+ <details class="clean"><summary>Day by Day Records</summary><div class="detailBody">${days.length?days.map(d=>recordCard(d,logs['day'+d])).join(''):'<p class="small">No saved records yet.</p>'}</div></details>
+ <div class="grid"><button class="blue full" onclick="exportData()">Export Data</button><button class="red full" onclick="resetConfirm()">Reset App</button></div>`;
+}
+function testingInputs(){
+ const l=logFor();
+ return `<div class="grid"><div><div class="label">Best 10 yard</div><input type="number" step=".01" data-log="best10" value="${l.best10||''}" oninput="stageInput(this)"></div><div><div class="label">Best 20 yard</div><input type="number" step=".01" data-log="best20" value="${l.best20||''}" oninput="stageInput(this)"></div><div><div class="label">Best 5 10 5</div><input type="number" step=".01" data-log="best505" value="${l.best505||''}" oninput="stageInput(this)"></div><div><div class="label">Broad jump inches</div><input type="number" data-log="bestBroad" value="${l.bestBroad||''}" oninput="stageInput(this)"></div><div><div class="label">Vertical inches</div><input type="number" step=".5" data-log="bestVertical" value="${l.bestVertical||''}" oninput="stageInput(this)"></div><div><div class="label">Testing notes</div><input data-log="testingNotes" value="${l.testingNotes||''}" oninput="stageInput(this)"></div></div><button class="green full" onclick="saveSection('Testing numbers')">Save Testing</button>`;
+}
+function dataCoach(days,logs){
+ if(days.length<2)return 'We need at least two days of honest logs before the trends get loud. Right now the win is building the habit.';
+ const last=logs['day'+days[days.length-1]], prev=logs['day'+days[days.length-2]];
+ let out=[];
+ if(Number(last.best10)&&Number(prev.best10)) out.push(Number(last.best10)<Number(prev.best10)?'First step speed improved.':'First step needs attention.');
+ const lastDrops=Object.keys(last).filter(k=>k.includes('_drops')).reduce((a,k)=>a+(Number(last[k])||0),0);
+ const prevDrops=Object.keys(prev).filter(k=>k.includes('_drops')).reduce((a,k)=>a+(Number(prev[k])||0),0);
+ out.push(lastDrops>prevDrops?'Drops went up, so eyes and late hands need extra work.':'Drops are controlled or improving.');
+ if(Number(last.pain)>=4)out.push('Pain showed up, so the next plan should protect him while keeping him moving.');
+ const nt=nutritionTargets(); if(nt && Number(last.waterOz)<nt.water)out.push('Hydration is under target, so cramps and energy dips can sneak up.');
+ return out.join(' ');
+}
+function recordCard(d,l){
+ const ready=readinessFromLog(l);
+ return `<div class="inner"><div class="row" style="justify-content:space-between"><h3>Day ${d}</h3><span class="badge ${readinessClass(ready.status)}">${ready.status}</span></div><p class="small">Energy ${l.energy||' '} • Pain ${l.pain||' '} • Water ${l.waterOz||' '} oz • Calories ${l.calories||' '} • Protein ${l.protein||' '} g • Carbs ${l.carbs||' '} g • Sugar ${l.addedSugar||' '} g</p><p>${(l.dadMessage||l.dadInput||l.testingNotes||'No notes saved.').slice(0,240)}</p></div>`;
+}
+function renderSettings(){
+ const colors=['#facc15','#22c55e','#38bdf8','#3b82f6','#a78bfa','#8b5cf6','#fb7185','#ef4444','#f97316','#14b8a6','#06b6d4','#84cc16','#eab308','#ffffff','#0ea5e9','#d946ef'];
+ document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">He can change the vibe, mode, and level. He cannot skip ahead anymore. The next day is earned.</p>
+ <div class="inner"><h3>App Color</h3><p class="small">This changes the full background, cards, glow, and contrast, not just a few letters.</p><div class="row">${colors.map(c=>`<button class="colorDot" style="background:${c}" onclick="setColor('${c}')" aria-label="Color"></button>`).join('')}</div><div class="grid" style="margin-top:10px"><input id="customColor" type="color" value="${state.accent||'#facc15'}"><button class="gold" onclick="setColor(document.getElementById('customColor').value)">Save Color</button></div></div>
+ <div class="inner"><h3>Mode</h3><div class="row"><button class="${state.mode==='outdoor'?'active':''}" onclick="state.mode='outdoor';save();render()">Outdoor</button><button class="${state.mode==='indoor'?'active':''}" onclick="state.mode='indoor';save();render()">Indoor</button></div></div>
+ <div class="inner"><h3>Difficulty</h3><div class="row"><button class="${state.level==='foundation'?'active':''}" onclick="state.level='foundation';save();render()">Foundation</button><button class="${state.level==='varsity'?'active':''}" onclick="state.level='varsity';save();render()">Varsity</button><button class="${state.level==='savage'?'active':''}" onclick="state.level='savage';save();render()">Savage</button></div><p class="small">${levelData[state.level].extra}</p></div>
+ <div class="inner"><h3>Athlete Weight</h3><p class="small">Nutrition and bodyweight logs use this first. Current saved weight: ${state.profileWeight||'not saved yet'} lb.</p><div class="grid"><input id="settingsWeightInput" type="number" min="60" max="350" value="${state.profileWeight||''}" placeholder="Enter weight"><button class="gold" onclick="saveSettingsWeight()">Save Weight</button></div></div><div class="inner"><h3>Progress Lock</h3><p class="small">Current day is Day ${state.day}. Max unlocked is Day ${state.maxUnlocked}. Complete all required logs and Dad Talk to unlock the next day.</p></div>`;
+}
+function saveSettingsWeight(){const input=document.getElementById('settingsWeightInput');const weight=Number(input&&input.value);if(!weight||weight<60||weight>350){alert('Enter a realistic athlete weight first.');return;}state.profileWeight=String(weight);logFor().weight=String(weight);save();render();}
+function setColor(c){state.accent=c;save();render();}
+function render(){
+ applyTheme();
+ const a=todayAdapt();
+ document.getElementById('dayLabel').textContent='Day '+state.day;
+ document.getElementById('readinessLabel').textContent=a.status;
+ document.getElementById('focusLabel').textContent=focusForDay(state.day);
+ const done=Object.keys(state.completed).length;
+ const pct=Math.round(done/DAYS_TOTAL*100);
+ document.getElementById('programPct').textContent=pct+'%';
+ document.getElementById('programFill').style.width=pct+'%';
+ document.getElementById('playerWrap').classList.toggle('hidden',!state.musicOpen);
+ renderChips();
+ renderTiles();
+ renderHome();
+ renderMorning();
+ renderStrength();
+ renderTouches();
+ renderNutrition();
+ renderDadTalk();
+ renderData();
+ renderSettings();
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ document.getElementById('screen_'+state.screen).classList.add('active');
+ document.getElementById('completeBtn').disabled=!canComplete();
+ document.getElementById('completeBtn').textContent=canComplete()?'Complete Day':'Locked';
+ save();
+}
+function renderChips(){document.getElementById('quickChips').innerHTML=musicPresets.map(p=>`<button onclick="playPreset('${p.key}')">${p.label}</button>`).join('');}
+function toggleMusic(){state.musicOpen=!state.musicOpen;save();render();}
+function parseYouTube(input){
+ try{
+  let u=new URL(input); let host=u.hostname.replace('www.','');
+  if(host==='youtu.be')return {type:'video',id:u.pathname.split('/')[1]};
+  if(host.includes('youtube.com')){
+    if(u.searchParams.get('list'))return {type:'playlist',id:u.searchParams.get('list')};
+    if(u.searchParams.get('v'))return {type:'video',id:u.searchParams.get('v')};
+    const parts=u.pathname.split('/'); const i=parts.indexOf('shorts'); if(i>=0&&parts[i+1])return {type:'video',id:parts[i+1]};
+  }
+ }catch(e){}
+ return null;
+}
+function playMusic(){
+ let q=document.getElementById('musicSearch').value.trim(); if(!q)return;
+ let parsed=parseYouTube(q), src='';
+ if(parsed) src=parsed.type==='playlist'?`https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(parsed.id)}&playsinline=1`:`https://www.youtube.com/embed/${encodeURIComponent(parsed.id)}?playsinline=1`;
+ else{
+   let found=musicPresets.find(p=>q.toLowerCase().includes(p.key));
+   src=found?found.src:`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}&playsinline=1`;
+ }
+ document.getElementById('musicFrame').src=src; state.musicOpen=true; save(); render();
+}
+function playPreset(key){let p=musicPresets.find(x=>x.key===key); if(p){document.getElementById('musicSearch').value=p.label; document.getElementById('musicFrame').src=p.src; state.musicOpen=true; save(); render();}}
+function completeDay(){
+ if(!canComplete()){alert('Day is locked. Finish every required section first.');return;}
+ state.completed[currentKey()]=new Date().toISOString();
+ if(state.day<DAYS_TOTAL){state.day++;state.maxUnlocked=Math.max(state.maxUnlocked,state.day);}
+ state.screen='home';
+ save();render();window.scrollTo({top:0,behavior:'smooth'});
+}
+function exportData(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jr_level13_training_data.json';a.click();URL.revokeObjectURL(a.href);
+}
+function resetConfirm(){
+ const pin=prompt('Coach reset PIN');
+ if(pin==='1302'){localStorage.removeItem(STORE);state=defaultState();render();}
+}
+render();
+</script>
+</body>
+</html><summary><span><span>Coach Instructions</span><div class="sessionSub">Read this before training</div></span></summary><div class="sessionBody compactCoach"><p>${sessionNote(state.week)} Morning should take 25 to 30 minutes. Evening should take 45 to 55 minutes. Quality comes before speed. If shin pain is above 3 out of 10, switch to indoor mode.</p><button class="blue full" onclick="scrollToMotivation()">Open Motivation Player</button></div></details>`;html+=`<details class="sessionDetails"><summary><span><span>Morning Session</span><div class="sessionSub">25 to 30 min • speed, plyos, agility, skill, or conditioning</div></span></summary><div class="sessionBody">${plan.morning.map(renderBlock).join('')}</div></details>`;html+=`<details class="sessionDetails"><summary><span><span>Evening Gym Session</span><div class="sessionSub">45 to 55 min • explosive strength, core, mobility, recovery</div></span></summary><div class="sessionBody">${plan.evening.map(renderBlock).join('')}</div></details>`;}
  html+=`<button class="green" onclick="completeDay()">${isDayDone(state.week,state.day)?'Day Complete':'Mark '+state.day+' Complete'}</button>`;document.getElementById('trainingCard').innerHTML=html;renderReflection();renderTesting();}
 function renderReflection(){ const k=dayKey(state.week,state.day); const r=state.reflect[k]||{}; const unlocked=isDayUnlocked(state.week,state.day); let html=`<h3>${state.day} Reflection</h3><p class="small">This saves under ${state.week} ${state.day}, so you can compare his mindset and growth week to week.</p>`; if(!unlocked){html+=`<p class="lockedMsg">Reflection unlocks when the day unlocks.</p>`; document.getElementById('reflectionCard').innerHTML=html;return;} html+=`<div class="grid"><div><div class="small">Energy 1 to 10</div><input id="energy" type="number" min="1" max="10" value="${r.energy||''}" placeholder="Example 7"></div><div><div class="small">Effort 1 to 10</div><input id="effort" type="number" min="1" max="10" value="${r.effort||''}" placeholder="Example 8"></div></div><div class="small">What did you like today?</div><textarea id="liked">${r.liked||''}</textarea><div class="small">What was hard or frustrating?</div><textarea id="hardpart">${r.hardpart||''}</textarea><div class="small">What do you want to improve tomorrow?</div><textarea id="improve">${r.improve||''}</textarea><button class="blue full" onclick="saveReflection()">Save ${state.day} Reflection</button>`; document.getElementById('reflectionCard').innerHTML=html;}
 function testingHTML(){ const w=state.week; const t=state.tests[w]||{}; return `<div class="inner"><h3>Weekly Testing</h3><p>Test once on Saturday. Use the same shoes, surface, warm up, and phone timing method every week.</p><div class="grid"><input id="t10" placeholder="10 yard dash" value="${t.t10||''}"><input id="t20" placeholder="20 yard dash" value="${t.t20||''}"><input id="t505" placeholder="5 10 5 shuttle" value="${t.t505||''}"><input id="tbroad" placeholder="Broad jump inches" value="${t.tbroad||''}"><input id="tvert" placeholder="Vertical jump inches" value="${t.tvert||''}"><input id="tplank" placeholder="Plank time" value="${t.tplank||''}"></div><textarea id="tnotes" placeholder="Testing notes, what improved, what looked better">${t.tnotes||''}</textarea><button class="blue full" onclick="saveTests()">Save ${w} Test Results</button></div>`; }
