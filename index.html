@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>BlackSuperman Jr Level 13 Earned Day Athlete Hub</title>
+<title>BlackSuperman Jr Level 13 Final Athlete Hub</title>
 <style>
 :root{
   --bg:#050507;
@@ -33,7 +33,7 @@ h1,h2,h3{margin:0;color:var(--text)}h1{font-size:25px;line-height:1}h2{font-size
 p,li{color:var(--text);line-height:1.42}.small{font-size:12px;color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}
 .musicDock{position:sticky;top:0;z-index:90;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:20px;padding:8px;margin-bottom:10px;box-shadow:0 10px 26px rgba(0,0,0,.32);backdrop-filter:blur(14px)}
 .musicTop{display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center}
-.musicTop input{min-height:40px}.playerWrap{display:grid;grid-template-columns:132px 1fr;gap:8px;align-items:center;margin-top:8px}.ytFrame{width:132px;height:74px;border:0;border-radius:14px;background:#000}.musicHelp{font-size:11px;color:var(--muted);line-height:1.35}.quickChips{display:flex;gap:6px;overflow:auto;padding-top:7px}.quickChips button{white-space:nowrap;min-height:32px;font-size:11px;border-radius:999px;padding:7px 10px}
+.musicTop input{min-height:40px}.playerWrap{display:grid;grid-template-columns:132px 1fr;gap:8px;align-items:center;margin-top:8px}.ytFrame{width:132px;height:74px;border:0;border-radius:14px;background:#000}.ytFrame[src="about:blank"]{background:linear-gradient(135deg,#07070b,#181824)}.musicHelp{font-size:11px;color:var(--muted);line-height:1.35}.quickChips{display:flex;gap:6px;overflow:auto;padding-top:7px}.quickChips button{white-space:nowrap;min-height:32px;font-size:11px;border-radius:999px;padding:7px 10px}.musicFallback{display:inline-flex;margin-top:7px;font-size:11px;color:var(--accent);font-weight:900;text-decoration:none}
 .hero{border:1px solid var(--line);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 17%,transparent),rgba(17,17,24,.96));border-radius:27px;padding:14px;box-shadow:0 22px 42px rgba(0,0,0,.35);margin-bottom:12px}
 .topLine{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:900;margin-bottom:8px}
@@ -62,6 +62,7 @@ details.clean{border:1px solid var(--line);background:#0b0b10;border-radius:20px
 .statCards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#0a0a0f;border:1px solid var(--line);border-radius:18px;padding:10px;text-align:center}.stat b{font-size:18px;color:var(--accent);display:block}.stat span{font-size:11px;color:var(--muted);font-weight:800}
 .completionList{display:grid;gap:7px;margin-top:9px}.checkItem{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0d0d12;border:1px solid var(--line);border-radius:15px;padding:9px 10px;font-size:13px;font-weight:800}.checkItem span:last-child{font-size:12px}
 .dadOrb{min-height:160px;width:min(92vw,360px);border-radius:32px;margin:10px auto;background:radial-gradient(circle at 20% 12%,#fff,var(--accent) 18%,var(--panel) 70%);box-shadow:0 0 30px color-mix(in srgb,var(--accent) 42%,transparent);display:flex;align-items:center;justify-content:center;color:var(--text);font-weight:900;font-size:18px;text-align:center;padding:22px;line-height:1.25}.dadOrb small{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+.eightBallWrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0 14px}.eightBall{position:relative;width:min(84vw,340px);aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 28% 18%,rgba(255,255,255,.48),rgba(255,255,255,.10) 12%,#15151b 34%,#020204 72%,#000 100%);box-shadow:inset -24px -28px 44px rgba(0,0,0,.72),inset 14px 14px 28px rgba(255,255,255,.08),0 0 42px color-mix(in srgb,var(--accent) 42%,transparent);border:2px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}.eightBall:before{content:'8';position:absolute;top:10%;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:50%;background:#f8fafc;color:#050507;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:32px;box-shadow:0 6px 18px rgba(0,0,0,.45)}.eightWindow{position:absolute;top:34%;left:50%;transform:translateX(-50%);width:68%;min-height:42%;clip-path:polygon(50% 0,100% 100%,0 100%);background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 80%,#fff 20%),#111827 72%);display:flex;align-items:center;justify-content:center;padding:42px 22px 18px;color:#fff;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.75);font-weight:900;line-height:1.2}.eightWindowContent{max-height:142px;overflow:auto;font-size:15px}.eightWindow small{display:block;color:#fff;font-size:10px;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px}.eightBall.advice .eightWindow{clip-path:none;border-radius:24px;width:76%;min-height:54%;top:27%;padding:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 38%,#111827 62%),#020204)}.eightBall.advice .eightWindowContent{font-size:12px;max-height:164px;text-align:left}.shake{animation:shakeBall .52s ease both}@keyframes shakeBall{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-8px) rotate(-4deg)}30%{transform:translateX(8px) rotate(4deg)}45%{transform:translateX(-6px) rotate(-3deg)}60%{transform:translateX(6px) rotate(3deg)}75%{transform:translateX(-3px) rotate(-1deg)}}
 .colorDot{height:36px;width:36px;border-radius:50%;border:2px solid rgba(255,255,255,.25);box-shadow:0 6px 18px rgba(0,0,0,.25)}
 
 #heroSub{display:inline-block;margin-top:7px;padding:8px 10px;border-radius:14px;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.14);color:var(--heroText);font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.7)}
@@ -76,7 +77,7 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr 1.25fr;gap:7px}.bottomNav button{min-height:43px;border-radius:14px;font-size:12px}.bottomNav .green{font-size:13px}
 @media(max-width:640px){
   body{padding:9px 9px 126px}h1{font-size:22px}.hero{border-radius:23px;padding:13px}.topLine{align-items:center}.status{min-width:88px;padding:8px}
-  .musicTop{grid-template-columns:1fr auto}.musicTop .hideSmall{display:none}.playerWrap{grid-template-columns:120px 1fr}.ytFrame{width:120px;height:68px}
+  .musicTop{grid-template-columns:1fr auto}.musicTop .hideSmall{display:none}.playerWrap{grid-template-columns:110px 1fr}.ytFrame{width:110px;height:62px}.eightBall{width:min(88vw,315px)}.eightWindowContent{font-size:13px}.eightBall.advice .eightWindowContent{font-size:11px}
   .tileGrid{grid-template-columns:repeat(3,1fr);gap:8px}.tile{min-height:88px;border-radius:21px;padding:10px 6px}.tileIcon{font-size:24px}.tile b{font-size:12px}.tile small{font-size:10px}
   .grid,.grid3,.logGrid{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.statCards{grid-template-columns:1fr 1fr}.card{border-radius:22px;padding:12px}.exercise{grid-template-columns:1fr}.num{margin-bottom:-3px}
   .bottomNav{grid-template-columns:1fr 1fr 1fr 1.1fr}.bottomNav button{font-size:11px}
@@ -92,10 +93,11 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
       <button class="hideSmall" onclick="toggleMusic()">Hide</button>
     </div>
     <div class="playerWrap" id="playerWrap">
-      <iframe id="musicFrame" class="ytFrame" src="https://www.youtube.com/embed/videoseries?list=PL4fGSI1pDJn5kI81J1fYWK5eZRl1zJ5kM&playsinline=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <iframe id="musicFrame" class="ytFrame" src="about:blank" title="Mini YouTube player" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
       <div>
         <div class="quickChips" id="quickChips"></div>
-        <div class="musicHelp">Mini player stays small so he can train while music runs. Paste links for the cleanest inside app playback.</div>
+        <div class="musicHelp" id="musicHelp">Mini player stays small. To avoid permission loops in preview, YouTube only loads after Play is tapped.</div>
+        <a id="musicFallback" class="musicFallback hidden" target="_blank" rel="noopener">Open on YouTube if blocked</a>
       </div>
     </div>
   </div>
@@ -213,7 +215,7 @@ const levelData={
 };
 
 function defaultState(){
- return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',screen:'home',musicOpen:true,logs:{},completed:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0};
+ return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',screen:'home',musicOpen:true,musicSrc:'',musicUrl:'',logs:{},completed:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0};
 }
 function migrateOld(){
  let raw=localStorage.getItem(STORE);
@@ -238,6 +240,9 @@ function migrateOld(){
 }
 let state=migrateOld();
 state.profileWeight = state.profileWeight || (state.logs && state.logs.day1 && state.logs.day1.weight && state.logs.day1.weight !== '145' ? state.logs.day1.weight : '');
+state.musicSrc = state.musicSrc || '';
+state.musicUrl = state.musicUrl || '';
+state.musicOpen = state.musicOpen !== false;
 
 function save(){localStorage.setItem(STORE,JSON.stringify(state));}
 function clamp(n,min,max){return Math.max(min,Math.min(max,Number(n)||min));}
@@ -582,21 +587,28 @@ const dadQuestions=[
  {key:'dadInput',q:'What do you need Dad to know before the app updates tomorrow?',type:'text'}
 ];
 
+function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function renderDadTalk(){
  const l=logFor(), step=state.dadStep||0;
  if(l.dadComplete){
-   document.getElementById('screen_dadtalk').innerHTML=`<div class="dadOrb"><div><small>Dad Talk complete</small>Tomorrow is updated</div></div><h2 style="text-align:center">Saved</h2><div class="coachBubble"><strong>Message for Jr</strong><p>${l.dadMessage||dadMessage(l)}</p></div><button class="blue full" onclick="restartDadTalk()">Redo Dad Talk</button>`;
+   const msg=escapeHTML(l.dadMessage||dadMessage(l));
+   document.getElementById('screen_dadtalk').innerHTML=`<div class="eightBallWrap"><div class="eightBall advice" onclick="shakeDadBall()"><div class="eightWindow"><div class="eightWindowContent"><small>Dad Talk complete</small>${msg}</div></div></div><button class="gold" onclick="shakeDadBall()">Shake The 8 Ball</button></div><h2 style="text-align:center">Tomorrow Is Updated</h2><div class="coachBubble"><strong>Dad Word</strong><p>${msg}</p></div><button class="blue full" onclick="restartDadTalk()">Redo Dad Talk</button>`;
    return;
  }
  const q=dadQuestions[Math.min(step,dadQuestions.length-1)];
  let val=l[q.key]||'';
- document.getElementById('screen_dadtalk').innerHTML=`<div class="dadOrb"><div><small>Question ${step+1} of ${dadQuestions.length}</small>${q.q}</div></div><div style="text-align:center"><h2>Dad Talk</h2><p class="small">Answer honest. This is how tomorrow adapts.</p></div>
+ const safeQ=escapeHTML(q.q);
+ const inputHtml=q.type==='number'
+   ? `<input id="dadAnswer" type="number" ${q.min!=null?'min="'+q.min+'"':''} ${q.max!=null?'max="'+q.max+'"':''} value="${escapeHTML(val)}" placeholder="Answer then save">`
+   : `<textarea id="dadAnswer" placeholder="Talk to the 8 ball. Be honest.">${escapeHTML(val)}</textarea>`;
+ document.getElementById('screen_dadtalk').innerHTML=`<div class="eightBallWrap"><div class="eightBall" id="dadEightBall" onclick="shakeDadBall()"><div class="eightWindow"><div class="eightWindowContent"><small>Question ${step+1} of ${dadQuestions.length}</small>${safeQ}</div></div></div><button class="gold" onclick="shakeDadBall()">Shake The 8 Ball</button></div><div style="text-align:center"><h2>Dad Talk</h2><p class="small">Answer honest. The 8 ball uses this to update tomorrow.</p></div>
  <div class="inner">
-   <input id="dadAnswer" type="${q.type}" ${q.min!=null?'min="'+q.min+'"':''} ${q.max!=null?'max="'+q.max+'"':''} value="${val}" placeholder="Type answer here">
+   ${inputHtml}
    <div class="grid" style="margin-top:10px"><button ${step<=0?'disabled':''} onclick="dadBack()">Back</button><button class="gold" onclick="dadNext()">${step===dadQuestions.length-1?'Finish Dad Talk':'Save and Next'}</button></div>
  </div>
  <p class="small">The next day stays locked until this is finished. Honest answers make the workout smarter.</p>`;
 }
+function shakeDadBall(){const b=document.getElementById('dadEightBall')||document.querySelector('.eightBall'); if(!b)return; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');}
 function dadBack(){state.dadStep=Math.max(0,(state.dadStep||0)-1);save();render();}
 function dadNext(){
  const step=state.dadStep||0, q=dadQuestions[step], input=document.getElementById('dadAnswer');
@@ -697,6 +709,7 @@ function render(){
  document.getElementById('programPct').textContent=pct+'%';
  document.getElementById('programFill').style.width=pct+'%';
  document.getElementById('playerWrap').classList.toggle('hidden',!state.musicOpen);
+ ensureMusicPlayer();
  renderChips();
  renderTiles();
  renderHome();
@@ -715,29 +728,55 @@ function render(){
 }
 function renderChips(){document.getElementById('quickChips').innerHTML=musicPresets.map(p=>`<button onclick="playPreset('${p.key}')">${p.label}</button>`).join('');}
 function toggleMusic(){state.musicOpen=!state.musicOpen;save();render();}
+function ensureMusicPlayer(){
+ const f=document.getElementById('musicFrame'), a=document.getElementById('musicFallback');
+ if(!f)return;
+ if(state.musicSrc && (f.getAttribute('src')==='about:blank' || !f.getAttribute('src'))){f.setAttribute('src',state.musicSrc);}
+ if(a){
+   if(state.musicUrl){a.href=state.musicUrl; a.classList.remove('hidden');}
+   else{a.classList.add('hidden');}
+ }
+}
+function youtubeWatchUrl(type,id){return type==='playlist'?`https://www.youtube.com/playlist?list=${encodeURIComponent(id)}`:`https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;}
 function parseYouTube(input){
  try{
   let u=new URL(input); let host=u.hostname.replace('www.','');
   if(host==='youtu.be')return {type:'video',id:u.pathname.split('/')[1]};
   if(host.includes('youtube.com')){
-    if(u.searchParams.get('list'))return {type:'playlist',id:u.searchParams.get('list')};
+    const parts=u.pathname.split('/').filter(Boolean);
+    const shorts=parts.indexOf('shorts'); if(shorts>=0&&parts[shorts+1])return {type:'video',id:parts[shorts+1]};
+    if(parts[0]==='embed'&&parts[1])return {type:'video',id:parts[1]};
     if(u.searchParams.get('v'))return {type:'video',id:u.searchParams.get('v')};
-    const parts=u.pathname.split('/'); const i=parts.indexOf('shorts'); if(i>=0&&parts[i+1])return {type:'video',id:parts[i+1]};
+    if(u.searchParams.get('list'))return {type:'playlist',id:u.searchParams.get('list')};
   }
  }catch(e){}
  return null;
 }
+function setMusicSource(src,url,label=''){
+ const f=document.getElementById('musicFrame'), a=document.getElementById('musicFallback'), h=document.getElementById('musicHelp');
+ state.musicSrc=src; state.musicUrl=url; state.musicOpen=true; save();
+ document.getElementById('playerWrap').classList.remove('hidden');
+ if(f)f.setAttribute('src',src);
+ if(a){a.href=url; a.classList.remove('hidden');}
+ if(h)h.textContent=label?`Playing: ${label}. If preview blocks YouTube, use the fallback link.`:'If preview blocks YouTube, use the fallback link. Vercel should load the iframe normally.';
+}
 function playMusic(){
  let q=document.getElementById('musicSearch').value.trim(); if(!q)return;
- let parsed=parseYouTube(q), src='';
- if(parsed) src=parsed.type==='playlist'?`https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(parsed.id)}&playsinline=1`:`https://www.youtube.com/embed/${encodeURIComponent(parsed.id)}?playsinline=1`;
- else{
-   let found=musicPresets.find(p=>q.toLowerCase().includes(p.key));
-   src=found?found.src:`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}&playsinline=1`;
+ let parsed=parseYouTube(q);
+ if(parsed){
+   const src=parsed.type==='playlist'?`https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(parsed.id)}&playsinline=1`:`https://www.youtube.com/embed/${encodeURIComponent(parsed.id)}?playsinline=1`;
+   setMusicSource(src,youtubeWatchUrl(parsed.type,parsed.id),'YouTube link');
+   return;
  }
- document.getElementById('musicFrame').src=src; state.musicOpen=true; save(); render();
+ let found=musicPresets.find(p=>q.toLowerCase().includes(p.key)||q.toLowerCase().includes(p.label.toLowerCase()));
+ if(found){playPreset(found.key);return;}
+ const a=document.getElementById('musicFallback'), h=document.getElementById('musicHelp');
+ const url='https://www.youtube.com/results?search_query='+encodeURIComponent(q);
+ if(a){a.href=url;a.classList.remove('hidden');a.textContent='Open YouTube search for '+q;}
+ if(h)h.textContent='Typed search cannot reliably play inside an embedded app without the YouTube Data API. Paste a video or playlist link to play inside the app.';
+ alert('Paste a YouTube video or playlist link to play inside the app. Search results are opened with the fallback link because embedded YouTube search is blocked.');
 }
-function playPreset(key){let p=musicPresets.find(x=>x.key===key); if(p){document.getElementById('musicSearch').value=p.label; document.getElementById('musicFrame').src=p.src; state.musicOpen=true; save(); render();}}
+function playPreset(key){let p=musicPresets.find(x=>x.key===key); if(p){document.getElementById('musicSearch').value=p.label; const url=p.src.includes('videoseries')?'https://www.youtube.com/playlist?list='+(p.src.split('list=')[1]||'').split('&')[0]:'https://www.youtube.com/watch?v='+(p.src.split('/embed/')[1]||'').split('?')[0]; setMusicSource(p.src,url,p.label);}}
 function completeDay(){
  if(!canComplete()){alert('Day is locked. Finish every required section first.');return;}
  state.completed[currentKey()]=new Date().toISOString();
