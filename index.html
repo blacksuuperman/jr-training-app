@@ -93,11 +93,11 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
       <button class="hideSmall" onclick="toggleMusic()">Hide</button>
     </div>
     <div class="playerWrap" id="playerWrap">
-      <iframe id="musicFrame" class="ytFrame" src="https://www.youtube.com/embed/videoseries?list=PLChOO_ZAB22WAvnFw86vUueyv026ULwIv&rel=0&playsinline=1&enablejsapi=0" title="Mini YouTube player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <iframe id="musicFrame" class="ytFrame" src="https://www.youtube.com/embed/videoseries?list=PL3-sRm8xAzY9Qd1BoHHYFXRMUQlB4BZNt&rel=0&playsinline=1&enablejsapi=0" title="Mini YouTube player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
       <div>
         <div class="quickChips" id="quickChips"></div>
         <div class="musicHelp" id="musicHelp">YouTube is loaded inside the app. Tap the triangle inside the player once. If a preview blocks it, the same file should work better after Vercel deploy.</div>
-        <a id="musicFallback" class="musicFallback" target="_blank" rel="noopener" href="https://www.youtube.com/playlist?list=PLChOO_ZAB22WAvnFw86vUueyv026ULwIv">Open on YouTube if blocked</a>
+        <a id="musicFallback" class="musicFallback" target="_blank" rel="noopener" href="https://www.youtube.com/playlist?list=PL3-sRm8xAzY9Qd1BoHHYFXRMUQlB4BZNt">Open on YouTube if blocked</a>
       </div>
     </div>
   </div>
@@ -192,8 +192,8 @@ deHands:'https://www.youtube.com/shorts/NSx86zEi1Vg'
 
 const YT_HOST='https://www.youtube.com/embed/';
 const musicPresets=[
- {key:'rap',label:'Rap / Hip Hop Workout',src:YT_HOST+'videoseries?list=PLChOO_ZAB22WAvnFw86vUueyv026ULwIv&rel=0&playsinline=1&enablejsapi=0'},
- {key:'trap',label:'Trap Motivation Workout',src:YT_HOST+'videoseries?list=PL2sF5EgRJzu-VZ2_UwOniFkboXLMZw6ky&rel=0&playsinline=1&enablejsapi=0'},
+ {key:'rap',label:'Rap / Hip Hop Workout',src:YT_HOST+'videoseries?list=PL3-sRm8xAzY9Qd1BoHHYFXRMUQlB4BZNt&rel=0&playsinline=1&enablejsapi=0'},
+ {key:'trap',label:'Trap Motivation Workout',src:YT_HOST+'videoseries?list=PLeqH9tG-ObnZddkSWNAc2bM9-MQf3JCxr&rel=0&playsinline=1&enablejsapi=0'},
  {key:'makaveli',label:'Bodybuilding Makaveli Motivation',src:YT_HOST+'videoseries?list=PLDeT3PYJ-AKm0P5ih7Znj_tfwrtFR39Wr&rel=0&playsinline=1&enablejsapi=0'},
  {key:'badbunny',label:'Bad Bunny Latin Reggaeton Mix',src:YT_HOST+'videoseries?list=PLuMEcroxcdXF0e_u7gMvbV3OfJ3NE9qDd&rel=0&playsinline=1&enablejsapi=0'},
  {key:'goggins',label:'David Goggins Motivation',src:YT_HOST+'videoseries?list=PLTaMkgKv5vlza7KP6-3ZbdWItiC_vk0Pq&rel=0&playsinline=1&enablejsapi=0'}
@@ -812,3 +812,5 @@ render();
 </script>
 </body>
 </html>
+
+
