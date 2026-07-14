@@ -219,9 +219,9 @@ const tiles=[
 ];
 
 const levelData={
- foundation:{name:'Foundation',mult:.85,sets:-1,extra:'Technique pace'},
- varsity:{name:'Varsity',mult:1,sets:0,extra:'Game pace'},
- savage:{name:'Savage',mult:1.18,sets:1,extra:'High school body challenge'}
+ foundation:{name:'8th Grade 5 Star',mult:1,sets:0,extra:'Elite middle school athlete. Clean mechanics, serious work, safer volume.'},
+ varsity:{name:'High School 5 Star',mult:1.25,sets:1,extra:'Five star high school athlete. More volume, more intensity, more complete work.'},
+ savage:{name:'Collegiate 5 Star',mult:1.5,sets:2,extra:'College level challenge. Highest volume, longest rest, fastest intent, no garbage reps.'}
 };
 
 function defaultState(){
@@ -309,26 +309,63 @@ function focusForDay(d){
  return names[(d-1)%7];
 }
 function phaseForDay(d){
- if(d<=14)return 'Build the base';
- if(d<=28)return 'Add power';
- if(d<=42)return 'Game speed';
- if(d<=56)return 'Peak and compete';
- return 'Polish and taper';
+ const week=Math.floor((d-1)/7)+1;
+ const day=((d-1)%7)+1;
+ const phase=week<=2?'Foundation Speed Build':week<=4?'Acceleration And Power Phase':week<=6?'Game Speed And COD Phase':week<=8?'Peak Speed And Combine Phase':'Polish, Taper, Prove It Phase';
+ return 'Week '+week+' • Day '+day+' • '+phase;
 }
-
+function dayTheme(d){
+ const day=((d-1)%7)+1;
+ return [
+  'Acceleration Power',
+  'Max Velocity Mechanics',
+  'Lateral Quickness And COD',
+  'Footwork And Reaction',
+  'Game Speed Blend',
+  'Test, Contrast, Recovery Power',
+  'Mobility, Elastic Reset, Prep'
+ ][day-1];
+}
+function weekBonus(){
+ const week=Math.floor((state.day-1)/7)+1;
+ if(week<=2)return 0;
+ if(week<=4)return 1;
+ if(week<=6)return 1;
+ if(week<=8)return 2;
+ return 0;
+}
 function adjusted(n,kind='reps'){
  const level=levelData[state.level]||levelData.varsity;
  const adapt=todayAdapt();
  let val=Math.round(n*level.mult*(adapt.mult||1));
- if(kind==='sets') val=Math.max(1,Math.round(n+(level.sets||0)+((adapt.mult||1)-1)));
+ if(kind==='sets') val=Math.round(n+(level.sets||0)+weekBonus()+((adapt.mult||1)-1));
  return Math.max(1,val);
 }
-function adjustedSets(base){return Math.max(2,Math.min(5,adjusted(base,'sets')));}
+function adjustedSets(base){
+ const level=levelData[state.level]||levelData.varsity;
+ const cap=state.level==='savage'?8:state.level==='varsity'?7:6;
+ return Math.max(2,Math.min(cap,adjusted(base,'sets')));
+}
+function scaleNumbers(str,mult){
+ return String(str).replace(/\d+(\.\d+)?/g,(m)=>{
+   let n=parseFloat(m);
+   if(n===1 && mult>1.2)return mult>=1.45?'2 to 3':'2';
+   if(n<3 && mult>1.3)return Math.max(2,Math.round(n*mult));
+   if(n<60)return Math.max(1,Math.round(n*mult));
+   return m;
+ });
+}
 function targetText(reps){
  if(typeof reps!=='string')return reps;
- if(state.level==='foundation')return reps+' clean';
- if(state.level==='savage')return reps+' plus finish strong';
- return reps;
+ const level=levelData[state.level]||levelData.varsity;
+ const scaled=scaleNumbers(reps,level.mult);
+ if(state.level==='foundation')return reps+' • 8th grade 5 star';
+ if(state.level==='varsity')return scaled+' • high school 5 star';
+ return scaled+' • collegiate 5 star';
+}
+function coachGoalLine(){
+ const l=levelData[state.level]||levelData.varsity;
+ return dayTheme(state.day)+' • '+l.name+' • '+modeLabel();
 }
 
 function ex(id,name,sets,reps,rest,cue,vidKey,metric='done'){
@@ -348,188 +385,84 @@ function modeNotice(){
 }
 function levelNotice(){
  const name=levelData[state.level].name;
- if(state.level==='foundation')return name+' still works harder now, but keeps mechanics clean and protects the joints.';
- if(state.level==='savage')return name+' is the elite chase day. More sprint exposure, more rest, more intent, no garbage reps.';
- return name+' is now the standard elite football speed challenge.';
+ if(state.level==='foundation')return name+' is not easy work. It is elite 8th grade volume with clean mechanics and safer fatigue.';
+ if(state.level==='varsity')return name+' pushes high school five star volume, harder sets, and more complete work.';
+ return name+' is the collegiate challenge with the most volume, longest intent, and the highest standard. No lazy reps.';
 }
 function morningPlan(){
- const d=state.day, cycle=(d-1)%4, mode=state.mode;
+ const d=state.day, day=((d-1)%7)+1, week=Math.floor((d-1)/7)+1, mode=state.mode;
+ const prog=week<=2?'mechanics':week<=4?'power':week<=6?'game speed':week<=8?'peak':'polish';
  const warm=[
-   ex('warm','Elite Dynamic Warm Up',1,'8 minutes','none','High knees, butt kicks, A skips, leg swings, hip openers, ankle pops, hamstring sweeps, and two smooth build ups. Warm up like a sprinter, not like recess.','warm'),
-   ex('sprintMechanics','A March To A Skip Mechanics',3,'15 yards or 20 seconds','30 sec','Tall posture, toe up, knee up, strike down under the hips. Track posture first, football speed second.','youthSpeed')
+   ex('warm'+day,'Elite Dynamic Warm Up',1,'8 minutes','none','A skips, high knees, ankle pops, hamstring sweeps, hip openers, leg swings, and two smooth build ups. Start like a track athlete.','warm'),
+   ex('mechanics'+day,'Sprint Mechanics Primer',3,'15 yards or 20 seconds','30 sec','Tall posture, toe up, knee up, foot under the hips, arms cheek to pocket. Clean mechanics before speed.','youthSpeed')
  ];
- const homePlans=[
-  [
-   ex('wallDriveHome','Wall Drive Switches',4,'15 seconds each leg','35 sec','First step angles without needing space. Knee up, toe up, punch down.','wallDrive'),
-   ex('linePogoHome','Stiff Ankle Line Pogos',4,'20 seconds','45 sec','Quick contacts, quiet feet, ankles like springs.','pogo'),
-   ex('hallwayStartHome','Hallway Falling Start',6,'1 start for 5 yards','60 sec','Small space burst. Explode, then shut it down safely.','falling'),
-   ex('decelStickHome','5 Yard Burst To Stick',5,'1 burst and stick','55 sec','Acceleration plus brakes. Sink hips and own the stop.','sprintStick'),
-   ex('lateralLineHome','Lateral Line Hop To Stick',4,'12 hops each way','45 sec','Side to side quickness with controlled landings.','hurdleHop'),
-   ex('dbBreakHome','Backpedal Break In Place',4,'3 breaks each side','45 sec','Cornerback feet. Pedal, plant, drive downhill.','dbBackpedal'),
-   ex('reactionHome','Mirror Shuffle Reaction',5,'10 seconds','35 sec','React to Dad or a timer. Low hips, quick feet, no wasted steps.','shuffleSprint')
-  ],
-  [
-   ex('wallIsoHome','Wall Drive Iso Holds',4,'20 seconds each leg','35 sec','Hip flexor and trunk position for sprint posture.','wallDrive'),
-   ex('tapeWicketHome','Tape Wicket Rhythm',5,'3 trips','40 sec','Use tape or floor lines. Tall hips, foot under body, no reaching.','wickets'),
-   ex('pushStartHome','Push Up Start To Burst',6,'1 start','60 sec','Pop up clean, attack the first step, stop safely.','pushStart'),
-   ex('skaterStickHome','Skater Bound Stick',4,'5 each side','55 sec','Push laterally and freeze balanced. Soccer and DB quickness.','lateralBound'),
-   ex('lineHopBurstHome','Line Hops To Burst',4,'8 hops plus burst','55 sec','Quick feet into acceleration.','hurdleHop'),
-   ex('wDrillHome','Small Space W Drill',4,'1 controlled W','70 sec','Pedal, plant, drive. Clean foot angles.','dbW'),
-   ex('ankleResetHome','Low Pogo Reset',3,'20 seconds','45 sec','Finish springy, not cooked.','pogo')
-  ]
- ];
- const facilityPlans=[
-  [
-   ex('accelLaneFacility','10 Yard Acceleration Lane',6,'1 sprint','90 sec','Full rest. Win the first three steps.','tenYard'),
-   ex('sledOrBandFacility','Light Sled Or Band Starts',5,'1 sprint for 10 yards','100 sec','Light resistance only. If form breaks, it is too heavy.','resisted'),
-   ex('wicketsFacility','Cone Wicket Runs',5,'2 trips','65 sec','Max velocity posture. Hips tall, foot under body.','wickets'),
-   ex('shuttleFacility','5 10 5 Pro Agility',5,'1 rep','110 sec','Low hips, violent plant, explode out.','shuttle'),
-   ex('lDrillFacility','3 Cone L Drill',4,'1 rep','110 sec','Tight turns, no wasted steps.','lDrill'),
-   ex('dbWFacility','DB W Drill Backpedal Break',4,'1 full W','85 sec','Great corner feet and safety hips.','dbW'),
-   ex('sprintStickFacility','Sprint To Stick Decel',4,'1 sprint and stop','80 sec','Fast athletes need brakes.','sprintStick')
-  ],
-  [
-   ex('fly10Facility','Flying 10s',5,'20 yard build plus 10 yard fly','120 sec','Top speed exposure. Smooth, relaxed, fast.','fly10'),
-   ex('sprintFloatFacility','Sprint Float Sprint',4,'10 fast, 10 float, 10 fast','120 sec','Learn speed relaxation. Fast does not mean tight.','sprintFloat'),
-   ex('soccerCutFacility','45 Degree Soccer Cut Series',5,'2 cuts each side','70 sec','Attack, drop hips, cut, accelerate like an elite winger.','linearCod'),
-   ex('lateralSprintFacility','Lateral Bound To Sprint',4,'4 each side','70 sec','Push side to side, stick, then burst.','lateralBound'),
-   ex('hurdleSprintFacility','Low Hurdle Hop To Sprint',4,'5 hops plus burst','75 sec','Elastic contacts into acceleration.','hurdleHop'),
-   ex('curveSprintFacility','Curved Sprint',5,'1 curve each side','75 sec','Lean naturally through the curve without drifting.','footballSpeed'),
-   ex('reactionCODFacility','Reaction Cut And Go',5,'1 cut each call','55 sec','React, plant, and go now.','linearCod')
-  ]
- ];
- const gymPlans=[
-  [
-   ex('treadBuildGym','Treadmill Build Up Or Bike Sprint Warm Up',4,'15 seconds fast','60 sec','Use this only as a prep, not the whole workout. Fast turnover, controlled exit.','sprintFloat'),
-   ex('sledPushGym','Sled Push Or Heavy Band Drive',5,'10 to 15 yards','90 sec','Drive the ground back. Body angle like acceleration.','resisted'),
-   ex('boxJumpGym','Box Jump Or Broad Jump Stick',4,'3 jumps','90 sec','Explode and land quiet. Stop before jumps get sloppy.','broad'),
-   ex('medballGym','Med Ball Slam Or Chest Pass',4,'5 reps','75 sec','Violent throw. Full reset every rep.','medball'),
-   ex('lateralShuffleGym','Cone Shuffle To Stick',5,'2 each side','55 sec','Low hips, sharp stop, own the position.','decel'),
-   ex('wallDriveGym','Wall Drive Triple Switch',4,'5 switches each leg','40 sec','Sprint mechanics with no track needed.','wallDrive'),
-   ex('pogoGym','Pogo Jump Series',4,'20 seconds','45 sec','Reactive lower legs for speed.','pogo')
-  ],
-  [
-   ex('inclineSprintGym','Incline Treadmill March Or Sprint Prep',4,'20 seconds','65 sec','Posture and rhythm. No hanging on the rails.','sprintFloat'),
-   ex('bandStartGym','Band Resisted Starts',5,'1 start for 5 to 10 yards','90 sec','Powerful first step, clean body angle.','resisted'),
-   ex('splitJumpGym','Split Stance Power Drive',4,'5 each leg','75 sec','Explode from split stance without losing balance.','split'),
-   ex('skaterGym','Skater Bound To Stick',4,'5 each side','65 sec','Lateral power for cuts and defensive movement.','lateralBound'),
-   ex('dbBreakGym','DB Backpedal Break',4,'3 breaks each side','55 sec','Turf or open gym space. Pedal, plant, drive.','dbBackpedal'),
-   ex('coreSpeedGym','Dead Bug Speed Brace',3,'8 each side','35 sec','Core locks the hips for sprinting.','deadbug'),
-   ex('ankleGym','Low Pogo Reset',3,'20 seconds','45 sec','Keep pop in the ankles.','pogo')
-  ]
- ];
- const outdoorPlans=[
-  [
-   ex('fallingOutdoor','Falling Starts',6,'1 sprint for 10 yards','70 sec','Fall as one piece. First three steps low, violent, and patient.','falling'),
-   ex('resistedOutdoor','Band Or Hill Resisted Starts',5,'1 sprint for 10 yards','90 sec','Light resistance only. Drive the ground back.','resisted'),
-   ex('tenOutdoor','10 Yard Explosive Starts',6,'1 sprint','90 sec','Full rest. Chase better first step, not more tired reps.','tenYard'),
-   ex('twentyOutdoor','20 Yard Acceleration Build',5,'1 sprint','100 sec','Drive, rise, finish. Do not pop up early.','tenYard'),
-   ex('broadOutdoor','Broad Jump Stick',5,'2 jumps','75 sec','Explode forward and land quiet.','broad'),
-   ex('sprintStickOutdoor','Sprint To Stick Deceleration',4,'1 sprint and stop','70 sec','Great athletes can stop and reaccelerate.','sprintStick'),
-   ex('lateralOutdoor','Lateral Bound To Sprint',4,'4 each side','70 sec','Cut power into acceleration.','lateralBound')
-  ],
-  [
-   ex('wicketsOutdoor','Wicket Runs Or Cone Wickets',5,'2 trips','60 sec','Top speed posture. Hips tall, foot under body, no overstriding.','wickets'),
-   ex('flyOutdoor','Flying 10s',5,'20 yard build plus 10 yard fly','120 sec','Build smooth, hit the fly zone fast and relaxed.','fly10'),
-   ex('sprintFloatOutdoor','Sprint Float Sprint',4,'10 fast, 10 float, 10 fast','120 sec','Fast but relaxed. No tight shoulders.','sprintFloat'),
-   ex('shuttleOutdoor','5 10 5 Pro Agility',5,'1 rep','110 sec','Plant outside foot, explode out.','shuttle'),
-   ex('lDrillOutdoor','3 Cone L Drill',4,'1 rep','110 sec','Tight angles, smooth feet.','lDrill'),
-   ex('soccerCutOutdoor','45 Degree Soccer Cut Series',5,'2 cuts each side','70 sec','Drop hips, cut, accelerate out.','linearCod'),
-   ex('fortyOutdoor','40 Yard Build And Finish',3,'1 fast rep','150 sec','Drive, rise, finish through the line.','footballSpeed')
-  ]
- ];
- if(mode==='home')return warm.concat(homePlans[cycle%homePlans.length]);
- if(mode==='facility')return warm.concat(facilityPlans[cycle%facilityPlans.length]);
- if(mode==='gym')return warm.concat(gymPlans[cycle%gymPlans.length]);
- return warm.concat(outdoorPlans[cycle%outdoorPlans.length]);
+ const plans={
+  home:{
+   1:[ex('homeD1Wall','Wall Drive Triple Switches',4,'5 switches each leg','35 sec','Acceleration angles inside the house. Hips tall, punch down, violent first step.','wallDrive'),ex('homeD1Burst','Hallway Falling Start',6,'1 start for 5 yards','60 sec','Explode in limited space, then shut it down safely.','falling'),ex('homeD1Pogo','Stiff Ankle Pogo Series',4,'20 seconds','45 sec','Elastic ankles for speed. Quick contacts only.','pogo'),ex('homeD1Decel','5 Yard Burst To Stick',5,'1 burst and stick','55 sec','Fast start plus clean brakes.','sprintStick'),ex('homeD1Split','Split Stance First Step Pops',4,'5 each leg','45 sec','First step power without needing space.','pushStart'),ex('homeD1Core','Dead Bug Sprint Brace',3,'8 each side','30 sec','Core locks the hips for acceleration.','deadbug')],
+   2:[ex('homeD2Wickets','Tape Wicket Rhythm',5,'3 trips','40 sec','Floor tape or lines. Tall hips, quick contacts, no reaching.','wickets'),ex('homeD2FastFeet','Fast Feet To Burst',5,'10 seconds plus burst','55 sec','Quick feet into controlled acceleration.','footballSpeed'),ex('homeD2LineHop','Line Hop Rhythm',4,'15 seconds','40 sec','Elastic contacts. Feet stay quiet and fast.','hurdleHop'),ex('homeD2WallIso','Wall Drive Iso Holds',4,'20 seconds each leg','35 sec','Hip flexor and posture strength for sprinting.','wallDrive'),ex('homeD2Skips','A Skip In Place',4,'20 seconds','30 sec','Max velocity rhythm in small space.','youthSpeed'),ex('homeD2Reset','Low Pogo Reset',3,'20 seconds','45 sec','Finish springy, not tired.','pogo')],
+   3:[ex('homeD3Skater','Skater Bound Stick',4,'5 each side','55 sec','Lateral power and balance. Land like a DB breaking downhill.','lateralBound'),ex('homeD3LineCut','Lateral Line Hop To Stick',5,'12 hops each way','45 sec','Side to side quickness with clean stops.','hurdleHop'),ex('homeD3Mirror','Mirror Shuffle Reaction',5,'10 seconds','35 sec','React to a call. Low hips, quick feet, no crossing.','shuffleSprint'),ex('homeD3Decel','45 Degree Decel Stick',5,'2 each side','50 sec','Plant and stop with knee stacked over foot.','decel'),ex('homeD3Db','Backpedal Break In Place',4,'3 breaks each side','45 sec','Cornerback feet indoors.','dbBackpedal'),ex('homeD3Core','Side Plank Speed Brace',3,'25 seconds each side','35 sec','Lateral trunk strength for cuts.','plank')],
+   4:[ex('homeD4W','Small Space W Drill',4,'1 controlled W','70 sec','Pedal, plant, drive. Clean angles.','dbW'),ex('homeD4Icky','Tape Ladder Icky Shuffle',5,'2 trips','30 sec','Rhythm, arms, eyes up.','icky'),ex('homeD4Shuffle','Shuffle Open Hip And Burst',5,'1 each side','50 sec','Low shuffle, open, burst.','shuffleSprint'),ex('homeD4Push','Push Up Start To Burst',6,'1 start','60 sec','Pop up and attack the first step.','pushStart'),ex('homeD4Reaction','Reaction Drop Step',5,'3 each side','40 sec','Drop step fast like DB or linebacker.','dbBackpedal'),ex('homeD4Pogo','Ankle Pogo Finisher',3,'20 seconds','45 sec','Elastic lower legs.','pogo')],
+   5:[ex('homeD5Combo','Fast Feet To Shuffle To Burst',5,'1 combo rep','60 sec','Put quick feet, lateral movement, and acceleration together.','footballSpeed'),ex('homeD5Wall','Wall Drive Switch To Start',5,'5 switches plus start','55 sec','Mechanics into first step.','wallDrive'),ex('homeD5Bound','Lateral Bound To Sprint Stance',4,'5 each side','55 sec','Land and snap into acceleration.','lateralBound'),ex('homeD5Decel','Sprint Stick Reaccel',4,'1 stop and go','70 sec','Brake, own the position, go again.','sprintStick'),ex('homeD5Db','DB Break Reaction',5,'2 each side','45 sec','Footwork and ball skill body angles.','dbBackpedal'),ex('homeD5Reset','Mobility Reset',1,'6 minutes','none','Open hips, calves, ankles, hamstrings.','warm')],
+   6:[ex('homeD6Test','Best Small Space Burst',4,'1 clean burst','90 sec','Best quality rep, not tired reps.','falling'),ex('homeD6Pogo','Pogo Test Rhythm',3,'20 seconds','45 sec','Fast contacts with posture.','pogo'),ex('homeD6Skater','Skater Bound Quality',3,'4 each side','60 sec','Measure control and pop.','lateralBound'),ex('homeD6W','W Drill Quality',3,'1 controlled W','70 sec','Clean feet and angles.','dbW'),ex('homeD6Core','Plank Sprint Brace',3,'30 seconds','45 sec','Core tight and posture strong.','plank'),ex('homeD6Mobility','Recovery Mobility',1,'8 minutes','none','Recover and prep for next week.','warm')],
+   7:[ex('homeD7Mobility','Extended Mobility Flow',1,'10 minutes','none','Hips, ankles, calves, hamstrings, quads, shoulders.','warm'),ex('homeD7Wall','Easy Wall Drive Holds',3,'20 seconds each leg','35 sec','Posture reset.','wallDrive'),ex('homeD7Pogo','Easy Pogo Rhythm',3,'15 seconds','40 sec','Springy but easy.','pogo'),ex('homeD7Deadbug','Dead Bug Breathing',3,'8 each side','30 sec','Control and recovery.','deadbug'),ex('homeD7Shuffle','Easy Shuffle Movement',3,'10 seconds','35 sec','Clean movement only.','shuffleSprint'),ex('homeD7Prep','Next Week Prep Build Ups',3,'10 seconds','45 sec','Smooth, not hard.','footballSpeed')]
+  },
+  facility:{
+   1:[ex('facD1Start','10 Yard Acceleration Starts',6,'1 sprint','90 sec','First three steps win the rep.','tenYard'),ex('facD1Resist','Light Sled Or Band Starts',5,'1 sprint for 10 yards','100 sec','Light resistance. Drive the turf back.','resisted'),ex('facD1Twenty','20 Yard Acceleration Build',5,'1 sprint','110 sec','Drive, rise, finish.','tenYard'),ex('facD1Broad','Broad Jump Stick',5,'2 jumps','75 sec','Horizontal power for the 40.','broad'),ex('facD1Decel','Sprint To Stick',4,'1 sprint and stop','80 sec','Speed with brakes.','sprintStick'),ex('facD1Pogo','Pogo Series',4,'25 seconds','45 sec','Reactive ankles.','pogo')],
+   2:[ex('facD2Wickets','Cone Wicket Runs',5,'2 trips','60 sec','Max velocity posture and rhythm.','wickets'),ex('facD2Fly','Flying 10s',5,'20 yard build plus 10 yard fly','120 sec','Top speed exposure. Smooth and fast.','fly10'),ex('facD2Float','Sprint Float Sprint',4,'10 fast, 10 float, 10 fast','120 sec','Fast without tension.','sprintFloat'),ex('facD2Bounds','Single Leg Bounds',4,'6 each leg','80 sec','Horizontal force.','singleLeg'),ex('facD2Pogo','Ankle Pogo Reset',3,'20 seconds','45 sec','Quick contacts.','pogo'),ex('facD2Decel','Fly Sprint To Decel',4,'1 rep','90 sec','Shut down clean.','decel')],
+   3:[ex('facD3Mirror','Mirror Shuffle Reaction',5,'12 seconds','45 sec','React and stay low.','shuffleSprint'),ex('facD3Shuttle','5 10 5 Pro Agility',5,'1 rep','110 sec','Violent plant and go.','shuttle'),ex('facD3L','3 Cone L Drill',4,'1 rep','110 sec','Tight turns, no wasted steps.','lDrill'),ex('facD3Soccer','45 Degree Soccer Cut Series',5,'2 cuts each side','75 sec','Winger style cut and go.','linearCod'),ex('facD3Lateral','Lateral Bound To Sprint',4,'4 each side','70 sec','Side power into acceleration.','lateralBound'),ex('facD3Db','DB W Drill',4,'1 full W','85 sec','Backpedal, plant, drive.','dbW')],
+   4:[ex('facD4Icky','Icky Shuffle To Sprint',5,'2 trips plus burst','40 sec','Fast feet with purpose.','icky'),ex('facD4Db','DB Backpedal Break',5,'3 breaks each side','55 sec','Cornerback hips and feet.','dbBackpedal'),ex('facD4Shuffle','Shuffle Open Hip Run',5,'1 each side','55 sec','LB, RB, DB transition.','shuffleSprint'),ex('facD4Curve','Curved Sprint',5,'1 curve each side','75 sec','Soccer and edge speed.','footballSpeed'),ex('facD4Hurdle','Low Hurdle Hop To Sprint',4,'5 hops plus burst','75 sec','Elastic to acceleration.','hurdleHop'),ex('facD4Stick','COD Stop Reaccel',4,'1 rep','90 sec','Brake, own it, go.','sprintStick')],
+   5:[ex('facD5Forty','40 Yard Build And Finish',3,'1 fast rep','150 sec','Combine transfer. Drive, rise, finish.','footballSpeed'),ex('facD5Fly','Flying 10',4,'20 build plus 10 fly','130 sec','Top end speed.','fly10'),ex('facD5Shuttle','Timed 5 10 5',4,'1 rep','120 sec','Best clean rep.','shuttle'),ex('facD5L','Timed L Drill',3,'1 rep','120 sec','Sharp and clean.','lDrill'),ex('facD5Bound','Broad Jump Power',4,'2 jumps','90 sec','Explode forward.','broad'),ex('facD5Reaction','Reaction Cut And Go',5,'1 cut each call','55 sec','Game speed reaction.','linearCod')],
+   6:[ex('facD6Tempo','Tempo Build Ups',6,'40 yards at 70 to 80 percent','60 sec','Technique under controlled fatigue.','sprintFloat'),ex('facD6Wickets','Easy Wicket Rhythm',4,'2 trips','50 sec','Posture and rhythm.','wickets'),ex('facD6Wall','Wall Drive Holds',4,'20 sec each leg','40 sec','Posture reset.','wallDrive'),ex('facD6Balance','Single Leg Balance Bound',4,'4 each leg','65 sec','Recovery power.','singleLeg'),ex('facD6Shuffle','Controlled Shuffle Burst',4,'1 each side','50 sec','Clean cuts.','shuffleSprint'),ex('facD6Mobility','Speed Mobility Reset',1,'8 minutes','none','Open the body.','warm')],
+   7:[ex('facD7Mobility','Extended Mobility Flow',1,'10 minutes','none','Mobility and recovery day.','warm'),ex('facD7Pogo','Easy Pogo Rhythm',3,'15 seconds','40 sec','Elastic reset.','pogo'),ex('facD7Wall','Easy Wall Drive',3,'20 seconds each leg','35 sec','Posture work.','wallDrive'),ex('facD7Skip','A Skip Rhythm',3,'20 yards','45 sec','Smooth mechanics.','youthSpeed'),ex('facD7Shuffle','Easy DB Footwork',3,'1 controlled W','60 sec','Clean, not hard.','dbW'),ex('facD7Prep','Three Smooth Build Ups',3,'30 yards','60 sec','Prime for the next week.','sprintFloat')]
+  },
+  gym:{
+   1:[ex('gymD1Sled','Sled Push Or Heavy Band Drive',5,'10 to 15 yards','90 sec','Acceleration power. Drive through the floor.','resisted'),ex('gymD1Box','Box Jump Or Broad Jump',4,'3 jumps','90 sec','Explosive jump, quiet landing.','broad'),ex('gymD1Wall','Wall Drive Triple Switch',4,'5 switches each leg','40 sec','Sprint posture.','wallDrive'),ex('gymD1Med','Med Ball Slam',4,'5 reps','75 sec','Power throw.','medball'),ex('gymD1Pogo','Pogo Jump Series',4,'20 seconds','45 sec','Ankle stiffness.','pogo'),ex('gymD1Stick','Cone Burst To Stick',5,'1 rep','55 sec','Power plus brakes.','decel')],
+   2:[ex('gymD2Tread','Treadmill Build Up Or Bike Sprint Prep',4,'15 seconds fast','60 sec','Turnover prep, not conditioning.','sprintFloat'),ex('gymD2Band','Band Resisted Starts',5,'1 start','90 sec','First step power.','resisted'),ex('gymD2Box','Low Box Quick Contacts',4,'8 contacts','60 sec','Fast feet and ankle stiffness.','hurdleHop'),ex('gymD2MedChest','Med Ball Chest Pass',4,'5 reps','75 sec','Explode through the ball.','medball'),ex('gymD2Wall','Wall Drive Holds',4,'20 sec each leg','35 sec','Posture strength.','wallDrive'),ex('gymD2Pogo','Pogo Reset',3,'20 seconds','45 sec','Springy finish.','pogo')],
+   3:[ex('gymD3Skater','Skater Bound To Stick',4,'5 each side','65 sec','Lateral force.','lateralBound'),ex('gymD3Shuffle','Cone Shuffle To Stick',5,'2 each side','55 sec','Low hips and brakes.','decel'),ex('gymD3Db','DB Backpedal Break',4,'3 breaks each side','55 sec','Footwork in open gym space.','dbBackpedal'),ex('gymD3Line','Line Hop Reaction',4,'12 each way','45 sec','Quick lateral contacts.','hurdleHop'),ex('gymD3Core','Dead Bug Speed Brace',3,'8 each side','35 sec','Core for hips.','deadbug'),ex('gymD3Med','Rotational Med Ball Throw Or Slam',4,'5 each side','75 sec','Power through the trunk.','medball')],
+   4:[ex('gymD4Ladder','Ladder Or Tape Footwork',5,'2 trips','35 sec','Foot speed with arms active.','icky'),ex('gymD4Open','Shuffle Open Hip Run',5,'1 each side','55 sec','Open and go.','shuffleSprint'),ex('gymD4Band','Band March To Sprint Posture',4,'15 seconds','45 sec','Posture under resistance.','resisted'),ex('gymD4Drop','Drop Step Reaction',5,'3 each side','45 sec','DB and LB footwork.','dbBackpedal'),ex('gymD4Pogo','Low Pogo Finisher',3,'20 seconds','45 sec','Elastic feet.','pogo'),ex('gymD4Mobility','Hip And Ankle Reset',1,'6 minutes','none','Move better.','warm')],
+   5:[ex('gymD5SledContrast','Sled Push To Free Burst',4,'1 push plus 1 burst','120 sec','Contrast power. Push heavy, then move fast.','resisted'),ex('gymD5Box','Box Jump Power',4,'3 jumps','100 sec','Explosive and clean.','broad'),ex('gymD5Med','Med Ball Power Complex',4,'5 reps','75 sec','Full body power.','medball'),ex('gymD5Shuffle','Shuffle Stick Reaccel',4,'1 each side','70 sec','Brake and reaccelerate.','sprintStick'),ex('gymD5Wall','Wall Drive Switches',4,'5 each leg','40 sec','Sprint mechanics.','wallDrive'),ex('gymD5Pogo','Ankle Pogo Reset',3,'20 seconds','45 sec','Finish springy.','pogo')],
+   6:[ex('gymD6Bike','Bike Sprint Technique Prep',5,'12 seconds','60 sec','Fast turnover, low impact.','sprintFloat'),ex('gymD6Jump','Easy Broad Jump Singles',3,'2 jumps','85 sec','Keep pop without fatigue.','broad'),ex('gymD6Wall','Wall Drive Holds',3,'20 sec each leg','35 sec','Posture.','wallDrive'),ex('gymD6Core','Dead Bug Recovery Core',3,'8 each side','30 sec','Breathe and brace.','deadbug'),ex('gymD6Carry','Easy Farmer Carry',3,'20 yards','50 sec','Posture and blood flow.','farmer'),ex('gymD6Mobility','Mobility Reset',1,'8 minutes','none','Recover.','warm')],
+   7:[ex('gymD7Mobility','Extended Mobility Flow',1,'10 minutes','none','Recovery day.','warm'),ex('gymD7Wall','Easy Wall Drives',3,'15 seconds each leg','35 sec','Posture only.','wallDrive'),ex('gymD7Pogo','Easy Pogos',3,'15 seconds','40 sec','Light ankle rhythm.','pogo'),ex('gymD7Core','Dead Bug Breathing',3,'8 each side','30 sec','Core reset.','deadbug'),ex('gymD7Carry','Light Carry',3,'20 yards','50 sec','Tall posture.','farmer'),ex('gymD7Prep','Smooth Prep Build Up',3,'15 seconds','45 sec','Leave fresh.','sprintFloat')]
+  }
+ };
+ plans.outdoor=plans.facility;
+ const list=(plans[mode]||plans.outdoor)[day];
+ return warm.concat(list);
 }
 
 function strengthPlan(){
- const d=state.day, cycle=(d-1)%3, mode=state.mode;
- const homePlans=[
-  [
-   ex('homeBroad','Broad Jump To Stick',3,'3 explosive jumps','75 sec','Explode forward, land quiet, stick two seconds.','broad','done'),
-   ex('homeSplitDrive','Split Squat Power Drive',3,'6 each leg','75 sec','Drive up like the first step of a sprint.','split','reps'),
-   ex('homePushPower','Explosive Push Up',3,'6 to 8 reps','70 sec','Push the floor away fast. Clean reps only.','floorPress','reps'),
-   ex('homeSingleRdl','Single Leg RDL',3,'6 each leg','70 sec','Hamstring, glute, and balance strength for speed.','singleRdl','weight'),
-   ex('homeBackpackCarry','Backpack Or Farmer Carry',3,'25 yards','60 sec','Use what he has. Grip and trunk stay locked.','farmer','weight'),
-   ex('homeDeadbug','Dead Bug Brace',3,'8 each side','35 sec','Ribs down, core locked.','deadbug','done'),
-   ex('homePlank','Hard Style Plank',3,'30 to 40 sec','45 sec','Brace hard, no sagging.','plank','seconds')
-  ],
-  [
-   ex('homePogoPower','Pogo Jump Power Series',3,'20 seconds','45 sec','Elastic ankles and quick ground contacts.','pogo','seconds'),
-   ex('homeGobletFast','Goblet Or Backpack Squat Fast Up',3,'5 reps','80 sec','Slow down, violent up.','goblet','weight'),
-   ex('homeLungeDrive','Reverse Lunge Knee Drive',3,'6 each leg','70 sec','Control the step back, drive up strong.','split','weight'),
-   ex('homeMedballAlt','Pillow Slam Or Med Ball Slam',3,'6 reps','60 sec','Explode down and reset.','medball','done'),
-   ex('homePushTempo','Push Up Power Set',3,'max clean minus two','70 sec','Stop before ugly reps.','floorPress','reps'),
-   ex('homeSuitcase','Suitcase Carry Or Single Side Hold',3,'25 yards each side','60 sec','Anti lean trunk strength.','farmer','weight'),
-   ex('homeSidePlank','Side Plank',3,'25 seconds each side','40 sec','Obliques locked in.','plank','seconds')
-  ]
+ const d=state.day, day=((d-1)%7)+1, mode=state.mode;
+ const plans={
+  home:{
+   1:[ex('homeS1Broad','Broad Jump To Stick',3,'3 jumps','90 sec','Acceleration power at home. Explode and stick.','broad','done'),ex('homeS1Split','Split Squat Power Drive',3,'6 each leg','80 sec','Single leg force for first step.','split','reps'),ex('homeS1Push','Explosive Push Up',3,'6 to 8 reps','70 sec','Push fast and clean.','floorPress','reps'),ex('homeS1Rdl','Single Leg RDL',3,'6 each leg','75 sec','Posterior chain for speed.','singleRdl','weight'),ex('homeS1Carry','Backpack Or Farmer Carry',3,'25 yards','65 sec','Grip and trunk armor.','farmer','weight'),ex('homeS1Plank','Hard Style Plank',3,'30 to 40 sec','45 sec','Brace like contact is coming.','plank','seconds')],
+   2:[ex('homeS2Pogo','Pogo Power Series',3,'20 seconds','45 sec','Ankle stiffness for max velocity.','pogo','seconds'),ex('homeS2Goblet','Backpack Squat Fast Up',3,'5 reps','80 sec','Slow down, violent up.','goblet','weight'),ex('homeS2Med','Pillow Slam Or Med Ball Slam',3,'6 reps','60 sec','Explode down and reset.','medball','done'),ex('homeS2Push','Push Up Power Set',3,'max clean minus two','70 sec','Stop before ugly reps.','floorPress','reps'),ex('homeS2Suitcase','Suitcase Carry Or Hold',3,'25 yards each side','60 sec','Anti lean trunk strength.','farmer','weight'),ex('homeS2Dead','Dead Bug Brace',3,'8 each side','35 sec','Core locks the hips.','deadbug','done')],
+   3:[ex('homeS3Skater','Skater Bound Stick',3,'5 each side','70 sec','Lateral power for cuts.','lateralBound','done'),ex('homeS3Lunge','Reverse Lunge Knee Drive',3,'6 each leg','75 sec','Control and drive up.','split','weight'),ex('homeS3Side','Side Plank',3,'25 sec each side','40 sec','Lateral trunk for cutting.','plank','seconds'),ex('homeS3Rdl','Single Leg RDL',3,'6 each leg','75 sec','Balance and hamstrings.','singleRdl','weight'),ex('homeS3Push','Explosive Push Up',3,'6 reps','70 sec','Upper body pop.','floorPress','reps'),ex('homeS3Carry','Farmer Carry',3,'25 yards','65 sec','Posture and grip.','farmer','weight')],
+   4:[ex('homeS4Iso','Split Squat Iso Hold To Drive',3,'15 sec hold plus 3 drives','80 sec','Hold then explode.','split','seconds'),ex('homeS4Goblet','Goblet Squat Speed Reps',3,'5 reps','80 sec','Fast intent up.','goblet','weight'),ex('homeS4Dead','Dead Bug Iso',3,'30 sec','40 sec','Bracing for footwork.','deadbug','seconds'),ex('homeS4Push','Floor Press Or Push Up',3,'8 reps','70 sec','Strong lockout.','floorPress','reps'),ex('homeS4Pogo','Low Pogo Reset',3,'20 sec','45 sec','Elastic ankles.','pogo','seconds'),ex('homeS4Carry','Suitcase Carry',3,'25 yards each side','65 sec','Anti rotation.','farmer','weight')],
+   5:[ex('homeS5Complex','Squat To Jump Pattern',3,'5 reps','80 sec','Bodyweight only. Pattern into power.','goblet','done'),ex('homeS5Broad','Broad Jump Singles',3,'2 jumps','90 sec','Low volume power.','broad','done'),ex('homeS5Split','Walking Split Squat',3,'6 each leg','75 sec','Leg strength and control.','split','reps'),ex('homeS5Med','Med Ball Or Pillow Slam',3,'6 reps','60 sec','Power finish.','medball','done'),ex('homeS5Push','Push Up Power',3,'8 reps','70 sec','Clean power reps.','floorPress','reps'),ex('homeS5Plank','Plank Shoulder Tap',3,'16 taps','45 sec','Anti rotation.','plank','reps')],
+   6:[ex('homeS6Test','Broad Jump Quality Check',3,'2 jumps','100 sec','Best controlled jump.','broad','done'),ex('homeS6Push','Push Up Quality Check',3,'max clean minus two','100 sec','No ugly reps.','floorPress','reps'),ex('homeS6Plank','Plank Quality Check',3,'max clean seconds','none','Stop when form breaks.','plank','seconds'),ex('homeS6Rdl','Single Leg RDL Control',3,'5 each leg','70 sec','Symmetry check.','singleRdl','weight'),ex('homeS6Carry','Carry Challenge',3,'max clean distance','90 sec','Posture stays tall.','farmer','distance'),ex('homeS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Recovery core.','deadbug','done')],
+   7:[ex('homeS7Mobility','Mobility And Core Reset',1,'10 minutes','none','Recover and prepare.','warm','done'),ex('homeS7Pogo','Easy Pogos',3,'15 sec','40 sec','Light bounce.','pogo','seconds'),ex('homeS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Ribs down.','deadbug','done'),ex('homeS7Plank','Easy Plank',3,'30 sec','40 sec','Clean posture.','plank','seconds'),ex('homeS7Carry','Light Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('homeS7Stretch','Hip And Ankle Reset',1,'6 minutes','none','Leave better.','warm','done')]
+  }
+ };
+ plans.facility=[
+  [ex('facS1Sled','Sled Push Or Prowler Drive',4,'10 to 15 yards','95 sec','Acceleration power.','resisted','weight'),ex('facS1Broad','Broad Jump To Stick',4,'3 jumps','90 sec','Horizontal power.','broad','done'),ex('facS1Split','Rear Foot Split Squat',3,'5 each leg','95 sec','Single leg force.','split','weight'),ex('facS1Med','Med Ball Slam',4,'5 reps','75 sec','Violent power.','medball','done'),ex('facS1Carry','Heavy Farmer Carry',3,'25 yards','80 sec','Trunk and grip.','farmer','weight'),ex('facS1Core','Plank Shoulder Tap',3,'16 taps','45 sec','Anti rotation.','plank','reps')],
+  [ex('facS2Hurdle','Low Hurdle Hop To Stick',4,'5 hops','75 sec','Reactive power.','hurdleHop','done'),ex('facS2Goblet','Goblet Squat Fast Up',3,'5 reps','90 sec','Fast intent.','goblet','weight'),ex('facS2MedChest','Med Ball Chest Pass',4,'5 reps','75 sec','Upper body power.','medball','done'),ex('facS2Rdl','Single Leg RDL',3,'6 each leg','80 sec','Hamstrings.','singleRdl','weight'),ex('facS2Suitcase','Suitcase Carry',3,'25 yards each side','70 sec','Anti lean.','farmer','weight'),ex('facS2Dead','Dead Bug Brace',3,'8 each side','35 sec','Core lock.','deadbug','done')],
+  [ex('facS3Lateral','Lateral Bound Stick',4,'5 each side','75 sec','Lateral power.','lateralBound','done'),ex('facS3Split','Lateral Lunge Or Split Squat',3,'6 each leg','85 sec','Cut strength.','split','weight'),ex('facS3MedRot','Rotational Med Ball Throw Or Slam',4,'5 each side','75 sec','Trunk power.','medball','done'),ex('facS3Push','Explosive Push Up',3,'6 to 8 reps','70 sec','Contact power.','floorPress','reps'),ex('facS3Rdl','Single Leg RDL',3,'6 each leg','80 sec','Balance.','singleRdl','weight'),ex('facS3Side','Side Plank',3,'25 sec each side','40 sec','Lateral core.','plank','seconds')],
+  [ex('facS4Iso','Split Squat Iso To Drive',3,'15 sec plus 3 drives','85 sec','Tendon and power.','split','seconds'),ex('facS4Pogo','Pogo Power Series',4,'20 sec','45 sec','Footwork stiffness.','pogo','seconds'),ex('facS4Floor','Floor Press Power',3,'6 reps','85 sec','Fast press.','floorPress','weight'),ex('facS4Med','Med Ball Slam',4,'5 reps','75 sec','Violent reset.','medball','done'),ex('facS4Carry','Farmer Carry',3,'30 yards','75 sec','Grip and posture.','farmer','weight'),ex('facS4Dead','Dead Bug Iso',3,'30 sec','40 sec','Brace.','deadbug','seconds')],
+  [ex('facS5Contrast','Sled Push To Free Jump',4,'1 push plus 2 jumps','120 sec','Contrast power.','resisted','done'),ex('facS5Broad','Broad Jump Power',4,'2 jumps','90 sec','Explode.','broad','done'),ex('facS5Goblet','Goblet Squat Speed Reps',3,'5 reps','90 sec','Move it fast.','goblet','weight'),ex('facS5Push','Explosive Push Up',3,'8 reps','70 sec','Pop.','floorPress','reps'),ex('facS5Carry','Suitcase Carry',3,'25 each side','70 sec','Trunk.','farmer','weight'),ex('facS5Core','Hard Style Plank',3,'35 sec','45 sec','Brace hard.','plank','seconds')],
+  [ex('facS6Test','Broad Jump Test',3,'2 jumps','120 sec','Best controlled jump.','broad','done'),ex('facS6Sled','Sled Push Quality',3,'10 yards','100 sec','Clean power.','resisted','weight'),ex('facS6Push','Push Up Test',3,'max clean minus two','100 sec','Quality reps.','floorPress','reps'),ex('facS6Carry','Carry Challenge',3,'max clean distance','90 sec','Posture.','farmer','distance'),ex('facS6Rdl','Single Leg RDL Control',3,'5 each leg','75 sec','Symmetry.','singleRdl','weight'),ex('facS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Core.','deadbug','done')],
+  [ex('facS7Mobility','Recovery Mobility',1,'10 minutes','none','Recover.','warm','done'),ex('facS7Pogo','Easy Pogo',3,'15 sec','40 sec','Elastic reset.','pogo','seconds'),ex('facS7Wall','Wall Drive Holds',3,'20 sec each','35 sec','Posture.','wallDrive','seconds'),ex('facS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Core reset.','deadbug','done'),ex('facS7Carry','Light Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('facS7Stretch','Hip Reset',1,'6 minutes','none','Prep.','warm','done')]
  ];
- const facilityPlans=[
-  [
-   ex('facSledPush','Sled Push Or Prowler Drive',4,'10 to 15 yards','90 sec','Track and football power. Drive the floor away.','resisted','weight'),
-   ex('facMedballSlam','Med Ball Slam Power',4,'5 reps','75 sec','Violent intent, full reset.','medball','done'),
-   ex('facBroad','Broad Jump To Stick',4,'3 jumps','90 sec','Explode and control the landing.','broad','done'),
-   ex('facSplit','Rear Foot Split Squat',3,'5 each leg','90 sec','Single leg force for sprinting and cutting.','split','weight'),
-   ex('facRdl','Single Leg RDL',3,'6 each leg','75 sec','Posterior chain strength and balance.','singleRdl','weight'),
-   ex('facCarry','Heavy Farmer Carry',3,'25 yards','75 sec','Grip, trunk, and contact balance.','farmer','weight'),
-   ex('facPlankTap','Plank Shoulder Tap',3,'16 taps','45 sec','Anti rotation for cuts and contact.','plank','reps')
-  ],
-  [
-   ex('facHurdlePower','Low Hurdle Hop To Stick',4,'5 hops','75 sec','Reactive power with clean landings.','hurdleHop','done'),
-   ex('facGobletFast','Goblet Squat Fast Up',3,'5 reps','90 sec','Controlled down, violent up.','goblet','weight'),
-   ex('facMedballChest','Med Ball Chest Pass Or Slam',4,'5 reps','75 sec','Explode through the ball.','medball','done'),
-   ex('facSplitIso','Split Squat Iso Hold To Drive',3,'15 sec hold plus 3 drives each leg','85 sec','Hold strong, then fire out.','split','seconds'),
-   ex('facPush','Explosive Push Up Or Floor Press',3,'6 to 8 reps','80 sec','Upper body power for contact.','floorPress','reps'),
-   ex('facSuitcase','Suitcase Carry',3,'25 yards each side','70 sec','Anti lean trunk strength.','farmer','weight'),
-   ex('facDeadbug','Dead Bug Brace',3,'8 each side','35 sec','Core stays locked.','deadbug','done')
-  ]
+ plans.outdoor=plans.facility;
+ plans.gym=[
+  [ex('gymS1Trap','Heavy Goblet Squat Or Trap Bar Pattern',4,'4 to 6 reps','120 sec','Heavy but fast.','goblet','weight'),ex('gymS1Box','Box Jump Or Broad Jump',4,'3 jumps','100 sec','Explosive landing.','broad','done'),ex('gymS1Rdl','DB RDL Or Single Leg RDL',3,'6 reps','90 sec','Hamstrings and glutes.','singleRdl','weight'),ex('gymS1Split','DB Split Squat Power Drive',3,'5 each leg','90 sec','Single leg force.','split','weight'),ex('gymS1Med','Med Ball Slam Or Chest Pass',4,'5 reps','75 sec','Power throw.','medball','done'),ex('gymS1Carry','Heavy Farmer Carry',3,'20 to 30 yards','85 sec','Grip and trunk.','farmer','weight')],
+  [ex('gymS2Speed','Goblet Squat Speed Reps',4,'5 reps','95 sec','Explosive up.','goblet','weight'),ex('gymS2Press','DB Floor Press Or Explosive Push Up',3,'6 to 8 reps','85 sec','Fast press.','floorPress','weight'),ex('gymS2Lunge','Reverse Lunge To Knee Drive',3,'6 each leg','80 sec','Drive up.','split','weight'),ex('gymS2Sled','Sled Push Or Heavy Carry',4,'10 to 15 yards','90 sec','Power.','farmer','weight'),ex('gymS2Rdl','Single Leg RDL',3,'6 each leg','75 sec','Balance.','singleRdl','weight'),ex('gymS2Core','Hard Style Plank',3,'35 sec','45 sec','Brace hard.','plank','seconds')],
+  [ex('gymS3Skater','Skater Bound Stick',4,'5 each side','75 sec','Lateral force.','lateralBound','done'),ex('gymS3Split','Lateral Lunge Or Split Squat',3,'6 each leg','85 sec','Cut power.','split','weight'),ex('gymS3Rot','Rotational Med Ball Slam',4,'5 each side','75 sec','Trunk power.','medball','done'),ex('gymS3Carry','Suitcase Carry',3,'25 yards each side','70 sec','Anti lean.','farmer','weight'),ex('gymS3Push','Explosive Push Up',3,'6 to 8','70 sec','Contact pop.','floorPress','reps'),ex('gymS3Side','Side Plank',3,'25 each side','40 sec','Lateral core.','plank','seconds')],
+  [ex('gymS4Iso','Split Squat Iso To Drive',3,'15 sec plus 3 drives','85 sec','Hold then explode.','split','seconds'),ex('gymS4Box','Low Box Quick Contacts',4,'8 contacts','60 sec','Foot stiffness.','hurdleHop','done'),ex('gymS4Press','Floor Press Power',3,'6 reps','85 sec','Fast lockout.','floorPress','weight'),ex('gymS4Rdl','DB RDL',3,'6 reps','90 sec','Posterior chain.','singleRdl','weight'),ex('gymS4Med','Med Ball Slam',4,'5 reps','75 sec','Violent reset.','medball','done'),ex('gymS4Dead','Dead Bug Iso',3,'30 sec','40 sec','Brace.','deadbug','seconds')],
+  [ex('gymS5Complex','Sled Push To Box Jump',4,'1 push plus 2 jumps','120 sec','Contrast power.','resisted','done'),ex('gymS5Squat','Goblet Squat Fast Up',3,'5 reps','95 sec','Speed strength.','goblet','weight'),ex('gymS5Push','Explosive Push Up Or DB Press',3,'8 reps','75 sec','Power.','floorPress','weight'),ex('gymS5Carry','Heavy Farmer Carry',3,'25 yards','85 sec','Armor.','farmer','weight'),ex('gymS5Rdl','Single Leg RDL',3,'6 each leg','80 sec','Control.','singleRdl','weight'),ex('gymS5Plank','Plank Shoulder Tap',3,'16 taps','45 sec','Anti rotation.','plank','reps')],
+  [ex('gymS6Test','Box Or Broad Jump Test',3,'2 jumps','120 sec','Best controlled jump.','broad','done'),ex('gymS6Squat','Goblet Strength Quality',3,'max clean reps at safe load','120 sec','No grinders.','goblet','reps'),ex('gymS6Push','Push Up Or Press Test',3,'max clean minus two','120 sec','Quality reps.','floorPress','reps'),ex('gymS6Carry','Carry Challenge',3,'max clean distance','90 sec','Posture.','farmer','distance'),ex('gymS6Core','Plank Test',3,'max clean seconds','none','Stop when form breaks.','plank','seconds'),ex('gymS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Core reset.','deadbug','done')],
+  [ex('gymS7Mobility','Mobility And Tissue Reset',1,'10 minutes','none','Recover.','warm','done'),ex('gymS7EasyJump','Easy Jump Singles',3,'2 jumps','85 sec','Light pop.','broad','done'),ex('gymS7Wall','Wall Drive Holds',3,'20 sec each','35 sec','Posture.','wallDrive','seconds'),ex('gymS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Core.','deadbug','done'),ex('gymS7Carry','Light Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('gymS7Stretch','Hip And Ankle Reset',1,'6 minutes','none','Prep.','warm','done')]
  ];
- const gymPlans=[
-  [
-   ex('gymTrapAlt','Heavy Goblet Squat Or Trap Bar Pattern',4,'4 to 6 reps','120 sec','Heavy but fast. No grinder reps. Explosive intent every rep.','goblet','weight'),
-   ex('gymBoxJump','Box Jump Or Broad Jump',4,'3 jumps','100 sec','Jump high or far, land quiet, reset fully.','broad','done'),
-   ex('gymRdl','DB RDL Or Single Leg RDL',3,'6 reps','90 sec','Build hamstrings and glutes for sprint power.','singleRdl','weight'),
-   ex('gymSplit','DB Split Squat Power Drive',3,'5 each leg','90 sec','Single leg force. Drive out of the bottom.','split','weight'),
-   ex('gymMedball','Med Ball Slam Or Chest Pass',4,'5 reps','75 sec','Power throw, full reset.','medball','done'),
-   ex('gymCarry','Heavy Farmer Carry',3,'20 to 30 yards','85 sec','Grip and trunk like armor.','farmer','weight'),
-   ex('gymCore','Hard Style Plank',3,'30 to 40 seconds','45 sec','Brace like contact is coming.','plank','seconds')
-  ],
-  [
-   ex('gymGobletSpeed','Goblet Squat Speed Reps',4,'5 reps','95 sec','Controlled down, explode up fast.','goblet','weight'),
-   ex('gymPushPower','DB Floor Press Or Explosive Push Up',3,'6 to 8 reps','85 sec','Fast press, clean control.','floorPress','weight'),
-   ex('gymLungeDrive','Reverse Lunge To Knee Drive',3,'6 each leg','80 sec','Own the ground then drive up.','split','weight'),
-   ex('gymSledAlt','Sled Push Or Heavy Carry',4,'10 to 15 yards','90 sec','If no sled, go heavy farmer carry.','farmer','weight'),
-   ex('gymSingleRdl','Single Leg RDL',3,'6 each leg','75 sec','Balance, hamstrings, glutes.','singleRdl','weight'),
-   ex('gymDeadbug','Dead Bug Iso',3,'30 seconds','40 sec','Bracing for sprint posture.','deadbug','seconds'),
-   ex('gymSidePlank','Side Plank',3,'25 seconds each side','40 sec','Lateral trunk strength for cuts.','plank','seconds')
-  ]
- ];
- const outdoorPlans=[
-  [
-   ex('fieldBroad','Broad Jump To Stick',4,'3 jumps','90 sec','Field power. Explode and own the landing.','broad','done'),
-   ex('fieldBound','Single Leg Bounds',4,'5 each leg','90 sec','Horizontal force for stride power.','singleLeg','done'),
-   ex('fieldSplit','Walking Split Squat',3,'6 each leg','75 sec','Single leg strength and knee control.','split','reps'),
-   ex('fieldMedball','Med Ball Slam Or Throw',4,'5 reps','75 sec','Violent intent, full reset.','medball','done'),
-   ex('fieldCarry','Farmer Carry',3,'30 yards','70 sec','Grip, posture, trunk stiffness.','farmer','weight'),
-   ex('fieldPush','Explosive Push Up',3,'6 to 8 reps','70 sec','Upper body pop for contact and sprint arms.','floorPress','reps'),
-   ex('fieldCore','Plank Shoulder Tap',3,'16 taps','45 sec','Hips still, core locked.','plank','reps')
-  ],
-  [
-   ex('fieldPogo','Pogo Jump Series',4,'25 seconds','45 sec','Reactive lower leg stiffness.','pogo','seconds'),
-   ex('fieldLateralBound','Lateral Bound Stick',4,'5 each side','75 sec','Lateral power for cuts.','lateralBound','done'),
-   ex('fieldGoblet','Goblet Squat Fast Up',3,'5 reps','90 sec','If load is available, move it fast.','goblet','weight'),
-   ex('fieldRdl','Single Leg RDL',3,'6 each leg','75 sec','Posterior chain and balance.','singleRdl','weight'),
-   ex('fieldFarmer','Suitcase Carry',3,'25 yards each side','70 sec','Anti lean core strength.','farmer','weight'),
-   ex('fieldPushPower','Push Up Power Set',3,'max clean minus two','70 sec','Stop before ugly reps.','floorPress','reps'),
-   ex('fieldDeadbug','Dead Bug Reset',3,'8 each side','35 sec','Core control after power work.','deadbug','done')
-  ]
- ];
- if(mode==='home')return homePlans[cycle%homePlans.length];
- if(mode==='facility')return facilityPlans[cycle%facilityPlans.length];
- if(mode==='gym')return gymPlans[cycle%gymPlans.length];
- return outdoorPlans[cycle%outdoorPlans.length];
+ return (plans[mode]||plans.outdoor)[day-1];
 }
 
 function touchPlan(){
@@ -698,14 +631,14 @@ function renderHome(){
  <div class="inner"><h3>Earn Day ${state.day+1}</h3>${completionHTML()}</div>`;
 }
 function renderMorning(){
- document.getElementById('screen_morning').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Elite Speed, Agility and Plyos</h2></div><span class="badge goldTxt">${modeLabel()}</span></div>
- <p class="small">This is the first workout. Built to chase elite football acceleration, max velocity, lateral quickness, soccer style change of direction, and real 40 yard dash transfer. ${modeNotice()} ${levelNotice()} No time, rep, or completed boxes during speed work. He trains straight through, rests like an athlete, then taps Save Morning Work once at the end.</p>
+ document.getElementById('screen_morning').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Elite Speed, Agility and Plyos</h2><div class="small">${dayTheme(state.day)}</div></div><span class="badge goldTxt">${modeLabel()}</span></div>
+ <p class="small">This is the first workout. The coach cycle changes every day: acceleration, max velocity, lateral quickness, footwork, game speed blend, testing/recovery power, then reset. It progresses every week. ${modeNotice()} ${levelNotice()} No time, rep, or completed boxes during speed work. He trains straight through, rests like an athlete, then taps Save Morning Work once at the end.</p>
  ${morningPlan().map((e,i)=>renderExercise(e,i,'morning')).join('')}
  <button class="green full" onclick="saveSection('Morning work')">Save Morning Work</button>`;
 }
 function renderStrength(){
  document.getElementById('screen_strength').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout • ${modeLabel()}</div><h2>Explosive Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
- <p class="small">This is the second workout. Track and football power work based on the selected environment: explosive strength, first step force, trunk stiffness, single leg power, posterior chain, grip, and contact balance. ${levelNotice()} Log reps and weight for each set. Bodyweight work should use his body weight.</p>
+ <p class="small">This is the second workout. It changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set. Bodyweight work should use his body weight.</p>
  ${strengthPlan().map((e,i)=>renderExercise(e,i,'strength')).join('')}
  <button class="green full" onclick="saveSection('Strength work')">Save Strength Work</button>`;
 }
@@ -861,7 +794,7 @@ function recordCard(d,l){
 }
 function renderSettings(){
  const colors=['#facc15','#22c55e','#38bdf8','#3b82f6','#a78bfa','#8b5cf6','#fb7185','#ef4444','#f97316','#14b8a6','#06b6d4','#84cc16','#eab308','#ffffff','#0ea5e9','#d946ef'];
- document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">He can change the vibe, mode, and level. He cannot skip ahead anymore. The next day is earned.</p>
+ document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">He can change the vibe, training environment, and athlete tier. The next day is still earned, but the coach cycle changes daily and progresses weekly.</p>
  <div class="inner"><h3>App Color</h3><p class="small">This changes the full background, cards, glow, and contrast, not just a few letters.</p><div class="row">${colors.map(c=>`<button class="colorDot" style="background:${c}" onclick="setColor('${c}')" aria-label="Color"></button>`).join('')}</div><div class="grid" style="margin-top:10px"><input id="customColor" type="color" value="${state.accent||'#facc15'}"><button class="gold" onclick="setColor(document.getElementById('customColor').value)">Save Color</button></div></div>
  <div class="inner"><h3>Training Environment</h3><p class="small">Pick where he is actually training. The speed work and strength work change based on this.</p><div class="grid">
  <button class="${state.mode==='outdoor'?'active':''}" onclick="state.mode='outdoor';save();render()">Outdoor Field</button>
@@ -869,8 +802,16 @@ function renderSettings(){
  <button class="${state.mode==='facility'?'active':''}" onclick="state.mode='facility';save();render()">Indoor Facility</button>
  <button class="${state.mode==='gym'?'active':''}" onclick="state.mode='gym';save();render()">Gym</button>
  </div><p class="small">${modeNotice()}</p></div>
- <div class="inner"><h3>Difficulty</h3><div class="row"><button class="${state.level==='foundation'?'active':''}" onclick="state.level='foundation';save();render()">Foundation</button><button class="${state.level==='varsity'?'active':''}" onclick="state.level='varsity';save();render()">Varsity</button><button class="${state.level==='savage'?'active':''}" onclick="state.level='savage';save();render()">Savage</button></div><p class="small">${levelData[state.level].extra}</p></div>
- <div class="inner"><h3>Athlete Weight</h3><p class="small">Nutrition and bodyweight logs use this first. Current saved weight: ${state.profileWeight||'not saved yet'} lb.</p><div class="grid"><input id="settingsWeightInput" type="number" min="60" max="350" value="${state.profileWeight||''}" placeholder="Enter weight"><button class="gold" onclick="saveSettingsWeight()">Save Weight</button></div></div><div class="inner"><h3>Progress Lock</h3><p class="small">Current day is Day ${state.day}. Max unlocked is Day ${state.maxUnlocked}. Complete all required logs and Dad Talk to unlock the next day.</p></div>`;
+ <div class="inner"><h3>Difficulty</h3><div class="row"><button class="${state.level==='foundation'?'active':''}" onclick="state.level='foundation';save();render()">8th Grade 5 Star</button><button class="${state.level==='varsity'?'active':''}" onclick="state.level='varsity';save();render()">High School 5 Star</button><button class="${state.level==='savage'?'active':''}" onclick="state.level='savage';save();render()">Collegiate 5 Star</button></div><p class="small">${levelData[state.level].extra}</p></div>
+ <div class="inner"><h3>Athlete Weight</h3><p class="small">Nutrition and bodyweight logs use this first. Current saved weight: ${state.profileWeight||'not saved yet'} lb.</p><div class="grid"><input id="settingsWeightInput" type="number" min="60" max="350" value="${state.profileWeight||''}" placeholder="Enter weight"><button class="gold" onclick="saveSettingsWeight()">Save Weight</button></div></div><div class="inner"><h3>Weekly Coach Cycle</h3><div class="completionList">
+ <div class="checkItem"><span>Day 1</span><span class="badge goldTxt">Acceleration Power</span></div>
+ <div class="checkItem"><span>Day 2</span><span class="badge goldTxt">Max Velocity Mechanics</span></div>
+ <div class="checkItem"><span>Day 3</span><span class="badge goldTxt">Lateral Quickness And COD</span></div>
+ <div class="checkItem"><span>Day 4</span><span class="badge goldTxt">Footwork And Reaction</span></div>
+ <div class="checkItem"><span>Day 5</span><span class="badge goldTxt">Game Speed Blend</span></div>
+ <div class="checkItem"><span>Day 6</span><span class="badge goldTxt">Test, Contrast, Recovery Power</span></div>
+ <div class="checkItem"><span>Day 7</span><span class="badge goldTxt">Mobility, Elastic Reset, Prep</span></div>
+ </div><p class="small">Every new week keeps this structure but progresses volume, intensity, and the coach expectation.</p></div><div class="inner"><h3>Progress Lock</h3><p class="small">Current day is Day ${state.day}. Max unlocked is Day ${state.maxUnlocked}. Complete all required logs and Dad Talk to unlock the next day.</p></div>`;
 }
 function saveSettingsWeight(){const input=document.getElementById('settingsWeightInput');const weight=Number(input&&input.value);if(!weight||weight<60||weight>350){alert('Enter a realistic athlete weight first.');return;}state.profileWeight=String(weight);logFor().weight=String(weight);save();render();}
 function setColor(c){state.accent=c;save();render();}
