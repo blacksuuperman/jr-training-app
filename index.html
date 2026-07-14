@@ -187,7 +187,16 @@ handFight:'https://www.youtube.com/shorts/NSx86zEi1Vg',
 oneHandTwoHands:'https://www.youtube.com/shorts/AjfUTo2-Kow',
 tossUpsGrip:'https://www.youtube.com/shorts/LswuOclvDNg',
 circleDrops:'https://www.youtube.com/shorts/D_PEe6TDiBA',
-deHands:'https://www.youtube.com/shorts/NSx86zEi1Vg'
+deHands:'https://www.youtube.com/shorts/NSx86zEi1Vg',
+resisted:'https://www.youtube.com/watch?v=MzcMXlsulSg',
+fly10:'https://www.youtube.com/watch?v=NrBQ2yWxp1s',
+wickets:'https://www.youtube.com/watch?v=Tc-UG_CKStQ',
+decel:'https://www.youtube.com/watch?v=gFB9mc7QdjQ',
+sprintFloat:'https://www.youtube.com/watch?v=qF88X_wLGlg',
+linearCod:'https://www.youtube.com/watch?v=hkirYNF-flU',
+sprintStick:'https://www.youtube.com/watch?v=sdgPBkKNO4Y',
+youthSpeed:'https://www.youtube.com/watch?v=ZpoTvgoUZSI',
+footballSpeed:'https://www.youtube.com/watch?v=_JVAshIAVnw'
 };
 
 const YT_HOST='https://www.youtube.com/embed/';
@@ -325,33 +334,116 @@ function touch(id,name,target,cue,vidKey,metric='count'){
 
 
 function modeNotice(){
- return state.mode==='indoor'?'Indoor mode swaps long sprints for wall drives, tape ladder work, hallway starts, low impact hops, and footwork that fits small spaces.':'Outdoor mode uses more true acceleration, shuttle work, field cutting, and full space sprint patterns.';
+ return state.mode==='indoor'?'Indoor elite mode swaps field sprints for wall drives, tape wickets, line hops, hallway bursts, decel sticks, DB breaks, and reaction footwork that fits small spaces. It is still hard, just safer for limited room.':'Outdoor elite mode uses true acceleration, flying sprints, resisted starts, deceleration, shuttle cuts, soccer style reaction change of direction, and football 40 yard transfer.';
 }
 function levelNotice(){
  const name=levelData[state.level].name;
- if(state.level==='foundation')return name+' keeps the work technical and controlled.';
- if(state.level==='savage')return name+' adds volume and finishers, but form still rules everything.';
- return name+' is the normal high school style challenge.';
+ if(state.level==='foundation')return name+' still works harder now, but keeps mechanics clean and protects the joints.';
+ if(state.level==='savage')return name+' is the elite chase day. More sprint exposure, more rest, more intent, no garbage reps.';
+ return name+' is now the standard elite football speed challenge.';
 }
 function morningPlan(){
  const d=state.day, cycle=(d-1)%7, indoor=state.mode==='indoor';
- const warm=[ex('warm','Dynamic Warm Up',1,'6 minutes','none','High knees, butt kicks, skips, leg swings, hip openers, and ankle pops. Wake the body up before speed.', 'warm')];
+ const warm=[
+   ex('warm','Elite Dynamic Warm Up',1,'8 minutes','none','High knees, butt kicks, A skips, leg swings, hip openers, ankle pops, hamstring sweeps, and two smooth build ups. Warm up like a sprinter, not like recess.','warm'),
+   ex('sprintMechanics','A March To A Skip Mechanics',3,'15 yards or 20 seconds','30 sec','Tall posture, toe up, knee up, strike down under the hips. This is Bolt style posture work before speed.','youthSpeed')
+ ];
  if(indoor){
    const indoorPlans=[
-    [ex('wallDrive','Wall Drive Switches',3,'12 seconds each leg','35 sec','Knee up, toe up, punch the ground. Sprint posture without needing space.','wallDrive'),ex('pogo','Pogo Jumps',3,'20 seconds','45 sec','Quick off the floor. Ankles like springs. Stop if shin pain shows up.','pogo'),ex('pushStart','Push Up Start To 5 Yards',5,'1 start','60 sec','Explode from the floor, first step violent but controlled.','pushStart'),ex('hurdleHop','Line Hops Forward And Back',3,'15 seconds','40 sec','Use a floor line. Quiet feet and quick contacts.','hurdleHop'),ex('shuffleSprint','Hallway Shuffle To Burst',4,'1 each side','45 sec','Low hips, open the hip, burst safely.','shuffleSprint')],
-    [ex('icky','Tape Ladder Icky Shuffle',4,'2 trips','30 sec','Use tape or tile lines. Rhythm first, then speed.','icky'),ex('shuffleSprint','Side Shuffle To Sprint',5,'1 each side','45 sec','Low hips, open and go.','shuffleSprint'),ex('dbBack','DB Backpedal Break',4,'3 breaks each side','45 sec','Smooth pedal, snap downhill on the break.','dbBackpedal'),ex('wallDrive','Wall Drive Holds',3,'20 seconds each leg','35 sec','Posture strength and hip flexor control.','wallDrive'),ex('pogo','Low Pogo Reset',3,'15 seconds','40 sec','Stay springy without getting sloppy.','pogo')],
-    [ex('singleLeg','Single Leg Bound Stick',3,'5 each leg','60 sec','Cover ground and stick the landing. No sloppy knees.','singleLeg'),ex('lateralBound','Lateral Skater Bound',4,'5 each side','55 sec','Push side to side and land balanced like a corner breaking downhill.','lateralBound'),ex('hurdleHop','Line Hurdle Hops',3,'12 hops','45 sec','Use a line if no hurdle. Fast contacts.','hurdleHop'),ex('pushStart','Kneeling Start To Burst',5,'1 start','55 sec','Pop the hips and go. Safe hallway distance only.','pushStart'),ex('icky','Fast Feet Tape Ladder',4,'2 trips','30 sec','Clean feet, eyes up, arms working.','icky')]
+    [
+      ex('wallDriveElite','Wall Drive Switches',4,'15 seconds each leg','35 sec','Knee up, toe up, ribs down. Punch the floor like the first ten yards of a 40.','wallDrive'),
+      ex('tapeWickets','Tape Wicket Run Rhythm',4,'3 trips','40 sec','Use tape marks or floor lines. Tall sprint posture, quick contacts, no reaching.','wickets'),
+      ex('hallwayFalling','Falling Start To 5 Yard Burst',6,'1 start','60 sec','Fall as one piece, catch the ground, drive hard for five safe yards.','falling'),
+      ex('linePogo','Stiff Ankle Pogo Series',4,'20 seconds','45 sec','Fast contacts. Ankles like springs. Stop if shin pain climbs.','pogo'),
+      ex('sprintStickIndoor','5 Yard Sprint To Stick',5,'1 burst and stick','55 sec','Burst, drop hips, stop in two steps. Elite quickness needs brakes too.','sprintStick'),
+      ex('dbBreakIndoor','Backpedal Break And Catch Angle',4,'3 breaks each side','45 sec','Cornerback feet. Smooth pedal, violent plant, drive downhill.','dbBackpedal'),
+      ex('reactionShuffleIndoor','Mirror Shuffle Reaction',5,'10 seconds','35 sec','React to a call or phone timer. Short, violent, low hips, no crossing feet.','shuffleSprint')
+    ],
+    [
+      ex('wallDriveHolds','Wall Drive Iso Holds',4,'20 seconds each leg','35 sec','Build hip flexor posture and sprint stiffness without needing a track.','wallDrive'),
+      ex('inOutTape','Tape Ladder In Out Acceleration Feet',5,'2 trips','30 sec','Fast feet, arms active, eyes up. This is coordination, not a lazy ladder dance.','icky'),
+      ex('kneelingBurst','Kneeling Start To Burst',6,'1 start','55 sec','Pop hips, attack the first step, finish under control.','pushStart'),
+      ex('lateralLineHop','Lateral Line Hop To Stick',4,'12 hops each way','45 sec','Side to side contacts, then freeze balanced. Soccer and DB ankle stiffness.','hurdleHop'),
+      ex('decelAngleIndoor','45 Degree Decel Stick',5,'2 each side','50 sec','Shuffle or burst to a 45 degree angle, stick low, knee stacked over foot.','decel'),
+      ex('wDrillIndoor','Indoor W Drill Backpedal Break',4,'1 controlled W','70 sec','Pedal, plant, drive. Keep chest over knees and feet under hips.','dbW'),
+      ex('fastFeetFinish','Fast Feet To Five Yard Finish',4,'10 sec feet plus burst','55 sec','Ten seconds of violent feet, then burst. Finish like the first step matters.','footballSpeed')
+    ],
+    [
+      ex('wallDriveSwitch','Wall Drive Triple Switch',4,'5 switches each leg','40 sec','Switch fast without losing posture. Hips high, foot under body.','wallDrive'),
+      ex('indoorFly','Hallway Build Up To Controlled Fly',5,'1 build and 1 fast zone','70 sec','Use safe space. Build smooth, hit fast turnover for only a few steps.','fly10'),
+      ex('singleLegStickIndoor','Single Leg Bound Stick',4,'5 each leg','60 sec','Cover ground and freeze. No knee collapse.','singleLeg'),
+      ex('skaterStickIndoor','Skater Bound To Sprint Stance',4,'5 each side','55 sec','Push laterally, land balanced, snap into a sprint stance.','lateralBound'),
+      ex('pushStartIndoor','Push Up Start To Burst',6,'1 start','60 sec','Pop up clean and attack the first step.','pushStart'),
+      ex('reactionCODIndoor','Soccer Style Reaction Cut',5,'1 cut each call','50 sec','React to left, right, back, or forward. Plant and go without drifting.','linearCod'),
+      ex('ankleResetIndoor','Low Pogo Reset',3,'20 seconds','45 sec','Finish springy, not cooked. Quality contacts only.','pogo')
+    ]
    ];
    return warm.concat(indoorPlans[cycle%3]);
  }
  const outdoorPlans=[
-  [ex('wallDrive','Wall Drive Sprint Posture',3,'12 seconds each leg','35 sec','Knee up, toe up, core tight. This sets the sprint angles.','wallDrive'),ex('falling','Falling Starts',6,'1 sprint for 10 yards','60 sec','Fall as one piece, catch the ground, drive out low.','falling'),ex('tenYard','10 Yard Explosive Starts',6,'1 timed sprint','75 sec','Full rest. First three steps win the rep.','tenYard'),ex('pogo','Pogo Jump Series',3,'20 seconds','45 sec','Elastic ankles, tall body, quick contact.','pogo'),ex('broad','Broad Jump Stick',4,'2 jumps','70 sec','Explode forward and land quiet.','broad')],
-  [ex('icky','Icky Shuffle Ladder',4,'2 trips','30 sec','Fast feet, clean rhythm, arms active.','icky'),ex('shuttle','5 10 5 Shuttle Technique',5,'1 rep','90 sec','Touch lines, low hips, explode out of cuts.','shuttle'),ex('lDrill','3 Cone L Drill',4,'1 rep','90 sec','Tight turns, eyes lead the body.','lDrill'),ex('shuffleSprint','Shuffle To Sprint Finish',5,'1 each side','50 sec','Win the transition from lateral to vertical.','shuffleSprint'),ex('lateralBound','Lateral Bound Stick',3,'4 each side','55 sec','Cut power and knee control.','lateralBound')],
-  [ex('pogo','Pogo Jumps',3,'25 seconds','45 sec','Bounce tall and quick. Ground contact must be fast.','pogo'),ex('broad','Broad Jump Stick Landing',5,'3 jumps','65 sec','Jump far, land quiet, stick for two seconds.','broad'),ex('singleLeg','Single Leg Bounds',4,'5 each leg','75 sec','Explode horizontal. Land under control.','singleLeg'),ex('hurdleHop','Low Hurdle Hops',4,'8 hops','60 sec','Snap off the ground, do not collapse.','hurdleHop'),ex('pushStart','Push Up Starts',5,'1 start for 10 yards','60 sec','Pop up and attack the first step.','pushStart')],
-  [ex('pushStart','Push Up Starts',6,'1 start for 10 yards','60 sec','Pop up and go. No wasted steps.','pushStart'),ex('shuffleSprint','Lateral Shuffle To Sprint',5,'1 each side','50 sec','Shuffle low, open hip, finish fast.','shuffleSprint'),ex('dbW','DB W Drill Backpedal Break',4,'1 full W','75 sec','For cornerback feet. Pedal, plant, drive.','dbW'),ex('falling','Falling Start Reaction',5,'1 sprint','65 sec','React and drive with violent first steps.','falling'),ex('lDrill','Short L Drill',3,'1 rep','80 sec','Low hips and smooth turn.','lDrill')],
-  [ex('tenYard','10 Yard Start Test Reps',5,'1 timed sprint','90 sec','Record best clean rep. Quality over volume.','tenYard'),ex('shuttle','5 10 5 Pro Agility',4,'1 timed rep','100 sec','Win the plant foot and shoulder angle.','shuttle'),ex('lateralBound','Lateral Bounds',4,'5 each side','60 sec','Cornerback and RB cut power. Stick each landing.','lateralBound'),ex('broad','Broad Jump Power',4,'2 jumps','75 sec','Explode without sloppy landings.','broad'),ex('wallDrive','Wall Drive Finisher',3,'15 seconds each','40 sec','Reset sprint posture after fatigue.','wallDrive')],
-  [ex('pogo','Low Impact Pogo Series',3,'18 seconds','45 sec','Stay springy and fresh. This is not conditioning.','pogo'),ex('broad','Broad Jump Easy Singles',4,'2 jumps','75 sec','Explosive but low volume. Leave pop in the legs.','broad'),ex('wallDrive','Wall Drive Holds',3,'20 seconds each leg','40 sec','Posture reset and hip flexor strength.','wallDrive'),ex('singleLeg','Single Leg Balance Bound',3,'4 each leg','60 sec','Recovery power and balance.','singleLeg'),ex('shuffleSprint','Controlled Shuffle Burst',3,'1 each side','45 sec','Move clean, not reckless.','shuffleSprint')],
-  [ex('warm','Extended Mobility Warm Up',1,'8 minutes','none','Open hips, ankles, hamstrings, calves, and shoulders before testing.','warm'),ex('tenYard','Best 10 Yard Dash',4,'1 timed rep','120 sec','Only count clean starts. Write the best number.','tenYard'),ex('shuttle','Best 5 10 5 Shuttle',3,'1 timed rep','120 sec','Do not over test. Great reps only.','shuttle'),ex('broad','Best Broad Jump',3,'2 attempts','120 sec','Measure from the start line to heel.','broad'),ex('pogo','Pogo Rhythm Reset',2,'15 seconds','45 sec','Keep the lower legs springy after testing.','pogo')]
+  [
+    ex('wallDrivePosture','Wall Drive Sprint Posture',4,'15 seconds each leg','35 sec','This sets the sprint angles. Knee up, toe up, punch down, hips tall.','wallDrive'),
+    ex('fallingStartsElite','Falling Starts',6,'1 sprint for 10 yards','70 sec','Fall as one piece. First three steps low, violent, and patient.','falling'),
+    ex('resistedStart','Band Or Hill Resisted Starts',5,'1 sprint for 10 yards','90 sec','Light resistance only. If the stride gets ugly, it is too heavy. Drive the ground back.','resisted'),
+    ex('tenYardLaserMindset','10 Yard Explosive Starts',6,'1 timed sprint','90 sec','Full rest. Chase better first step, not just more reps.','tenYard'),
+    ex('twentyBuild','20 Yard Acceleration Build',5,'1 sprint','100 sec','Build from low drive to tall sprint. Do not pop up early.','tenYard'),
+    ex('broadPower','Broad Jump Stick',5,'2 jumps','75 sec','Explode forward and land quiet. Power without control does not count.','broad'),
+    ex('sprintToStick','Sprint To Stick Deceleration',4,'1 sprint and stop','70 sec','Great athletes have brakes. Sprint, sink hips, stop clean.','sprintStick')
+  ],
+  [
+    ex('aSkipTall','A Skip To Sprint Rhythm',4,'15 yards','35 sec','Tall posture, front side mechanics, arms cheek to pocket.','youthSpeed'),
+    ex('wicketsMaxV','Wicket Runs Or Cone Wickets',5,'2 trips','60 sec','Top speed posture. Hips tall, foot under body, no overstriding.','wickets'),
+    ex('fly10Elite','Flying 10s',5,'20 yard build plus 10 yard fly','120 sec','Build smooth, hit the fly zone fast and relaxed. This is max velocity work.','fly10'),
+    ex('sprintFloatSprint','Sprint Float Sprint',4,'10 fast, 10 float, 10 fast','120 sec','Learn speed relaxation. Fast does not mean tight.','sprintFloat'),
+    ex('singleLegHorizontal','Single Leg Bounds',4,'6 each leg','75 sec','Horizontal power for stride length and force. Land stable.','singleLeg'),
+    ex('pogoElastic','Pogo Jump Series',4,'25 seconds','45 sec','Elastic ankles, tall body, quick ground contact.','pogo'),
+    ex('decelFly','Fly Sprint To Decel Zone',4,'1 controlled rep','90 sec','After the fast zone, brake under control. No sloppy shutdowns.','decel')
+  ],
+  [
+    ex('mirrorReaction','Mirror Shuffle Reaction',5,'12 seconds','45 sec','React to a partner or call. Low hips, violent feet, no guessing.','shuffleSprint'),
+    ex('proAgilityElite','5 10 5 Pro Agility Timed',5,'1 rep','110 sec','Plant outside foot, shoulders stay tight, explode out. Record best clean rep.','shuttle'),
+    ex('lDrillElite','3 Cone L Drill',4,'1 rep','110 sec','Tight turns, eyes lead the body, no wasted steps around the cones.','lDrill'),
+    ex('soccerCod','Soccer Style 45 Degree Cut Series',5,'2 cuts each side','70 sec','Attack the cone, drop hips, cut at 45, accelerate out like an elite winger.','linearCod'),
+    ex('lateralPower','Lateral Bound To Sprint',4,'4 each side','70 sec','Push side to side, stick, then burst out. Cornerback and soccer quickness.','lateralBound'),
+    ex('dbWElite','DB W Drill Backpedal Break',4,'1 full W','85 sec','Pedal, plant, drive. Great corner feet and safety hips.','dbW'),
+    ex('sprintStickCOD','Sprint To Stop To Reaccelerate',4,'1 stop and go','90 sec','Brake, own the position, then reaccelerate. This builds real game quickness.','sprintStick')
+  ],
+  [
+    ex('threePointStart','3 Point Or Football Start',6,'1 sprint for 10 yards','80 sec','Low, loaded, violent first step. Make the first three steps look pro.','pushStart'),
+    ex('resistedContrast','Resisted Start To Free Start Contrast',4,'1 resisted plus 1 free','120 sec','Resisted rep, rest, then free rep. Feel the ground push.','resisted'),
+    ex('curvedSprint','Curved Sprint For Soccer And Edge Speed',5,'1 curve each side','75 sec','Lean naturally through the curve, keep speed without drifting wide.','footballSpeed'),
+    ex('shuffleOpenRun','Shuffle Open Hip And Run',5,'1 each side','55 sec','Low shuffle, open the hip, run vertical. Perfect for LB, RB, DB.','shuffleSprint'),
+    ex('hurdleReactive','Low Hurdle Hop To Sprint',4,'5 hops plus burst','75 sec','Quick contacts into a burst. Elastic to acceleration.','hurdleHop'),
+    ex('lateralDecel','Lateral Decel Stick',5,'2 each side','55 sec','Cut hard, stop clean, knee over foot. Strong brakes make faster cuts.','decel'),
+    ex('finish20','20 Yard Finish Through Line',4,'1 sprint','100 sec','Sprint through the line. No coasting. Relax the face and shoulders.','tenYard')
+  ],
+  [
+    ex('tenYardTest','10 Yard Start Test Reps',5,'1 timed sprint','120 sec','Only count clean starts. Chase first step and drive phase.','tenYard'),
+    ex('twentyTest','20 Yard Acceleration Test Reps',4,'1 timed sprint','130 sec','Record best clean rep. Rest enough to be fast.','tenYard'),
+    ex('fortyBuildElite','40 Yard Build And Finish',3,'1 timed or fast rep','150 sec','Treat this like combine prep. Drive, rise, finish through the line.','footballSpeed'),
+    ex('fly10Timed','Timed Flying 10',4,'20 build plus 10 fly','130 sec','Top end speed exposure. Smooth, relaxed, fast.','fly10'),
+    ex('proAgilityTimed','5 10 5 Pro Agility',4,'1 timed rep','120 sec','Win the plant foot and shoulder angle. Record best clean rep.','shuttle'),
+    ex('broadTestPower','Broad Jump Power',4,'2 jumps','90 sec','Explode forward. Measure if possible.','broad'),
+    ex('pogoFinish','Pogo Rhythm Finisher',3,'20 seconds','45 sec','Keep the lower legs springy after speed.','pogo')
+  ],
+  [
+    ex('tempoBuildUps','Tempo Build Ups',6,'40 yards at 70 to 80 percent','60 sec','This is speed endurance technique, not a race. Smooth mechanics under fatigue.','sprintFloat'),
+    ex('wicketsEasy','Easy Wicket Rhythm',4,'2 trips','50 sec','Technique day. Posture and rhythm over max effort.','wickets'),
+    ex('wallDriveReset','Wall Drive Holds',4,'20 seconds each leg','40 sec','Posture reset and hip flexor strength.','wallDrive'),
+    ex('singleLegBalance','Single Leg Balance Bound',4,'4 each leg','65 sec','Recovery power and balance. Stick every landing.','singleLeg'),
+    ex('controlledShuffle','Controlled Shuffle Burst',4,'1 each side','50 sec','Move clean, not reckless.','shuffleSprint'),
+    ex('sprintStickEasy','Sprint To Stick Easy',4,'1 clean rep','65 sec','Teach the brakes without beating up the legs.','sprintStick'),
+    ex('mobilityReset','Hip And Ankle Speed Mobility',1,'6 minutes','none','Open hips, ankles, calves, hamstrings. Leave the body better than it started.','warm')
+  ],
+  [
+    ex('tenYardBest','Best 10 Yard Dash',4,'1 timed rep','150 sec','Only count clean starts. Write the best number.','tenYard'),
+    ex('twentyBest','Best 20 Yard Dash',3,'1 timed rep','150 sec','Rest long enough to be fast. No tired testing.','tenYard'),
+    ex('fortyBest','Best 40 Yard Dash',3,'1 timed rep','180 sec','Big goal rep. Clean start, patient rise, violent finish.','footballSpeed'),
+    ex('fiveTenFiveBest','Best 5 10 5 Shuttle',3,'1 timed rep','150 sec','Low hips, violent plant, no rounded turns.','shuttle'),
+    ex('lDrillBest','Best 3 Cone L Drill',3,'1 timed rep','150 sec','Tight angles, smooth feet, accelerate out.','lDrill'),
+    ex('broadBest','Best Broad Jump',3,'2 attempts','120 sec','Measure from the start line to heel.','broad'),
+    ex('pogoReset','Pogo Rhythm Reset',2,'20 seconds','45 sec','Keep the lower legs springy after testing.','pogo')
+  ]
  ];
  return warm.concat(outdoorPlans[cycle]);
 }
@@ -530,8 +622,8 @@ function renderHome(){
  <div class="inner"><h3>Earn Day ${state.day+1}</h3>${completionHTML()}</div>`;
 }
 function renderMorning(){
- document.getElementById('screen_morning').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Morning Speed and Plyos</h2></div><span class="badge goldTxt">${state.mode}</span></div>
- <p class="small">This is the first workout. ${modeNotice()} ${levelNotice()} Log each drill so the app knows he actually did it.</p>
+ document.getElementById('screen_morning').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Elite Speed, Agility and Plyos</h2></div><span class="badge goldTxt">${state.mode}</span></div>
+ <p class="small">This is the first workout. Built to chase elite football acceleration, max velocity, lateral quickness, soccer style change of direction, and real 40 yard dash transfer. ${modeNotice()} ${levelNotice()} Log each drill so the app knows he actually did it.</p>
  ${morningPlan().map((e,i)=>renderExercise(e,i,'morning')).join('')}
  <button class="green full" onclick="saveSection('Morning work')">Save Morning Work</button>`;
 }
@@ -812,5 +904,3 @@ render();
 </script>
 </body>
 </html>
-
-
