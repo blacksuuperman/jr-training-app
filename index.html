@@ -4,6 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>BlackSuperman Jr Level 13 Final Athlete Hub</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#050507" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Athlete Hub" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" href="icon-192.png" />
 <style>
 :root{
   --bg:#050507;
@@ -82,6 +90,40 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
   .grid,.grid3,.logGrid{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.statCards{grid-template-columns:1fr 1fr}.card{border-radius:22px;padding:12px}.exercise{grid-template-columns:1fr}.num{margin-bottom:-3px}
   .bottomNav{grid-template-columns:1fr 1fr 1fr 1.1fr}.bottomNav button{font-size:11px}
 }
+body.timerFlash{animation:flashPulse .7s ease}
+@keyframes flashPulse{0%{background-color:var(--bg)}30%{background-color:color-mix(in srgb,var(--accent) 55%,var(--bg))}100%{background-color:var(--bg)}}
+.timerBar{position:fixed;left:10px;right:10px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:90;background:rgba(6,6,9,.97);border:1px solid var(--accent);border-radius:22px;padding:10px 12px;box-shadow:0 14px 30px rgba(0,0,0,.5);display:flex;align-items:center;gap:10px;backdrop-filter:blur(10px)}
+.timerBar.hidden{display:none}
+.timerRing{position:relative;height:52px;width:52px;flex:0 0 auto;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--pct,0)*1%),#26262f 0);display:flex;align-items:center;justify-content:center}
+.timerRing:before{content:'';position:absolute;height:41px;width:41px;border-radius:50%;background:#07070b}
+.timerRing b{position:relative;font-size:13px;color:#fff}
+.timerInfo{flex:1;min-width:0}.timerInfo .small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timerBtns{display:flex;gap:6px}.timerBtns button{min-height:38px;padding:8px 10px;font-size:12px;border-radius:12px}
+.guidedWrap{border:1px solid var(--line);background:#0a0a0f;border-radius:22px;padding:13px;margin:10px 0}
+.guidedTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.guidedDots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.guidedDot{height:8px;width:8px;border-radius:50%;background:#33333f}.guidedDot.done{background:var(--green)}.guidedDot.now{background:var(--accent);width:18px;border-radius:6px}
+.guidedNav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.filmRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.filmRow button{font-size:12px;min-height:40px}
+.filmRow>button:nth-child(3):last-child{grid-column:1/-1}
+.mediaBox{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#000;margin-top:8px}
+.mediaBox video,.mediaBox iframe{width:100%;display:block;aspect-ratio:9/16;max-height:340px;border:0;background:#000}
+.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.compareGrid .mediaBox video,.compareGrid .mediaBox iframe{aspect-ratio:9/16;max-height:260px}
+.mediaLabel{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:900;padding:6px 8px 0}
+.recDot{display:inline-block;height:8px;width:8px;border-radius:50%;background:var(--red);margin-right:5px;animation:recPulse 1s infinite}
+@keyframes recPulse{0%,100%{opacity:1}50%{opacity:.25}}
+@media(max-width:640px){.compareGrid{grid-template-columns:1fr}.filmRow{grid-template-columns:1fr 1fr}}
+.trendCard{border:1px solid var(--line);background:#0a0a0f;border-radius:18px;padding:10px 10px 12px;margin:8px 0}
+.trendTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:2px}
+.trendTitle{font-size:12px;font-weight:900;color:var(--text);text-transform:uppercase;letter-spacing:.03em}
+.trendSvgWrap{position:relative}
+.trendSvg{width:100%;height:110px;display:block}
+.trendHit{cursor:pointer}
+.trendHit:focus{outline:2px solid var(--accent);outline-offset:2px}
+.trendTip{position:absolute;transform:translate(-50%,-130%);background:#050507;border:1px solid var(--accent);border-radius:10px;padding:5px 8px;font-size:11px;font-weight:900;color:#fff;white-space:nowrap;pointer-events:none;box-shadow:0 8px 18px rgba(0,0,0,.4);z-index:5}
+.trendTip.hidden{display:none}
 </style>
 </head>
 <body>
@@ -132,6 +174,15 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
   <div id="screen_dadtalk" class="card screen"></div>
   <div id="screen_data" class="card screen"></div>
   <div id="screen_settings" class="card screen"></div>
+</div>
+
+<div class="timerBar hidden" id="timerBar">
+  <div class="timerRing" id="timerRing" style="--pct:0"><b id="timerRingText">0:00</b></div>
+  <div class="timerInfo"><div class="small" id="timerLabel">Timer</div><div class="tiny" id="timerSub">Rest period</div></div>
+  <div class="timerBtns">
+    <button id="timerPauseBtn" onclick="pauseResumeTimer()">Pause</button>
+    <button class="red" onclick="skipTimer()">Skip</button>
+  </div>
 </div>
 
 <div class="bottomNav">
@@ -462,6 +513,12 @@ function strengthPlan(){
   [ex('gymS6Test','Box Or Broad Jump Test',3,'2 jumps','120 sec','Best controlled jump.','broad','done'),ex('gymS6Squat','Goblet Strength Quality',3,'max clean reps at safe load','120 sec','No grinders.','goblet','reps'),ex('gymS6Push','Push Up Or Press Test',3,'max clean minus two','120 sec','Quality reps.','floorPress','reps'),ex('gymS6Carry','Carry Challenge',3,'max clean distance','90 sec','Posture.','farmer','distance'),ex('gymS6Core','Plank Test',3,'max clean seconds','none','Stop when form breaks.','plank','seconds'),ex('gymS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Core reset.','deadbug','done')],
   [ex('gymS7Mobility','Mobility And Tissue Reset',1,'10 minutes','none','Recover.','warm','done'),ex('gymS7EasyJump','Easy Jump Singles',3,'2 jumps','85 sec','Light pop.','broad','done'),ex('gymS7Wall','Wall Drive Holds',3,'20 sec each','35 sec','Posture.','wallDrive','seconds'),ex('gymS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Core.','deadbug','done'),ex('gymS7Carry','Light Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('gymS7Stretch','Hip And Ankle Reset',1,'6 minutes','none','Prep.','warm','done')]
  ];
+ // BUGFIX: plans.home above is an object keyed 1..7 (not a 0-indexed
+ // array like facility/outdoor/gym), but the return below indexes with
+ // day-1 for all modes. Left as-is, picking "Home Indoor" crashed the
+ // whole app on day 1 (plans.home[0] was undefined). Normalize it to a
+ // matching 0-indexed array so every mode indexes the same way.
+ plans.home=[1,2,3,4,5,6,7].map(d=>plans.home[d]);
  return (plans[mode]||plans.outdoor)[day-1];
 }
 
@@ -587,7 +644,8 @@ function renderExercise(e,i,type){
     <h3>${e.name}</h3>
     <div class="rx"><div><b>${sets}</b><span>Sets</span></div><div><b>${targetText(e.reps)}</b><span>Target</span></div><div><b>${e.rest}</b><span>Rest</span></div></div>
     <p class="cue">${e.cue}</p>
-    <a class="btn videoLink" target="_blank" href="${e.video}">Watch exact drill</a>
+    <a class="btn videoLink" target="_blank" href="${e.video}">Open on YouTube</a>
+    ${exerciseControlsHTML(e,type)}
     ${logHTML}
   </div>
  </div>`
@@ -600,18 +658,22 @@ function renderTouch(t,i){
     <h3>${t.name}</h3>
     <div class="rx"><div><b>${t.target}</b><span>Target</span></div><div><b>${t.metric==='reps'?'reps':'catches'}</b><span>Log</span></div><div><b>Clean</b><span>Finish</span></div></div>
     <p class="cue">${t.cue}</p>
-    <a class="btn videoLink" target="_blank" href="${t.video}">Watch exact drill</a>
+    <a class="btn videoLink" target="_blank" href="${t.video}">Open on YouTube</a>
+    ${exerciseControlsHTML(t,'touch')}
     <div class="logGrid"><input type="number" value="${l[key]||''}" data-log="${key}" placeholder="how many completed" oninput="stageInput(this)"><input type="number" value="${l[key+'_drops']||''}" data-log="${key+'_drops'}" placeholder="drops or misses" oninput="stageInput(this)"></div>
   </div>
  </div>`;
 }
-function stageInput(el){logFor()[el.dataset.log]=el.value; save(); renderHomeOnly();}
+function stageInput(el){logFor()[el.dataset.log]=el.value; save(); updateCompleteButton();}
 function saveSection(name){
  if(name==='Morning work')logFor().morningComplete=true;
  save(); alert(name+' saved for Day '+state.day); render();
 }
-function renderHomeOnly(){
- document.getElementById('completeBtn').disabled=!canComplete();
+function updateCompleteButton(){
+ const btn=document.getElementById('completeBtn');
+ if(!btn)return;
+ btn.disabled=!canComplete();
+ btn.textContent=canComplete()?'Complete Day':'Locked';
 }
 function completionHTML(){
  const req=dayRequirements();
@@ -631,22 +693,43 @@ function renderHome(){
  <div class="inner"><h3>Earn Day ${state.day+1}</h3>${completionHTML()}</div>`;
 }
 function renderMorning(){
- document.getElementById('screen_morning').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Elite Speed, Agility and Plyos</h2><div class="small">${dayTheme(state.day)}</div></div><span class="badge goldTxt">${modeLabel()}</span></div>
- <p class="small">This is the first workout. The coach cycle changes every day: acceleration, max velocity, lateral quickness, footwork, game speed blend, testing/recovery power, then reset. It progresses every week. ${modeNotice()} ${levelNotice()} No time, rep, or completed boxes during speed work. He trains straight through, rests like an athlete, then taps Save Morning Work once at the end.</p>
- ${morningPlan().map((e,i)=>renderExercise(e,i,'morning')).join('')}
- <button class="green full" onclick="saveSection('Morning work')">Save Morning Work</button>`;
+ const intro=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Elite Speed, Agility and Plyos</h2><div class="small">${dayTheme(state.day)}</div></div><span class="badge goldTxt">${modeLabel()}</span></div>
+ <p class="small">This is the first workout. The coach cycle changes every day: acceleration, max velocity, lateral quickness, footwork, game speed blend, testing/recovery power, then reset. It progresses every week. ${modeNotice()} ${levelNotice()} No time, rep, or completed boxes during speed work. He trains straight through, rests like an athlete, then taps Save Morning Work once at the end.</p>`;
+ if(guided.morning.active){
+  document.getElementById('screen_morning').innerHTML=intro+renderGuidedCard('morning')+`<button class="green full" style="margin-top:10px" onclick="saveSection('Morning work')">Save Morning Work</button>`;
+  flushMediaBoxes();
+  return;
+ }
+ document.getElementById('screen_morning').innerHTML=intro+`<button class="gold full" onclick="startGuided('morning')">▶ Start Guided Workout — one drill at a time</button>`
+ +morningPlan().map((e,i)=>renderExercise(e,i,'morning')).join('')
+ +`<button class="green full" onclick="saveSection('Morning work')">Save Morning Work</button>`;
+ flushMediaBoxes();
 }
 function renderStrength(){
- document.getElementById('screen_strength').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout • ${modeLabel()}</div><h2>Explosive Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
- <p class="small">This is the second workout. It changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set. Bodyweight work should use his body weight.</p>
- ${strengthPlan().map((e,i)=>renderExercise(e,i,'strength')).join('')}
- <button class="green full" onclick="saveSection('Strength work')">Save Strength Work</button>`;
+ const intro=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout • ${modeLabel()}</div><h2>Explosive Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
+ <p class="small">This is the second workout. It changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set. Bodyweight work should use his body weight.</p>`;
+ if(guided.strength.active){
+  document.getElementById('screen_strength').innerHTML=intro+renderGuidedCard('strength')+`<button class="green full" style="margin-top:10px" onclick="saveSection('Strength work')">Save Strength Work</button>`;
+  flushMediaBoxes();
+  return;
+ }
+ document.getElementById('screen_strength').innerHTML=intro+`<button class="gold full" onclick="startGuided('strength')">▶ Start Guided Workout — one drill at a time</button>`
+ +strengthPlan().map((e,i)=>renderExercise(e,i,'strength')).join('')
+ +`<button class="green full" onclick="saveSection('Strength work')">Save Strength Work</button>`;
+ flushMediaBoxes();
 }
 function renderTouches(){
- document.getElementById('screen_touches').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Solo football skill</div><h2>Football Touches</h2></div><span class="badge goldTxt">WR RB TE DE CB</span></div>
- <p class="small">These are not random touches. This blends receiver hands, running back security, tight end high catches, cornerback ball skills, and defensive end hand reaction.</p>
- ${touchPlan().map(renderTouch).join('')}
- <button class="green full" onclick="saveSection('Football touches')">Save Football Touches</button>`;
+ const intro=`<div class="row" style="justify-content:space-between"><div><div class="small">Solo football skill</div><h2>Football Touches</h2></div><span class="badge goldTxt">WR RB TE DE CB</span></div>
+ <p class="small">These are not random touches. This blends receiver hands, running back security, tight end high catches, cornerback ball skills, and defensive end hand reaction.</p>`;
+ if(guided.touches.active){
+  document.getElementById('screen_touches').innerHTML=intro+renderGuidedCard('touches')+`<button class="green full" style="margin-top:10px" onclick="saveSection('Football touches')">Save Football Touches</button>`;
+  flushMediaBoxes();
+  return;
+ }
+ document.getElementById('screen_touches').innerHTML=intro+`<button class="gold full" onclick="startGuided('touches')">▶ Start Guided Workout — one drill at a time</button>`
+ +touchPlan().map(renderTouch).join('')
+ +`<button class="green full" onclick="saveSection('Football touches')">Save Football Touches</button>`;
+ flushMediaBoxes();
 }
 function renderNutrition(){
  const l=logFor(), nt=nutritionTargets();
@@ -766,7 +849,10 @@ function renderData(){
  const drops=days.reduce((a,d)=>a+Object.keys(logs['day'+d]).filter(k=>k.includes('_drops')).reduce((s,k)=>s+(Number(logs['day'+d][k])||0),0),0);
  const catchRate=(catches+drops)>0?Math.round(catches/(catches+drops)*100)+'%':'No data';
  document.getElementById('screen_data').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Progress</div><h2>Data Lab</h2></div><span class="badge goldTxt">${days.length} logged days</span></div>
- <table class="dataTable"><tr><td>Best 10 yard</td><td>${bestLower('best10')}</td></tr><tr><td>Best 20 yard</td><td>${bestLower('best20')}</td></tr><tr><td>Best 5 10 5</td><td>${bestLower('best505')}</td></tr><tr><td>Best broad jump</td><td>${bestHigher('bestBroad')}</td></tr><tr><td>Best vertical</td><td>${bestHigher('bestVertical')}</td></tr><tr><td>Total touch reps</td><td>${touchCounts}</td></tr><tr><td>Estimated catch rate</td><td>${catchRate}</td></tr><tr><td>Total drops or misses</td><td>${drops}</td></tr></table>
+ <div class="inner"><h3>Trend Lines</h3><p class="small">Each testing number gets its own chart because they're different units — you can't put seconds and inches on one axis and have it mean anything. Tap any point for the exact day and number.</p>
+ ${renderAllTrendCharts()}
+ </div>
+ <table class="dataTable"><tr><td>Total touch reps</td><td>${touchCounts}</td></tr><tr><td>Estimated catch rate</td><td>${catchRate}</td></tr><tr><td>Total drops or misses</td><td>${drops}</td></tr></table>
  <details class="clean" open><summary>Testing Numbers</summary><div class="detailBody">${testingInputs()}</div></details>
  <div class="coachBubble"><strong>Strong and Weak Read</strong><p>${dataCoach(days,logs)}</p></div>
  <details class="clean"><summary>Day by Day Records</summary><div class="detailBody">${days.length?days.map(d=>recordCard(d,logs['day'+d])).join(''):'<p class="small">No saved records yet.</p>'}</div></details>
@@ -795,6 +881,9 @@ function recordCard(d,l){
 function renderSettings(){
  const colors=['#facc15','#22c55e','#38bdf8','#3b82f6','#a78bfa','#8b5cf6','#fb7185','#ef4444','#f97316','#14b8a6','#06b6d4','#84cc16','#eab308','#ffffff','#0ea5e9','#d946ef'];
  document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">He can change the vibe, training environment, and athlete tier. The next day is still earned, but the coach cycle changes daily and progresses weekly.</p>
+ <div class="inner"><h3>Install As An App</h3><p class="small">Gets a real home-screen icon, opens full-screen with no browser bar, and still works with no signal at the field. Not on the App Store or Play Store — installs straight from this page.</p>
+ <button id="installBtn" class="gold full hidden" onclick="promptInstall()">Install Athlete Hub</button>
+ <p class="tiny" style="margin-top:8px"><b>iPhone:</b> tap the Share icon in Safari, then "Add to Home Screen."<br><b>Android:</b> tap the button above, or the browser menu, then "Install app" / "Add to Home Screen."</p></div>
  <div class="inner"><h3>App Color</h3><p class="small">This changes the full background, cards, glow, and contrast, not just a few letters.</p><div class="row">${colors.map(c=>`<button class="colorDot" style="background:${c}" onclick="setColor('${c}')" aria-label="Color"></button>`).join('')}</div><div class="grid" style="margin-top:10px"><input id="customColor" type="color" value="${state.accent||'#facc15'}"><button class="gold" onclick="setColor(document.getElementById('customColor').value)">Save Color</button></div></div>
  <div class="inner"><h3>Training Environment</h3><p class="small">Pick where he is actually training. The speed work and strength work change based on this.</p><div class="grid">
  <button class="${state.mode==='outdoor'?'active':''}" onclick="state.mode='outdoor';save();render()">Outdoor Field</button>
@@ -815,7 +904,11 @@ function renderSettings(){
 }
 function saveSettingsWeight(){const input=document.getElementById('settingsWeightInput');const weight=Number(input&&input.value);if(!weight||weight<60||weight>350){alert('Enter a realistic athlete weight first.');return;}state.profileWeight=String(weight);logFor().weight=String(weight);save();render();}
 function setColor(c){state.accent=c;save();render();}
-function render(){
+const screenRenderers={home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,data:renderData,settings:renderSettings};
+// Perf note: only the screen the athlete is actually looking at gets rebuilt.
+// The other seven stay untouched until he navigates to them (they always
+// redraw fresh from state at that point, so nothing goes stale).
+function renderShell(){
  applyTheme();
  const a=todayAdapt();
  document.getElementById('dayLabel').textContent='Day '+state.day;
@@ -829,18 +922,13 @@ function render(){
  ensureMusicPlayer();
  renderChips();
  renderTiles();
- renderHome();
- renderMorning();
- renderStrength();
- renderTouches();
- renderNutrition();
- renderDadTalk();
- renderData();
- renderSettings();
+ updateCompleteButton();
+}
+function render(){
+ renderShell();
+ (screenRenderers[state.screen]||renderHome)();
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
  document.getElementById('screen_'+state.screen).classList.add('active');
- document.getElementById('completeBtn').disabled=!canComplete();
- document.getElementById('completeBtn').textContent=canComplete()?'Complete Day':'Locked';
  save();
 }
 function renderChips(){document.getElementById('quickChips').innerHTML=musicPresets.map(p=>`<button onclick="playPreset('${p.key}')">${p.label}</button>`).join('');}
@@ -922,6 +1010,380 @@ function resetConfirm(){
  const pin=prompt('Coach reset PIN');
  if(pin==='1302'){localStorage.removeItem(STORE);state=defaultState();render();}
 }
+
+/* =========================================================
+   INSTALLABLE APP — register the service worker for offline
+   use, and surface Chrome/Android's native "install" prompt
+   when it fires. iOS Safari has no install-prompt API; the
+   iOS meta tags above handle that path via Share > Add to
+   Home Screen instead.
+   ========================================================= */
+if('serviceWorker' in navigator){
+ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+ e.preventDefault();
+ deferredInstallPrompt=e;
+ const btn=document.getElementById('installBtn');
+ if(btn)btn.classList.remove('hidden');
+});
+function promptInstall(){
+ if(!deferredInstallPrompt)return;
+ deferredInstallPrompt.prompt();
+ deferredInstallPrompt.userChoice.finally(()=>{
+  deferredInstallPrompt=null;
+  const btn=document.getElementById('installBtn');
+  if(btn)btn.classList.add('hidden');
+ });
+}
+
+/* =========================================================
+   TIMER ENGINE — rest countdowns, timed-work countdowns, and
+   a plain stopwatch for anything without a clean duration.
+   Alerts fire on sound AND vibration (vibration silently does
+   nothing on iOS Safari since Apple does not expose the
+   Vibration API there — sound and the full-screen flash still
+   fire everywhere).
+   ========================================================= */
+let audioCtx=null;
+function ensureAudio(){
+ try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended')audioCtx.resume(); }catch(e){}
+}
+function beep(times=1){
+ ensureAudio(); if(!audioCtx)return;
+ try{
+  const t=audioCtx.currentTime;
+  for(let i=0;i<times;i++){
+   const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+   osc.type='sine'; osc.frequency.value=880;
+   gain.gain.setValueAtTime(.0001,t+i*.35);
+   gain.gain.exponentialRampToValueAtTime(.5,t+i*.35+.02);
+   gain.gain.exponentialRampToValueAtTime(.0001,t+i*.35+.28);
+   osc.connect(gain); gain.connect(audioCtx.destination);
+   osc.start(t+i*.35); osc.stop(t+i*.35+.3);
+  }
+ }catch(e){}
+}
+function buzz(pattern){ if(navigator.vibrate){ try{navigator.vibrate(pattern);}catch(e){} } }
+function flashScreen(){ document.body.classList.remove('timerFlash'); void document.body.offsetWidth; document.body.classList.add('timerFlash'); }
+function fmtClock(sec){ sec=Math.max(0,Math.round(sec)); const m=Math.floor(sec/60), s=sec%60; return m+':'+String(s).padStart(2,'0'); }
+function parseSeconds(str){
+ if(!str)return null;
+ const s=String(str).toLowerCase();
+ if(s==='none'||s==='not applicable')return null;
+ let m=s.match(/(\d+(?:\.\d+)?)\s*min/);
+ if(m)return Math.round(parseFloat(m[1])*60);
+ m=s.match(/(\d+(?:\.\d+)?)\s*sec/);
+ if(m)return Math.round(parseFloat(m[1]));
+ return null;
+}
+
+const timerState={mode:null,remaining:0,total:0,elapsed:0,label:'',sub:'',intervalId:null,onDone:null};
+function clearTimerInterval(){ if(timerState.intervalId){ clearInterval(timerState.intervalId); timerState.intervalId=null; } }
+function showTimerBar(){ const b=document.getElementById('timerBar'); if(b)b.classList.remove('hidden'); }
+function hideTimerBar(){ const b=document.getElementById('timerBar'); if(b)b.classList.add('hidden'); }
+function tickCountdown(){
+ timerState.remaining--;
+ if(timerState.remaining<=0){
+  clearTimerInterval();
+  beep(3); buzz([220,100,220,100,320]); flashScreen();
+  renderTimerBar();
+  const cb=timerState.onDone; timerState.onDone=null;
+  if(cb)cb();
+  return;
+ }
+ if(timerState.remaining<=3)beep(1);
+ if(timerState.remaining<=3)buzz(100);
+ renderTimerBar();
+}
+function startTimer(seconds,label,sub,onDone){
+ clearTimerInterval();
+ timerState.mode='countdown'; timerState.remaining=seconds; timerState.total=Math.max(seconds,1);
+ timerState.label=label||'Timer'; timerState.sub=sub||'Rest period'; timerState.onDone=onDone||null;
+ showTimerBar(); renderTimerBar();
+ timerState.intervalId=setInterval(tickCountdown,1000);
+ ensureAudio();
+}
+function startStopwatchMode(label){
+ clearTimerInterval();
+ timerState.mode='stopwatch'; timerState.elapsed=0; timerState.label=label||'Timer'; timerState.sub='Timing this set'; timerState.onDone=null;
+ showTimerBar(); renderTimerBar();
+ timerState.intervalId=setInterval(()=>{ timerState.elapsed++; renderTimerBar(); },1000);
+ ensureAudio();
+}
+function pauseResumeTimer(){
+ if(!timerState.mode)return;
+ if(timerState.intervalId){ clearTimerInterval(); }
+ else if(timerState.mode==='countdown'){ timerState.intervalId=setInterval(tickCountdown,1000); }
+ else { timerState.intervalId=setInterval(()=>{ timerState.elapsed++; renderTimerBar(); },1000); }
+ renderTimerBar();
+}
+function skipTimer(){
+ clearTimerInterval();
+ const wasCountdown=timerState.mode==='countdown', cb=timerState.onDone;
+ timerState.mode=null; timerState.onDone=null;
+ hideTimerBar();
+ if(wasCountdown&&cb)cb();
+}
+function renderTimerBar(){
+ const bar=document.getElementById('timerBar'); if(!bar||bar.classList.contains('hidden'))return;
+ const ring=document.getElementById('timerRing'), txt=document.getElementById('timerRingText');
+ document.getElementById('timerLabel').textContent=timerState.label||'Timer';
+ document.getElementById('timerSub').textContent=timerState.sub||'';
+ document.getElementById('timerPauseBtn').textContent=timerState.intervalId?'Pause':'Resume';
+ if(timerState.mode==='countdown'){
+  const pct=Math.round(((timerState.total-timerState.remaining)/timerState.total)*100);
+  ring.style.setProperty('--pct',pct); txt.textContent=fmtClock(timerState.remaining);
+ } else if(timerState.mode==='stopwatch'){
+  ring.style.setProperty('--pct',100); txt.textContent=fmtClock(timerState.elapsed);
+ }
+}
+
+/* =========================================================
+   PER-DRILL TIMER + RECORD + REFERENCE CONTROLS
+   ========================================================= */
+const exerciseIndex={};
+let pendingMediaUids=[];
+function registerExercise(uid,name,video,restSec,workSec){ exerciseIndex[uid]={name,video,restSec,workSec}; pendingMediaUids.push(uid); }
+function flushMediaBoxes(){ const uids=pendingMediaUids; pendingMediaUids=[]; uids.forEach(uid=>renderMediaBox(uid)); }
+function timerButtonHTML(uid){
+ const info=exerciseIndex[uid]||{};
+ if(info.restSec)return `<button onclick="startRestTimer('${uid}')">⏱ Rest (${info.restSec}s)</button>`;
+ if(info.workSec)return `<button onclick="startWorkTimer('${uid}')">⏱ Go (${info.workSec}s)</button>`;
+ return `<button onclick="startStopwatch('${uid}')">⏱ Time It</button>`;
+}
+function exerciseControlsHTML(e,type){
+ const uid=type+'_'+e.id+'_d'+state.day;
+ const restSec=parseSeconds(e.rest);
+ const workSec=parseSeconds(e.reps);
+ registerExercise(uid,e.name,e.video,restSec,workSec);
+ return `<div class="filmRow">
+  ${timerButtonHTML(uid)}
+  <button onclick="startRecording('${uid}')">🎥 Record</button>
+  <button onclick="toggleRef('${uid}')">▶ Reference</button>
+ </div>
+ <div id="media_${uid}"></div>`;
+}
+function startRestTimer(uid){ const i=exerciseIndex[uid]; if(!i||!i.restSec)return; startTimer(i.restSec,i.name,'Rest period'); }
+function startWorkTimer(uid){ const i=exerciseIndex[uid]; if(!i||!i.workSec)return; startTimer(i.workSec,i.name,'Timed work — go!'); }
+function startStopwatch(uid){ const i=exerciseIndex[uid]; startStopwatchMode(i?i.name:'Set'); }
+
+/* =========================================================
+   RECORDING — his rep vs. the reference clip, side by side.
+   Clips are stored as video blobs in IndexedDB (not
+   localStorage — video is too big for that), so they live on
+   this device only unless/until Phase 1's cloud sync lands.
+   ========================================================= */
+let dbPromise=null;
+function getDB(){
+ if(dbPromise)return dbPromise;
+ dbPromise=new Promise((resolve,reject)=>{
+  if(!window.indexedDB){reject(new Error('no indexeddb'));return;}
+  const req=indexedDB.open('jr_level13_media',1);
+  req.onupgradeneeded=()=>{ req.result.createObjectStore('clips'); };
+  req.onsuccess=()=>resolve(req.result);
+  req.onerror=()=>reject(req.error);
+ });
+ return dbPromise;
+}
+async function saveClip(uid,blob){
+ try{
+  const db=await getDB();
+  return new Promise((resolve,reject)=>{
+   const tx=db.transaction('clips','readwrite');
+   tx.objectStore('clips').put({blob,ts:Date.now()},uid);
+   tx.oncomplete=()=>resolve(); tx.onerror=()=>reject(tx.error);
+  });
+ }catch(e){}
+}
+async function loadClip(uid){
+ try{
+  const db=await getDB();
+  return new Promise((resolve,reject)=>{
+   const tx=db.transaction('clips','readonly');
+   const req=tx.objectStore('clips').get(uid);
+   req.onsuccess=()=>resolve(req.result||null); req.onerror=()=>reject(req.error);
+  });
+ }catch(e){ return null; }
+}
+async function deleteClip(uid){
+ try{
+  const db=await getDB();
+  return new Promise((resolve,reject)=>{
+   const tx=db.transaction('clips','readwrite');
+   tx.objectStore('clips').delete(uid);
+   tx.oncomplete=()=>resolve(); tx.onerror=()=>reject(tx.error);
+  });
+ }catch(e){}
+}
+async function removeClip(uid){ await deleteClip(uid); renderMediaBox(uid); }
+
+const mediaUI={};
+function toggleRef(uid){ mediaUI[uid]=mediaUI[uid]||{ref:false}; mediaUI[uid].ref=!mediaUI[uid].ref; renderMediaBox(uid); }
+
+let activeRecorder=null, activeStream=null, activeChunks=[], recordingUid=null;
+async function startRecording(uid){
+ if(activeRecorder){ alert('Already recording a different drill. Stop that one first.'); return; }
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ alert('Camera recording is not available in this browser.'); return; }
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:true});
+  activeStream=stream; activeChunks=[]; recordingUid=uid;
+  await renderMediaBox(uid);
+  const mimeCandidates=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'];
+  const mime=mimeCandidates.find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t));
+  activeRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:undefined);
+  activeRecorder.ondataavailable=(ev)=>{ if(ev.data&&ev.data.size)activeChunks.push(ev.data); };
+  activeRecorder.onstop=async ()=>{
+   const blob=new Blob(activeChunks,{type:(activeRecorder&&activeRecorder.mimeType)||'video/webm'});
+   activeChunks=[];
+   if(activeStream){ activeStream.getTracks().forEach(t=>t.stop()); }
+   activeStream=null; activeRecorder=null; recordingUid=null;
+   await saveClip(uid,blob);
+   renderMediaBox(uid);
+  };
+  activeRecorder.start();
+ }catch(err){
+  recordingUid=null; activeStream=null;
+  alert('Camera access was blocked or unavailable. Check camera and microphone permissions for this app in phone settings, then try again.');
+  renderMediaBox(uid);
+ }
+}
+function stopRecording(){ if(activeRecorder&&activeRecorder.state!=='inactive')activeRecorder.stop(); }
+async function renderMediaBox(uid){
+ const mount=document.getElementById('media_'+uid);
+ if(!mount)return;
+ const info=exerciseIndex[uid]||{};
+ const ui=mediaUI[uid]||{ref:false};
+ let recHtml='';
+ if(recordingUid===uid){
+  recHtml=`<div class="mediaBox"><div class="mediaLabel"><span class="recDot"></span>Recording — tap Stop when done</div><video autoplay muted playsinline id="liveVideo_${uid}"></video></div><button class="red full" style="margin-top:6px" onclick="stopRecording()">Stop Recording</button>`;
+ } else {
+  const rec=await loadClip(uid);
+  if(rec&&rec.blob){
+   const url=URL.createObjectURL(rec.blob);
+   recHtml=`<div class="mediaBox"><div class="mediaLabel">His rep</div><video controls playsinline src="${url}"></video></div><button class="red full" style="margin-top:6px" onclick="removeClip('${uid}')">Delete this recording</button>`;
+  }
+ }
+ let refHtml='';
+ if(ui.ref&&info.video){
+  const parsed=parseYouTube(info.video);
+  const src=parsed?youtubeEmbedUrl(parsed.type,parsed.id):info.video;
+  refHtml=`<div class="mediaBox"><div class="mediaLabel">How it should look</div><iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`;
+ }
+ const wrap=(refHtml&&recHtml)?'compareGrid':'';
+ mount.innerHTML=(recHtml||refHtml)?`<div class="${wrap}">${recHtml}${refHtml}</div>`:'';
+ if(recordingUid===uid){
+  const v=document.getElementById('liveVideo_'+uid);
+  if(v&&activeStream)v.srcObject=activeStream;
+ }
+}
+
+/* =========================================================
+   GUIDED, ONE-DRILL-AT-A-TIME FLOW
+   ========================================================= */
+const guided={morning:{active:false,idx:0},strength:{active:false,idx:0},touches:{active:false,idx:0}};
+function guidedList(type){
+ if(type==='morning')return morningPlan();
+ if(type==='strength')return strengthPlan();
+ return touchPlan();
+}
+function startGuided(type){ guided[type].active=true; guided[type].idx=0; render(); }
+function exitGuided(type){ guided[type].active=false; render(); }
+function guidedPrev(type){ const g=guided[type]; if(g.idx>0){ g.idx--; render(); } }
+function guidedNext(type){
+ const list=guidedList(type), g=guided[type];
+ if(g.idx<list.length-1){ g.idx++; render(); } else { exitGuided(type); }
+}
+function guidedNextWithRest(type){
+ const list=guidedList(type), g=guided[type], e=list[g.idx];
+ const restSec=parseSeconds(e.rest);
+ if(restSec){ startTimer(restSec,e.name,'Rest — next drill loads at zero',()=>guidedNext(type)); }
+ else { guidedNext(type); }
+}
+function renderGuidedCard(type){
+ const list=guidedList(type), g=guided[type], e=list[g.idx];
+ const cardHtml=type==='touches'?renderTouch(e,g.idx):renderExercise(e,g.idx,type);
+ const dots=list.map((_,i)=>`<span class="guidedDot ${i<g.idx?'done':''} ${i===g.idx?'now':''}"></span>`).join('');
+ return `<div class="guidedWrap">
+  <div class="guidedTop"><span class="small">Drill ${g.idx+1} of ${list.length}</span><button onclick="exitGuided('${type}')">Exit guided</button></div>
+  ${cardHtml}
+  <div class="guidedDots">${dots}</div>
+  <div class="guidedNav">
+   <button ${g.idx<=0?'disabled':''} onclick="guidedPrev('${type}')">Back</button>
+   <button class="gold" onclick="guidedNextWithRest('${type}')">${g.idx>=list.length-1?'Finish':'Next Drill'}</button>
+  </div>
+ </div>`;
+}
+
+/* =========================================================
+   DATA LAB TREND LINES — small multiples, one metric per
+   card (different units can never share one axis), sequential
+   accent hue, direct end-label, hairline recessive gridlines,
+   tap-to-read tooltip. See dataviz skill for the spec this follows.
+   ========================================================= */
+const trendData={};
+function fmtMetric(v,unit){ return unit==='s'?v.toFixed(2)+'s':(unit==='in'?(Math.round(v*10)/10)+'"':v); }
+function renderTrendChart(field,label,unit,betterDirection){
+ const logs=state.logs;
+ const days=Object.keys(logs).map(k=>Number(k.replace('day',''))).filter(Boolean).sort((a,b)=>a-b);
+ const pts=days.map(d=>{const v=parseFloat(logs['day'+d][field]);return isNaN(v)?null:{day:d,v};}).filter(Boolean);
+ const cid='trend_'+field;
+ if(pts.length<2){
+  return `<div class="trendCard"><div class="trendTitle">${label}</div><p class="tiny">Log this at least twice to see a trend line.</p></div>`;
+ }
+ const W=300,H=110,padL=8,padR=8,padT=16,padB=18;
+ const vals=pts.map(p=>p.v);
+ let min=Math.min(...vals), max=Math.max(...vals);
+ if(min===max){min-=1;max+=1;}
+ const pad=(max-min)*0.18; min-=pad; max+=pad;
+ const xFor=i=>padL+(pts.length===1?0:(i/(pts.length-1))*(W-padL-padR));
+ const yFor=v=>padT+(1-((v-min)/(max-min)))*(H-padT-padB);
+ const pathD=pts.map((p,i)=>(i===0?'M':'L')+xFor(i).toFixed(1)+','+yFor(p.v).toFixed(1)).join(' ');
+ const areaD=pathD+` L${xFor(pts.length-1).toFixed(1)},${(H-padB).toFixed(1)} L${xFor(0).toFixed(1)},${(H-padB).toFixed(1)} Z`;
+ const first=pts[0], last=pts[pts.length-1];
+ const delta=last.v-first.v;
+ const improved=betterDirection==='lower'?delta<=0:delta>=0;
+ const deltaTxt=(delta>=0?'+':'-')+fmtMetric(Math.abs(delta),unit)+' since Day '+first.day;
+ const dots=pts.map((p,i)=>{
+  const x=xFor(i),y=yFor(p.v), isLast=i===pts.length-1;
+  return `<circle cx="${x}" cy="${y}" r="${isLast?5:3}" fill="${isLast?'var(--accent)':'var(--muted)'}" stroke="#0a0a0f" stroke-width="2"></circle><circle cx="${x}" cy="${y}" r="14" fill="transparent" class="trendHit" tabindex="0" role="button" aria-label="Day ${p.day}: ${fmtMetric(p.v,unit)}" onclick="showTrendTip(event,'${cid}',${i})" onfocus="showTrendTip(event,'${cid}',${i})"></circle>`;
+ }).join('');
+ const grid=[0,.5,1].map(f=>{const y=padT+f*(H-padT-padB);return `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;}).join('');
+ trendData[cid]={pts,unit};
+ return `<div class="trendCard">
+  <div class="trendTop"><div class="trendTitle">${label}</div><span class="badge ${improved?'good':'warn'}">${deltaTxt}</span></div>
+  <div class="trendSvgWrap" id="wrap_${cid}">
+   <svg viewBox="0 0 ${W} ${H}" class="trendSvg" preserveAspectRatio="none">
+    ${grid}
+    <path d="${areaD}" fill="var(--accent)" opacity=".12" stroke="none"></path>
+    <path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    ${dots}
+   </svg>
+   <div class="trendTip hidden" id="tip_${cid}"></div>
+  </div>
+ </div>`;
+}
+function showTrendTip(ev,cid,i){
+ const entry=trendData[cid]; if(!entry)return;
+ const p=entry.pts[i]; if(!p)return;
+ const tip=document.getElementById('tip_'+cid); if(!tip)return;
+ const circle=ev.currentTarget;
+ const cx=parseFloat(circle.getAttribute('cx')), cy=parseFloat(circle.getAttribute('cy'));
+ tip.style.left=(cx/300*100)+'%'; tip.style.top=(cy/110*100)+'%';
+ tip.textContent='Day '+p.day+' • '+fmtMetric(p.v,entry.unit);
+ tip.classList.remove('hidden');
+ clearTimeout(tip._hideT);
+ tip._hideT=setTimeout(()=>tip.classList.add('hidden'),2600);
+}
+function renderAllTrendCharts(){
+ return renderTrendChart('best10','10 Yard Sprint','s','lower')
+ +renderTrendChart('best20','20 Yard Sprint','s','lower')
+ +renderTrendChart('best505','5-10-5 Shuttle','s','lower')
+ +renderTrendChart('bestBroad','Broad Jump','in','higher')
+ +renderTrendChart('bestVertical','Vertical Jump','in','higher');
+}
+
 render();
 </script>
 </body>

@@ -1,0 +1,16 @@
+{
+  "name": "Jr Level 13 Athlete Hub",
+  "short_name": "Athlete Hub",
+  "description": "63-day speed, strength, and football skills coaching program.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050507",
+  "theme_color": "#050507",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
