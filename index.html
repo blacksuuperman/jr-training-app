@@ -41,7 +41,8 @@ h1,h2,h3{margin:0;color:var(--text)}h1{font-size:25px;line-height:1}h2{font-size
 p,li{color:var(--text);line-height:1.42}.small{font-size:12px;color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}
 .musicDock{position:relative;top:auto;z-index:1;background:color-mix(in srgb,var(--panel) 92%,transparent);border:1px solid var(--line);border-radius:20px;padding:8px;margin-bottom:10px;box-shadow:0 10px 26px rgba(0,0,0,.32);backdrop-filter:blur(14px)}
 .musicTop{display:grid;grid-template-columns:1fr auto auto;gap:7px;align-items:center}
-.musicTop input{min-height:40px}.playerWrap{display:grid;grid-template-columns:240px 1fr;gap:8px;align-items:center;margin-top:8px}.ytFrame{width:240px;height:135px;border:0;border-radius:14px;background:#000}.ytFrame[src="about:blank"]{background:linear-gradient(135deg,#07070b,#181824)}.musicHelp{font-size:11px;color:var(--muted);line-height:1.35}.quickChips{display:grid;grid-template-columns:1fr;gap:7px;padding-top:7px}.quickChips button{width:100%;justify-content:flex-start;text-align:left;white-space:normal;min-height:38px;font-size:12px;border-radius:14px;padding:9px 11px}.musicFallback{display:inline-flex;margin-top:7px;font-size:11px;color:var(--accent);font-weight:900;text-decoration:none}.musicModeRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.musicModeRow button{min-height:34px;font-size:11px;border-radius:999px;padding:7px 10px}.trackName{font-size:11px;color:var(--text);font-weight:900;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.musicTop input{min-height:40px}.playerWrap{display:grid;grid-template-columns:240px 1fr;gap:8px;align-items:center;margin-top:8px}.ytFrame{width:240px;height:135px;border:0;border-radius:14px;background:#000}.ytFrame[src="about:blank"]{background:linear-gradient(135deg,#07070b,#181824)}.musicHelp{font-size:11px;color:var(--muted);line-height:1.35}.musicFallback{display:inline-flex;margin-top:7px;font-size:11px;color:var(--accent);font-weight:900;text-decoration:none}.trackName{font-size:11px;color:var(--text);font-weight:900;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.musicDockMini{padding:7px 8px}.musicDockMini .musicTop{grid-template-columns:auto 1fr auto auto;gap:6px}.musicIcon{font-size:16px;opacity:.85}.musicDockMini .hideSmall{min-width:34px;padding:8px 9px}.musicDockMini .playerWrap{grid-template-columns:64px 1fr;gap:8px;margin-top:7px}.ytFrameMini{width:64px;height:64px;border:0;border-radius:12px;background:#000}.ytFrameMini[src="about:blank"]{background:linear-gradient(135deg,#07070b,#181824)}
 .hero{border:1px solid var(--line);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 17%,transparent),rgba(17,17,24,.96));border-radius:27px;padding:14px;box-shadow:0 22px 42px rgba(0,0,0,.35);margin-bottom:12px}
 .topLine{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .tag{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:900;margin-bottom:8px}
@@ -90,7 +91,7 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.bottomNav button{min-height:43px;border-radius:14px;font-size:12px}.bottomNav .green{font-size:13px}
 @media(max-width:640px){
   body{padding:9px 9px 126px}h1{font-size:22px}.hero{border-radius:23px;padding:13px}.topLine{align-items:center}.status{min-width:88px;padding:8px}
-  .musicTop{grid-template-columns:1fr auto}.musicTop .hideSmall{display:none}.musicTop .chooseSmall{grid-column:1 / -1}.playerWrap{grid-template-columns:110px 1fr}.ytFrame{width:110px;height:62px}.eightBall{width:min(88vw,315px)}.eightWindowContent{font-size:13px}.eightBall.advice .eightWindowContent{font-size:11px}
+  .musicDockMini .musicTop{grid-template-columns:auto 1fr auto auto}.playerWrap{grid-template-columns:110px 1fr}.ytFrame{width:110px;height:62px}.eightBall{width:min(88vw,315px)}.eightWindowContent{font-size:13px}.eightBall.advice .eightWindowContent{font-size:11px}
   .tileGrid{grid-template-columns:repeat(2,1fr);gap:8px}.tile{min-height:88px;border-radius:21px;padding:10px 6px}.tileIcon{font-size:24px}.tile b{font-size:12px}.tile small{font-size:10px}
   .grid,.grid3,.logGrid{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.statCards{grid-template-columns:1fr 1fr}.card{border-radius:22px;padding:12px}.exercise{grid-template-columns:1fr}.num{margin-bottom:-3px}
   .bottomNav{grid-template-columns:1fr 1fr 1fr}.bottomNav button{font-size:11px}
@@ -145,23 +146,52 @@ body.timerFlash{animation:flashPulse .7s ease}
 .touchdownCard{text-align:center;padding:16px 14px}
 .touchdownCard .big{font-size:44px;line-height:1}
 @media(max-width:640px){.yardChips{grid-template-columns:repeat(5,1fr)}}
+
+/* ===== Onboarding + launcher gate ===== */
+.gateScreen{position:fixed;inset:0;background:#000;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 20px calc(26px + env(safe-area-inset-bottom))}
+.gateScreen.hidden{display:none}
+.gateInner{width:100%;max-width:420px;display:flex;flex-direction:column;gap:16px;animation:gateIn .32s ease}
+@keyframes gateIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.gateStep{color:var(--muted);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.gateTitle{color:#fff;font-size:24px;font-weight:900;text-align:center;line-height:1.25;margin:0}
+.gateSub{color:var(--muted);font-size:13px;text-align:center;margin:0}
+.gateInput{background:#0b0b10;color:#fff;border:1px solid #33343f;border-radius:18px;padding:16px;font-size:20px;text-align:center;font-weight:900}
+.gateGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:52vh;overflow-y:auto;padding:2px}
+.gateOption{background:#0b0b10;border:1px solid #33343f;border-radius:18px;padding:16px 8px;color:#fff;font-weight:900;font-size:14px;text-align:center;cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:center}
+.gateOption.active{background:var(--accent);color:var(--buttonText);border-color:transparent;transform:scale(1.03)}
+.gateOption small{display:block;font-weight:700;font-size:11px;opacity:.8;margin-top:3px}
+.gateRow{display:flex;gap:10px}
+.gateRow select,.gateRow input{flex:1}
+.gateBtn{width:100%;min-height:52px;border-radius:18px;background:var(--accent);color:var(--buttonText);font-weight:900;font-size:16px;border:0}
+.gateSkip{background:transparent;border:0;color:var(--muted);font-weight:800;font-size:13px;text-decoration:underline;padding:6px;min-height:0}
+.gateBack{position:absolute;top:calc(18px + env(safe-area-inset-top));left:18px;background:transparent;border:0;color:var(--muted);font-weight:900;font-size:14px;padding:8px}
+.gateDots{display:flex;gap:6px;justify-content:center;margin-bottom:2px}
+.gateDot{width:7px;height:7px;border-radius:50%;background:#33343f}
+.gateDot.on{background:var(--accent)}
+.launcherWrap{display:flex;flex-direction:column;gap:14px;width:100%}
+.launcherTitle{color:#fff;font-size:26px;font-weight:900;text-align:center;margin:0 0 4px}
+.launcherSub{color:var(--muted);font-size:13px;text-align:center;margin:0 0 10px}
+.launcherBtn{width:100%;min-height:84px;border-radius:24px;background:#0b0b10;border:1px solid #33343f;color:#fff;font-weight:900;font-size:18px;display:flex;align-items:center;gap:14px;padding:0 22px;cursor:pointer}
+.launcherBtn .launcherIcon{font-size:30px}
+.launcherBtn:active{background:var(--accent);color:var(--buttonText);border-color:transparent}
 </style>
 </head>
 <body>
+<div class="gateScreen hidden" id="gateScreen">
+  <div class="gateInner" id="gateInner"></div>
+</div>
 <div class="app">
-  <div class="musicDock">
+  <div class="musicDock musicDockMini">
     <div class="musicTop">
-      <input id="musicSearch" class="miniInput" placeholder="Paste YouTube video or playlist link, or type a preset" />
-      <button class="gold" onclick="playMusic()">Load Player</button>
-      <button class="hideSmall" onclick="toggleMusic()">Hide</button>
+      <span class="musicIcon">🎵</span>
+      <input id="musicSearch" class="miniInput" placeholder="Search a song or artist…" onkeydown="if(event.key==='Enter'){playMusic();}" />
+      <button class="gold" onclick="playMusic()">Play</button>
+      <button class="hideSmall" onclick="toggleMusic()" id="musicToggleBtn">▾</button>
     </div>
-    <div class="playerWrap" id="playerWrap">
-      <iframe id="musicFrame" class="ytFrame" src="https://www.youtube.com/embed/videoseries?list=PL3-sRm8xAzY9Qd1BoHHYFXRMUQlB4BZNt&rel=0&playsinline=1&enablejsapi=0" title="Mini YouTube player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-      <div>
-        <div class="quickChips" id="quickChips"></div>
-        <div class="musicHelp" id="musicHelp">YouTube is loaded inside the app. Tap the triangle inside the player once. If a preview blocks it, the same file should work better after Vercel deploy.</div>
-        <a id="musicFallback" class="musicFallback" target="_blank" rel="noopener" href="https://www.youtube.com/playlist?list=PL3-sRm8xAzY9Qd1BoHHYFXRMUQlB4BZNt">Open on YouTube if blocked</a>
-      </div>
+    <div class="playerWrap hidden" id="playerWrap">
+      <iframe id="musicFrame" class="ytFrame ytFrameMini" src="about:blank" title="Background music player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <div class="musicHelp" id="musicHelp">Type a song, artist, or paste a YouTube link, then tap Play.</div>
+      <a id="musicFallback" class="musicFallback hidden" target="_blank" rel="noopener" href="#">Open in YouTube</a>
     </div>
   </div>
 
@@ -272,13 +302,6 @@ footballSpeed:'https://www.youtube.com/watch?v=_JVAshIAVnw'
 };
 
 const YT_HOST='https://www.youtube.com/embed/';
-const musicPresets=[
- {key:'rap',label:'Rap / Hip Hop Workout',src:YT_HOST+'videoseries?list=PL3-sRm8xAzY9Qd1BoHHYFXRMUQlB4BZNt&rel=0&playsinline=1&enablejsapi=0'},
- {key:'trap',label:'Trap Motivation Workout',src:YT_HOST+'videoseries?list=PLeqH9tG-ObnZddkSWNAc2bM9-MQf3JCxr&rel=0&playsinline=1&enablejsapi=0'},
- {key:'makaveli',label:'Bodybuilding Makaveli Motivation',src:YT_HOST+'videoseries?list=PLDeT3PYJ-AKm0P5ih7Znj_tfwrtFR39Wr&rel=0&playsinline=1&enablejsapi=0'},
- {key:'badbunny',label:'Bad Bunny Latin Reggaeton Mix',src:YT_HOST+'videoseries?list=PLuMEcroxcdXF0e_u7gMvbV3OfJ3NE9qDd&rel=0&playsinline=1&enablejsapi=0'},
- {key:'goggins',label:'David Goggins Motivation',src:YT_HOST+'videoseries?list=PLTaMkgKv5vlza7KP6-3ZbdWItiC_vk0Pq&rel=0&playsinline=1&enablejsapi=0'}
-];
 const tiles=[
  ['morning','⚡','Speed & Agility','Warm up, quick feet, acceleration, COD, cooldown'],
  ['strength','🏋️','Workout','Strength, power, and core'],
@@ -293,7 +316,7 @@ const levelData={
 };
 
 function defaultState(){
- return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',height:'',age:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},skipped:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0,checkinDraft:{},checkinHistory:[],lastCheckinAt:0};
+ return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',height:'',age:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},skipped:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0,checkinDraft:{},checkinHistory:[],lastCheckinAt:0,onboarded:false,onboardStep:0,posMode:'hybrid',offPos:'',defPos:''};
 }
 function migrateOld(){
  let raw=localStorage.getItem(STORE);
@@ -325,11 +348,21 @@ if(state.mode==='indoor')state.mode='home';
 if(!['outdoor','home','facility','gym'].includes(state.mode))state.mode='outdoor';
 state.height = state.height || '';
 state.age = state.age || '';
+state.musicQuery = state.musicQuery || '';
 state.skipped = state.skipped || {};
 state.checkinDraft = state.checkinDraft || {};
 state.checkinHistory = state.checkinHistory || [];
 state.lastCheckinAt = state.lastCheckinAt || 0;
 if(!['home','morning','strength','touches','nutrition','dadtalk','settings'].includes(state.screen)) state.screen='home';
+state.posMode = state.posMode==='custom' ? 'custom' : 'hybrid';
+state.offPos = state.offPos || '';
+state.defPos = state.defPos || '';
+// Someone who already had a profile before this build shouldn't be forced
+// through onboarding — only genuinely new installs see it.
+if(state.onboarded===undefined){
+ state.onboarded = !!(state.profileWeight || state.day>1 || Object.keys(state.logs||{}).length>0);
+}
+state.onboardStep = state.onboardStep || 0;
 
 function modeLabel(){
  return {outdoor:'Outdoor Field',home:'Home Indoor',facility:'Indoor Facility',gym:'Gym'}[state.mode]||'Outdoor Field';
@@ -569,7 +602,103 @@ function touchPlan(){
   [touch('tightEnd','TE High Catch And Tuck',adjusted(30),'Big body hands. High catch, squeeze, tuck through contact.','oneHandTwoHands'),touch('overShoulder','Over The Shoulder Catch',adjusted(20),'Both shoulders. Smooth run, late eyes, soft hands.','overShoulder')],
   [touch('cleanTuck','Clean Tuck Finishes',adjusted(50),'Every catch ends high and tight. Catch means nothing if he does not secure it.','tossUpsGrip'),touch('dropReset','Drop Reset Tiny Catch Work',adjusted(25),'For every drop, add a perfect tiny catch. Correct the mistake immediately.','circleDrops')]
  ];
+ const activePools=activePositionPools();
+ if(activePools && activePools.length===2){
+   return base.concat([activePools[0][cycle%5], activePools[1][cycle%5]]);
+ }
+ if(activePools && activePools.length===1){
+   // Just one position picked (offense OR defense) — pull two different
+   // drills from that same 5-drill pool so the session still has variety.
+   return base.concat([activePools[0][cycle%5], activePools[0][(cycle+2)%5]]);
+ }
  return base.concat(extras[cycle]);
+}
+const OFF_POSITIONS=[['QB','Quarterback'],['RB','Running Back'],['WR','Wide Receiver'],['TE','Tight End'],['OL','Offensive Line']];
+const DEF_POSITIONS=[['DL','D-Line / Edge'],['LB','Linebacker'],['CB','Cornerback'],['S','Safety']];
+function posLabel(code){
+ const f=OFF_POSITIONS.find(p=>p[0]===code)||DEF_POSITIONS.find(p=>p[0]===code);
+ return f?f[1]:code;
+}
+// Returns an array of the drill pools actually in play (0, 1, or 2 of them)
+// based on onboarding's position choice: Athlete/unsure -> null (hybrid,
+// unchanged rotation), just one position -> 1 pool, both -> 2 pools.
+function activePositionPools(){
+ if(state.posMode!=='custom') return null;
+ const pools=positionDrillPools();
+ const chosen=[state.offPos,state.defPos].filter(Boolean);
+ if(!chosen.length) return null;
+ return chosen.map(p=>pools[p]).filter(Boolean);
+}
+// Position-tailored Touches pools — 5 drills each for all 9 positions.
+// Two of the day's seven Touches drills are pulled from here when a
+// position (or two) is chosen; otherwise touchPlan() uses the all-position
+// hybrid rotation above, unchanged.
+function positionDrillPools(){
+ return {
+  QB:[
+   touch('posQbSnap','QB Snap Catch And Secure',adjusted(35),'Catch clean off the snap motion, secure the ball high and tight immediately.','tossUpsGrip'),
+   touch('posQbFootwork','QB Drop Back Ball Carriage',adjusted(20),'3 and 5 step drop while carrying the ball at the chest, eyes up.','dbW'),
+   touch('posQbPocket','Pocket Reset Shuffle',adjusted(18),'Short controlled shuffle, reset the feet, stay square in the pocket.','shuffleSprint'),
+   touch('posQbRelease','Quick Hand Transfer For Release',adjusted(30),'Fast two hand ball transfers to speed up release timing.','circleDrops'),
+   touch('posQbScramble','Scramble Ball Security',adjusted(20),'Extend the play on the move, keep the ball high and tight.','falling')
+  ],
+  RB:[
+   touch('posRbSecurity','RB Five Points Of Pressure',adjusted(45),'Fingers over the tip, palm, forearm, bicep, ribs. Switch arms, finish high and tight.','tossUpsGrip'),
+   touch('posRbCut','Jump Cut With Ball Security',adjusted(24),'Plant, cut, explode, cover the ball through the cut.','tossUpsGrip'),
+   touch('posRbVision','Toss And Tuck Vision Reps',adjusted(30),'Catch the toss, find the hole, tuck immediately and go downhill.','oneHandTwoHands'),
+   touch('posRbCarry','Carry Through Contact Control',adjusted(20),'Carry through a bag or pillow, ball locked down the whole way.','farmer'),
+   touch('posRbCheckdown','Check Down Hands Out Of The Backfield',adjusted(30),'Soft hands out of the backfield, tuck and get vertical fast.','oneHandTwoHands')
+  ],
+  WR:[
+   touch('posWrRelease','Release And Late Hands Catch',adjusted(30),'Do not show hands early. Release clean, flash late, snatch the ball.','lateHands'),
+   touch('posWrOverShoulder','Deep Ball Over The Shoulder',adjusted(25),'Track it over both shoulders, late eyes, soft hands, tuck and finish.','overShoulder'),
+   touch('posWrContested','Contested Catch Hands',adjusted(20),'High point the ball, strong hands through contact.','badHands'),
+   touch('posWrQuick','Quick Game Hands Reps',adjusted(35),'Fast, low, and away catches for the quick passing game.','tennisWall'),
+   touch('posWrRoute','Route Break Catch Finish',adjusted(30),'Plant out of the break, catch clean, get north immediately.','catchFootball')
+  ],
+  TE:[
+   touch('posTeHighCatch','Big Body High Point Catch',adjusted(28),'Go get it. High catch, squeeze it, tuck through contact.','oneHandTwoHands'),
+   touch('posTeRelease','Release Hands At The Line',adjusted(30),'Beat the jam with strong, fast hands before the release.','handFight'),
+   touch('posTeSeam','Seam Route Tracking',adjusted(22),'Track it up the seam, late eyes, soft hands, finish strong.','overShoulder'),
+   touch('posTeBlockHands','Blocking Hand Placement',adjusted(20),'Inside hands, strike and control, stay square.','wallDrive'),
+   touch('posTeSecurity','After Catch Ball Security',adjusted(25),'Secure high and tight the instant the catch is made.','tossUpsGrip')
+  ],
+  OL:[
+   touch('posOlPunch','Punch And Hand Placement',adjusted(30),'Inside hands, strike on rise, lock out, stay square.','wallDrive'),
+   touch('posOlGetoff','Get Off On The Snap Count',adjusted(25),'React to the snap, not a guess. First move wins.','deGetoff'),
+   touch('posOlAnchor','Anchor And Hold Ground',adjusted(20),'Heavy carry or hold, sink the hips, do not get moved.','farmer'),
+   touch('posOlHandFight','Hand Fighting At The Point',adjusted(35),'Strike, control, reset. Hands win the rep at the line.','handFight'),
+   touch('posOlCore','Core Brace For Contact',adjusted(30),'Brace like contact is coming on every rep.','plank','seconds')
+  ],
+  DL:[
+   touch('posDlGetoff','DE Get Off Reaction',adjusted(25),'Explode on movement or sound. First step wins the rep.','deGetoff'),
+   touch('posDlHands','Hand Strike Reaction',adjusted(35),'Strike fast, disengage, relocate. Hands win the rep.','deHands'),
+   touch('posDlBend','Edge Bend And Turn The Corner',adjusted(20),'Flatten out and turn the corner low and fast.','linearCod'),
+   touch('posDlShed','Block Shed Hand Fight',adjusted(30),'Strike, extend, shed, and find the ball.','handFight'),
+   touch('posDlPursuit','Pursuit Angle Burst',adjusted(22),'Take the right angle and finish the play.','falling')
+  ],
+  LB:[
+   touch('posLbShed','Block Shed And Locate',adjusted(30),'Strike, shed, find the ball fast.','handFight'),
+   touch('posLbBackpedal','Zone Drop Backpedal Break',adjusted(24),'Pedal, read, break downhill on the ball.','dbBackpedal'),
+   touch('posLbShuffle','Shuffle And Fill The Gap',adjusted(25),'Low hips, quick feet, fill your gap fast.','shuffleSprint'),
+   touch('posLbHands','Strip And Take Away Hands',adjusted(30),'Rip through, punch the ball out, secure the takeaway.','tossUpsGrip'),
+   touch('posLbCatch','Underneath Zone Catch Reps',adjusted(25),'Read, break, catch clean, turn upfield.','oneHandTwoHands')
+  ],
+  CB:[
+   touch('posCbBackpedal','Backpedal Break And Drive',adjusted(24),'Pedal, plant, break downhill, finish on the ball.','dbBackpedal'),
+   touch('posCbW','W Drill Ball Finish',adjusted(18),'W pattern footwork with a catch finish at the break.','dbW'),
+   touch('posCbLate','Late Hands Ball Skill',adjusted(30),'Do not show hands early. Flash late and attack the catch point.','lateHands'),
+   touch('posCbDeep','Deep Ball Tracking',adjusted(25),'Turn and track over the shoulder, play through the hands.','overShoulder'),
+   touch('posCbPress','Press Jam Hands',adjusted(28),'Strong hands at the line, stay square, redirect.','handFight')
+  ],
+  S:[
+   touch('posSRange','Deep Range Ball Tracking',adjusted(25),'Read the quarterback, break, track it over the shoulder.','overShoulder'),
+   touch('posSBackpedal','Backpedal Break On The Ball',adjusted(24),'Pedal, plant, drive downhill on the throw.','dbBackpedal'),
+   touch('posSTackle','Angle And Close Burst',adjusted(22),'Take the right angle, close the gap fast.','falling'),
+   touch('posSHands','Late Hands Interception Reps',adjusted(30),'Flash late, attack the ball at its highest point.','lateHands'),
+   touch('posSCommunicate','Read And React Shuffle',adjusted(25),'Shuffle, read the play, react and fill.','shuffleSprint')
+  ]
+ };
 }
 function athleteWeight(){
  const l=logFor();
@@ -602,10 +731,45 @@ function nutritionTargets(){
  return {weight,calLow,calHigh,proteinLow,proteinHigh,carbLow,carbHigh,fatLow,fatHigh,water,addedSugarMax};
 }
 
+// SOLO / PARTNER — asked once per module per day. Stored on that day's log
+// since it's a session-shape choice, not a global setting.
+function soloPartnerFor(type){ return logFor()['sp_'+type] || ''; }
+function setSoloPartner(type,choice){ logFor()['sp_'+type]=choice; save(); render(); }
+function morningPlanForSession(){
+ const list=morningPlan();
+ if(soloPartnerFor('morning')==='partner'){
+   return list.concat([
+     ex('partnerMirror','Partner Mirror Reaction Sprint',3,'10 seconds each','40 sec','Partner calls a direction, you mirror and react instantly — reaction speed a solo session cannot replicate.','shuffleSprint'),
+     ex('partnerResisted','Partner-Resisted Start',4,'10 yards','75 sec','Partner holds light resistance (band, or hands on shoulders) for the first 3 steps, then releases clean.','resisted')
+   ]);
+ }
+ return list;
+}
+function strengthPlanForSession(){
+ const list=strengthPlan();
+ if(soloPartnerFor('strength')==='partner'){
+   return list.concat([
+     ex('partnerSpot','Partner-Spotted Press Variation',3,'6 reps','80 sec','Partner spots the top of the lift so you can push heavier intent safely.','floorPress','weight'),
+     ex('partnerMedThrow','Partner Med Ball Exchange',3,'8 exchanges','70 sec','Explosive back-and-forth passes — real power and reaction a wall cannot give.','medball')
+   ]);
+ }
+ return list;
+}
+function touchPlanForSession(){
+ const list=touchPlan();
+ if(soloPartnerFor('touches')==='partner'){
+   return list.concat([
+     touch('partnerThrow','Partner Thrown Ball Catch Series',adjusted(30),'Partner throws live passes instead of tosses — real timing and a real read.','oneHandTwoHands'),
+     touch('partnerContest','Partner Contested Catch',adjusted(15),'Partner lightly contests the catch point — 50-50 ball reps.','badHands')
+   ]);
+ }
+ return list;
+}
 function reqWorkoutComplete(type){
  const l=logFor();
+ if(!soloPartnerFor(type)) return false;
  if(type==='morning')return !!l.morningComplete;
- const plan=strengthPlan();
+ const plan=strengthPlanForSession();
  if(type==='strength'){
    return plan.every(e=>{
      const sets=adjustedSets(e.sets);
@@ -620,7 +784,8 @@ function reqWorkoutComplete(type){
 
 function reqTouchesComplete(){
  const l=logFor();
- return touchPlan().every(t=>String(l['touch_'+t.id]||'').trim()!=='');
+ if(!soloPartnerFor('touches')) return false;
+ return touchPlanForSession().every(t=>String(l['touch_'+t.id]||'').trim()!=='');
 }
 function reqNutritionCompleteForDay(d){
  const l=state.logs['day'+d]||{};
@@ -667,6 +832,135 @@ function goBack(){
  const prev=navStack.pop()||'home';
  state.screen=prev; save(); render();
 }
+
+/* =========================================================
+   ONBOARDING + LAUNCHER GATE
+   Full-screen black question flow shown once ever (until reset),
+   followed by a Home/Settings/Nutrition launcher shown once per
+   app open, before any dashboard content renders.
+   ========================================================= */
+let appEntered=false;
+let onboardStack=[];
+function showGate(){
+ document.getElementById('gateScreen').classList.remove('hidden');
+ const app=document.querySelector('.app'); if(app)app.classList.add('hidden');
+ const nav=document.getElementById('bottomNav'); if(nav)nav.classList.add('hidden');
+}
+function hideGate(){
+ document.getElementById('gateScreen').classList.add('hidden');
+ const app=document.querySelector('.app'); if(app)app.classList.remove('hidden');
+ const nav=document.getElementById('bottomNav'); if(nav)nav.classList.remove('hidden');
+}
+function boot(){
+ if(!state.onboarded){ showGate(); renderOnboarding(); return; }
+ if(!appEntered){ showGate(); renderLauncher(); return; }
+ hideGate(); render();
+}
+function onboardGoto(step){
+ onboardStack.push(state.onboardStep||0);
+ state.onboardStep=step; save();
+ renderOnboarding();
+}
+function onboardBack(){
+ const prev=onboardStack.pop();
+ state.onboardStep = prev===undefined?0:prev; save();
+ renderOnboarding();
+}
+function onboardStepHTML(){
+ const step=state.onboardStep||0;
+ if(step===0)return onboardAgeHTML();
+ if(step===1)return onboardOffenseHTML();
+ if(step===2)return onboardDefenseHTML();
+ return onboardHeightWeightHTML();
+}
+function renderOnboarding(){
+ const el=document.getElementById('gateInner');
+ if(el)el.innerHTML=onboardStepHTML();
+}
+function onboardAgeHTML(){
+ return `<div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===0?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 1 of 4</div>
+  <h1 class="gateTitle">How old are you?</h1>
+  <p class="gateSub">This sets safe training loads and supplement dosing for your age — not a fixed adult number.</p>
+  <input id="onboardAgeInput" class="gateInput" type="number" inputmode="numeric" min="8" max="25" placeholder="Age" value="${state.age||''}" />
+  <button class="gateBtn" onclick="onboardSaveAge()">Continue</button>`;
+}
+function onboardSaveAge(){
+ const v=Number((document.getElementById('onboardAgeInput')||{}).value);
+ if(!v||v<8||v>25){alert('Enter a real age between 8 and 25.');return;}
+ state.age=String(v); save();
+ onboardGoto(1);
+}
+function onboardOffenseHTML(){
+ return `<button class="gateBack" onclick="onboardBack()">← Back</button>
+  <div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===1?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 2 of 4</div>
+  <h1 class="gateTitle">What do you play on offense?</h1>
+  <p class="gateSub">Pick one — or skip if you only play defense, or you are not sure yet.</p>
+  <div class="gateGrid">${OFF_POSITIONS.map(([code,label])=>`<div class="gateOption ${state.offPos===code?'active':''}" onclick="onboardPickOff('${code}')">${label}</div>`).join('')}</div>
+  <button class="gateSkip" onclick="onboardSkipOff()">Skip offense →</button>
+  <button class="gateSkip" onclick="onboardJustAthlete()">Not sure yet — just athlete</button>`;
+}
+function onboardPickOff(code){ state.offPos=code; state.posMode='custom'; save(); onboardGoto(2); }
+function onboardSkipOff(){ onboardGoto(2); }
+function onboardJustAthlete(){ state.posMode='hybrid'; state.offPos=''; state.defPos=''; save(); onboardGoto(3); }
+function onboardDefenseHTML(){
+ return `<button class="gateBack" onclick="onboardBack()">← Back</button>
+  <div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===2?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 3 of 4</div>
+  <h1 class="gateTitle">What do you play on defense?</h1>
+  <p class="gateSub">Pick one — or skip if you only play offense.</p>
+  <div class="gateGrid">${DEF_POSITIONS.map(([code,label])=>`<div class="gateOption ${state.defPos===code?'active':''}" onclick="onboardPickDef('${code}')">${label}</div>`).join('')}</div>
+  <button class="gateSkip" onclick="onboardSkipDef()">Skip defense →</button>`;
+}
+function onboardPickDef(code){ state.defPos=code; state.posMode='custom'; save(); onboardGoto(3); }
+function onboardSkipDef(){ onboardGoto(3); }
+function onboardHeightWeightHTML(){
+ const totalIn=Number(state.height)||0;
+ const ft=totalIn?Math.floor(totalIn/12):5, inch=totalIn?Math.round(totalIn%12):0;
+ return `<button class="gateBack" onclick="onboardBack()">← Back</button>
+  <div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===3?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 4 of 4</div>
+  <h1 class="gateTitle">Height & weight</h1>
+  <p class="gateSub">Used for your nutrition targets and workout scaling.</p>
+  <div class="gateRow">
+   <select id="onboardFeet" class="gateInput">${[3,4,5,6,7].map(f=>`<option value="${f}" ${f===ft?'selected':''}>${f} ft</option>`).join('')}</select>
+   <select id="onboardInches" class="gateInput">${Array.from({length:12},(_,i)=>i).map(i=>`<option value="${i}" ${i===inch?'selected':''}>${i} in</option>`).join('')}</select>
+  </div>
+  <input id="onboardWeight" class="gateInput" type="number" inputmode="numeric" min="40" max="400" placeholder="Weight (lbs)" value="${state.profileWeight||''}" />
+  <button class="gateBtn" onclick="onboardFinish()">Finish</button>`;
+}
+function onboardFinish(){
+ const ft=Number((document.getElementById('onboardFeet')||{}).value);
+ const inch=Number((document.getElementById('onboardInches')||{}).value);
+ const w=Number((document.getElementById('onboardWeight')||{}).value);
+ if(!w||w<40||w>400){alert('Enter a real weight in pounds (40 to 400).');return;}
+ state.height=String(ft*12+inch);
+ state.profileWeight=String(w);
+ state.onboarded=true;
+ save();
+ boot();
+}
+function renderLauncher(){
+ const el=document.getElementById('gateInner');
+ if(!el)return;
+ el.innerHTML=`<div class="launcherWrap">
+  <h1 class="launcherTitle">Jr Level 13</h1>
+  <p class="launcherSub">Where do you want to go?</p>
+  <button class="launcherBtn" onclick="enterApp('home')"><span class="launcherIcon">🏠</span> Home</button>
+  <button class="launcherBtn" onclick="enterApp('settings')"><span class="launcherIcon">🎨</span> Settings</button>
+  <button class="launcherBtn" onclick="enterApp('nutrition')"><span class="launcherIcon">🍽️</span> Nutrition</button>
+ </div>`;
+}
+function enterApp(screen){
+ appEntered=true;
+ state.screen=screen;
+ navStack=['home'];
+ save();
+ hideGate();
+ render();
+}
+
 function renderTiles(){
  const card=document.getElementById('tileCard'), el=document.getElementById('tiles');
  const backRow=document.getElementById('backRow');
@@ -803,29 +1097,56 @@ function outlineRow(item){
  }
  return `<div class="checkItem"><span>${item.name}</span><span class="tiny">${adjustedSets(item.sets)}x ${targetText(item.reps)}</span></div>`;
 }
+function soloPartnerPromptHTML(type,title){
+ return `<div class="questionCard" style="margin:0 0 10px">
+  <div class="qCount">Before you start</div>
+  <div class="qText">${title} — solo or with a partner today?</div>
+ </div>
+ <div class="grid">
+  <button class="gold" onclick="setSoloPartner('${type}','solo')">🧍 Solo</button>
+  <button class="blue" onclick="setSoloPartner('${type}','partner')">🤝 Partner</button>
+ </div>
+ <p class="tiny" style="text-align:center;margin-top:8px">Partner unlocks a couple of extra reaction and resistance drills a solo session can't do.</p>`;
+}
+function soloPartnerBadgeHTML(type){
+ const sp=soloPartnerFor(type);
+ return `<div class="row" style="justify-content:space-between;margin-top:6px"><span class="badge ${sp==='partner'?'good':''}">${sp==='partner'?'🤝 Partner':'🧍 Solo'} session</span><button style="min-height:30px;padding:5px 10px;font-size:11px" onclick="setSoloPartner('${type}','')">Change</button></div>`;
+}
 function renderMorning(){
- const list=morningPlan();
+ const sp=soloPartnerFor('morning');
+ if(!sp){ document.getElementById('screen_morning').innerHTML=soloPartnerPromptHTML('morning','Speed & Agility'); return; }
+ const list=morningPlanForSession();
  if(guided.morning.idx>=list.length)guided.morning.idx=0;
  const header=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Speed, Agility & Plyos</h2><div class="small">${dayTheme(state.day)}</div></div><span class="badge goldTxt">${modeLabel()}</span></div>
+ ${soloPartnerBadgeHTML('morning')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">The coach cycle changes every day and progresses every week. ${modeNotice()} ${levelNotice()} No time, rep, or completed boxes during speed work — train straight through, rest like an athlete, then tap Save once at the end.</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
  document.getElementById('screen_morning').innerHTML=header+renderGuidedCard('morning',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Morning work')">Save Morning Work</button>`;
  flushMediaBoxes();
 }
 function renderStrength(){
- const list=strengthPlan();
+ const sp=soloPartnerFor('strength');
+ if(!sp){ document.getElementById('screen_strength').innerHTML=soloPartnerPromptHTML('strength','Workout'); return; }
+ const list=strengthPlanForSession();
  if(guided.strength.idx>=list.length)guided.strength.idx=0;
  const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout • ${modeLabel()}</div><h2>Explosive Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
+ ${soloPartnerBadgeHTML('strength')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">Changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set — bodyweight work uses his body weight.</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
  document.getElementById('screen_strength').innerHTML=header+renderGuidedCard('strength',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Strength work')">Save Strength Work</button>`;
  flushMediaBoxes();
 }
 function renderTouches(){
- const list=touchPlan();
+ const sp=soloPartnerFor('touches');
+ if(!sp){ document.getElementById('screen_touches').innerHTML=soloPartnerPromptHTML('touches','Football Touches'); return; }
+ const list=touchPlanForSession();
  if(guided.touches.idx>=list.length)guided.touches.idx=0;
- const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Solo football skill</div><h2>Football Touches</h2></div><span class="badge goldTxt">WR RB TE DE CB</span></div>
- <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">Blends receiver hands, running back security, tight end high catches, cornerback ball skills, and defensive end hand reaction.</p></div></details>
+ const custom=state.posMode==='custom' && (state.offPos||state.defPos);
+ const badgeTxt=custom?[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' / '):'WR RB TE DE CB';
+ const whyTxt=custom?`Tailored to ${[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' and ')}, blended with the core catching fundamentals every athlete needs.`:'Blends receiver hands, running back security, tight end high catches, cornerback ball skills, and defensive end hand reaction.';
+ const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Football skill</div><h2>Football Touches</h2></div><span class="badge goldTxt">${badgeTxt}</span></div>
+ ${soloPartnerBadgeHTML('touches')}
+ <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">${whyTxt}</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
  document.getElementById('screen_touches').innerHTML=header+renderGuidedCard('touches',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Football touches')">Save Football Touches</button>`;
  flushMediaBoxes();
@@ -1126,7 +1447,6 @@ function renderShell(){
  document.getElementById('programFill').style.width=pct+'%';
  document.getElementById('playerWrap').classList.toggle('hidden',!state.musicOpen);
  ensureMusicPlayer();
- renderChips();
  renderTiles();
  updateCompleteButton();
 }
@@ -1137,18 +1457,19 @@ function render(){
  document.getElementById('screen_'+state.screen).classList.add('active');
  save();
 }
-function renderChips(){document.getElementById('quickChips').innerHTML=musicPresets.map(p=>`<button onclick="playPreset('${p.key}')">${p.label}</button>`).join('');}
-function toggleMusic(){state.musicOpen=!state.musicOpen;save();render();}
+function toggleMusic(){
+ state.musicOpen=!state.musicOpen;save();
+ document.getElementById('playerWrap').classList.toggle('hidden',!state.musicOpen);
+ const btn=document.getElementById('musicToggleBtn'); if(btn)btn.textContent=state.musicOpen?'▴':'▾';
+}
 function ensureMusicPlayer(){
- const f=document.getElementById('musicFrame'), a=document.getElementById('musicFallback'), h=document.getElementById('musicHelp');
+ const f=document.getElementById('musicFrame');
  if(!f)return;
  document.getElementById('playerWrap').classList.toggle('hidden',!state.musicOpen);
- if(!f.getAttribute('src') || f.getAttribute('src')==='about:blank'){
-   const p=musicPresets.find(x=>x.key==='rap');
-   f.setAttribute('src',p.src);
-   if(a){a.href='https://www.youtube.com/playlist?list=PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI';a.classList.remove('hidden');}
- }
- if(h)h.textContent='YouTube is loaded inside the app. Tap the triangle inside the player once. Browsers usually will not start sound from a button outside the iframe.';
+ const btn=document.getElementById('musicToggleBtn'); if(btn)btn.textContent=state.musicOpen?'▴':'▾';
+ if(state.musicSrc && f.getAttribute('src')!==state.musicSrc){ f.setAttribute('src',state.musicSrc); }
+ const search=document.getElementById('musicSearch');
+ if(search && state.musicQuery && !search.value) search.value=state.musicQuery;
 }
 function youtubeWatchUrl(type,id){return type==='playlist'?`https://www.youtube.com/playlist?list=${encodeURIComponent(id)}`:`https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;}
 function youtubeEmbedUrl(type,id){
@@ -1168,38 +1489,29 @@ function parseYouTube(input){
  }catch(e){}
  return null;
 }
-function setMusicSource(src,url,label=''){
+function setMusicSource(src,url,query=''){
  const f=document.getElementById('musicFrame'), a=document.getElementById('musicFallback'), h=document.getElementById('musicHelp');
- state.musicSrc=src; state.musicUrl=url; state.musicOpen=true; save();
+ state.musicSrc=src; state.musicUrl=url; state.musicQuery=query; state.musicOpen=true; save();
  document.getElementById('playerWrap').classList.remove('hidden');
+ const btn=document.getElementById('musicToggleBtn'); if(btn)btn.textContent='▴';
  if(f){f.setAttribute('src',src);}
- if(a){a.href=url; a.classList.remove('hidden');a.textContent='Open on YouTube if blocked';}
- if(h)h.textContent=label?`${label} loaded. Tap the play triangle inside the YouTube player.`:'Player loaded. Tap the play triangle inside the YouTube player.';
+ if(a && url){a.href=url; a.classList.remove('hidden');}
+ if(h)h.textContent='Playing in the background. Tap the play triangle inside the player once if it does not auto-start.';
 }
+// No YouTube Data API key is configured, so a typed search plays through
+// YouTube's own embeddable "search results as a playlist" mode. A pasted
+// video or playlist link plays directly instead.
 function playMusic(){
- let q=document.getElementById('musicSearch').value.trim();
- if(!q){playPreset('rap');return;}
+ let q=(document.getElementById('musicSearch').value||'').trim();
+ if(!q)return;
  let parsed=parseYouTube(q);
  if(parsed){
-   setMusicSource(youtubeEmbedUrl(parsed.type,parsed.id),youtubeWatchUrl(parsed.type,parsed.id),'YouTube');
+   setMusicSource(youtubeEmbedUrl(parsed.type,parsed.id),youtubeWatchUrl(parsed.type,parsed.id),q);
    return;
  }
- let found=musicPresets.find(p=>q.toLowerCase().includes(p.key)||q.toLowerCase().includes(p.label.toLowerCase()));
- if(found){playPreset(found.key);return;}
- const a=document.getElementById('musicFallback'), h=document.getElementById('musicHelp');
- const url='https://www.youtube.com/results?search_query='+encodeURIComponent(q);
- if(a){a.href=url;a.classList.remove('hidden');a.textContent='Open YouTube search for '+q;}
- if(h)h.textContent='Search results cannot be embedded directly without YouTube Data API. Paste a YouTube video or playlist link, or tap a preset.';
-}
-function playPreset(key){
- let p=musicPresets.find(x=>x.key===key);
- if(p){
-   document.getElementById('musicSearch').value=p.label;
-   const listMatch=p.src.match(/[?&]list=([^&]+)/);
-   const videoMatch=p.src.match(/\/embed\/([^?]+)/);
-   const url=listMatch?'https://www.youtube.com/playlist?list='+listMatch[1]:'https://www.youtube.com/watch?v='+(videoMatch?videoMatch[1]:'');
-   setMusicSource(p.src,url,p.label);
- }
+ const embed=YT_HOST+'?listType=search&list='+encodeURIComponent(q)+'&autoplay=1&rel=0&playsinline=1';
+ const watch='https://www.youtube.com/results?search_query='+encodeURIComponent(q);
+ setMusicSource(embed,watch,q);
 }
 function completeDay(){
  if(!canComplete()){alert('Day is locked. Finish every required section first.');return;}
@@ -1215,7 +1527,7 @@ function exportData(){
 }
 function resetConfirm(){
  const pin=prompt('Coach reset PIN');
- if(pin==='1302'){localStorage.removeItem(STORE);state=defaultState();render();}
+ if(pin==='1302'){localStorage.removeItem(STORE);state=defaultState();appEntered=false;onboardStack=[];boot();}
 }
 
 /* =========================================================
@@ -1491,9 +1803,9 @@ async function renderMediaBox(uid){
    ========================================================= */
 const guided={morning:{idx:0},strength:{idx:0},touches:{idx:0}};
 function guidedList(type){
- if(type==='morning')return morningPlan();
- if(type==='strength')return strengthPlan();
- return touchPlan();
+ if(type==='morning')return morningPlanForSession();
+ if(type==='strength')return strengthPlanForSession();
+ return touchPlanForSession();
 }
 function resetGuidedProgress(){ guided.morning.idx=0; guided.strength.idx=0; guided.touches.idx=0; }
 function jumpGuided(type,i){ guided[type].idx=i; render(); }
@@ -1594,7 +1906,7 @@ function renderAllTrendCharts(){
  +renderTrendChart('bestVertical','Vertical Jump','in','higher');
 }
 
-render();
+boot();
 </script>
 </body>
 </html>
