@@ -256,7 +256,7 @@ const DAYS_TOTAL=30;
 // (full onboarding + launcher) instead of carrying over test data from the
 // last round. Once this is the final version, stop bumping it (or set
 // FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v3-round6';
+const BUILD_VERSION='v3-round7';
 const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
@@ -552,7 +552,19 @@ function morningPlan(){
    7:[ex('gymD7Mobility','Extended Mobility Flow',1,'10 minutes','none','Recovery day.','warm'),ex('gymD7Wall','Easy Wall Drives',3,'15 seconds each leg','35 sec','Posture only.','wallDrive'),ex('gymD7Pogo','Easy Pogos',3,'15 seconds','40 sec','Light ankle rhythm.','pogo'),ex('gymD7Core','Dead Bug Breathing',3,'8 each side','30 sec','Core reset.','deadbug'),ex('gymD7Carry','Light Carry',3,'20 yards','50 sec','Tall posture.','farmer'),ex('gymD7Prep','Smooth Prep Build Up',3,'15 seconds','45 sec','Leave fresh.','sprintFloat')]
   }
  };
- plans.outdoor=plans.facility;
+ // Outdoor Field gets its own genuinely no-equipment program — open grass,
+ // field lines, and bodyweight only. It used to just reuse the Facility
+ // plan (which assumes cones, sleds, and bands), which meant "Outdoor"
+ // never actually looked different from "Indoor Facility."
+ plans.outdoor={
+  1:[ex('outD1Start','10 Yard Acceleration Starts',6,'1 sprint','90 sec','No equipment needed — just open grass. First three steps win the rep.','tenYard'),ex('outD1Falling','Falling Start Sprints',5,'1 sprint for 10 yards','90 sec','Lean and fall into the sprint, no blocks or gear needed.','falling'),ex('outD1Twenty','20 Yard Acceleration Build',5,'1 sprint','110 sec','Drive, rise, finish — open field only.','tenYard'),ex('outD1Broad','Broad Jump Stick',5,'2 jumps','75 sec','Horizontal power for the 40, bodyweight only.','broad'),ex('outD1Decel','Sprint To Stick',4,'1 sprint and stop','80 sec','Speed with brakes, no equipment.','sprintStick'),ex('outD1Pogo','Pogo Series',4,'25 seconds','45 sec','Reactive ankles, just grass under the feet.','pogo')],
+  2:[ex('outD2Wickets','Line Or Shadow Wicket Runs',5,'2 trips','60 sec','Use painted field lines or imagined marks instead of cones — same rhythm work.','wickets'),ex('outD2Fly','Flying 10s',5,'20 yard build plus 10 yard fly','120 sec','Top speed exposure across open grass.','fly10'),ex('outD2Float','Sprint Float Sprint',4,'10 fast, 10 float, 10 fast','120 sec','Fast without tension.','sprintFloat'),ex('outD2Bounds','Single Leg Bounds',4,'6 each leg','80 sec','Horizontal force, bodyweight only.','singleLeg'),ex('outD2Pogo','Ankle Pogo Reset',3,'20 seconds','45 sec','Quick contacts.','pogo'),ex('outD2Decel','Fly Sprint To Decel',4,'1 rep','90 sec','Shut down clean.','decel')],
+  3:[ex('outD3Mirror','Mirror Shuffle Reaction',5,'12 seconds','45 sec','Partner calls a direction — no cones needed, just open space.','shuffleSprint'),ex('outD3Shuttle','5 10 5 Pro Agility, Field Lines',5,'1 rep','110 sec','Use yard lines or any two visible marks 5 yards apart.','shuttle'),ex('outD3Soccer','45 Degree Cut Series',5,'2 cuts each side','75 sec','Plant and cut on open grass.','linearCod'),ex('outD3Lateral','Lateral Bound To Sprint',4,'4 each side','70 sec','Side power into acceleration.','lateralBound'),ex('outD3Db','Backpedal Break In Place',4,'1 full rep','85 sec','Backpedal, plant, drive — bodyweight only.','dbW'),ex('outD3Core','Side Plank Speed Brace',3,'25 seconds each side','35 sec','Lateral trunk strength for cuts.','plank')],
+  4:[ex('outD4Icky','Shadow Icky Shuffle',5,'2 trips plus burst','40 sec','No ladder needed — high knee shuffle pattern on grass.','icky'),ex('outD4Db','Backpedal Break',5,'3 breaks each side','55 sec','Cornerback hips and feet.','dbBackpedal'),ex('outD4Shuffle','Shuffle Open Hip Run',5,'1 each side','55 sec','LB, RB, DB transition.','shuffleSprint'),ex('outD4Curve','Curved Sprint',5,'1 curve each side','75 sec','Soccer and edge speed.','footballSpeed'),ex('outD4Hurdle','Bodyweight Hop Series To Sprint',4,'5 hops plus burst','75 sec','No hurdles needed — quick pogo hops into a burst.','hurdleHop'),ex('outD4Stick','COD Stop Reaccel',4,'1 rep','90 sec','Brake, own it, go.','sprintStick')],
+  5:[ex('outD5Forty','40 Yard Build And Finish',3,'1 fast rep','150 sec','Combine transfer on open grass. Drive, rise, finish.','footballSpeed'),ex('outD5Fly','Flying 10',4,'20 build plus 10 fly','130 sec','Top end speed.','fly10'),ex('outD5Shuttle','Timed 5 10 5',4,'1 rep','120 sec','Use field lines, best clean rep.','shuttle'),ex('outD5Bound','Broad Jump Power',4,'2 jumps','90 sec','Explode forward.','broad'),ex('outD5Reaction','Reaction Cut And Go',5,'1 cut each call','55 sec','Game speed reaction, partner calls direction.','linearCod'),ex('outD5Core','Plank Sprint Brace',3,'30 seconds','45 sec','Core tight and posture strong.','plank')],
+  6:[ex('outD6Tempo','Tempo Build Ups',6,'40 yards at 70 to 80 percent','60 sec','Technique under controlled fatigue.','sprintFloat'),ex('outD6Wickets','Easy Rhythm Runs',4,'2 trips','50 sec','Posture and rhythm on open grass.','wickets'),ex('outD6Balance','Single Leg Balance Bound',4,'4 each leg','65 sec','Recovery power.','singleLeg'),ex('outD6Shuffle','Controlled Shuffle Burst',4,'1 each side','50 sec','Clean cuts.','shuffleSprint'),ex('outD6Mobility','Speed Mobility Reset',1,'8 minutes','none','Open the body.','warm'),ex('outD6Pogo','Easy Pogo Rhythm',3,'15 seconds','40 sec','Light bounce to finish.','pogo')],
+  7:[ex('outD7Mobility','Extended Mobility Flow',1,'10 minutes','none','Mobility and recovery day.','warm'),ex('outD7Pogo','Easy Pogo Rhythm',3,'15 seconds','40 sec','Elastic reset.','pogo'),ex('outD7Skip','A Skip Rhythm',3,'20 yards','45 sec','Smooth mechanics.','youthSpeed'),ex('outD7Shuffle','Easy Shuffle Movement',3,'10 seconds','35 sec','Clean movement only.','shuffleSprint'),ex('outD7Prep','Three Smooth Build Ups',3,'30 yards','60 sec','Prime for the next week.','sprintFloat'),ex('outD7Deadbug','Dead Bug Breathing',3,'8 each side','30 sec','Control and recovery.','deadbug')]
+ };
  const list=(plans[mode]||plans.outdoor)[day];
  return warm.concat(list);
 }
@@ -579,15 +591,28 @@ function strengthPlan(){
   [ex('facS6Test','Broad Jump Test',3,'2 jumps','120 sec','Best controlled jump.','broad','done'),ex('facS6Sled','Sled Push Quality',3,'10 yards','100 sec','Clean power.','resisted','weight'),ex('facS6Push','Push Up Test',3,'max clean minus two','100 sec','Quality reps.','floorPress','reps'),ex('facS6Carry','Carry Challenge',3,'max clean distance','90 sec','Posture.','farmer','distance'),ex('facS6Rdl','Single Leg RDL Control',3,'5 each leg','75 sec','Symmetry.','singleRdl','weight'),ex('facS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Core.','deadbug','done')],
   [ex('facS7Mobility','Recovery Mobility',1,'10 minutes','none','Recover.','warm','done'),ex('facS7Pogo','Easy Pogo',3,'15 sec','40 sec','Elastic reset.','pogo','seconds'),ex('facS7Wall','Wall Drive Holds',3,'20 sec each','35 sec','Posture.','wallDrive','seconds'),ex('facS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Core reset.','deadbug','done'),ex('facS7Carry','Light Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('facS7Stretch','Hip Reset',1,'6 minutes','none','Prep.','warm','done')]
  ];
- plans.outdoor=plans.facility;
+ // Outdoor (open field, no facility gear): bodyweight, backpack or sandbag
+ // load, and band-resisted work only. Genuinely different equipment from
+ // Facility (sleds, med balls, hurdles) and Gym (barbells, DBs, machines).
+ plans.outdoor=[
+  [ex('outS1Broad','Broad Jump To Stick',4,'3 jumps','90 sec','No equipment. Explode horizontal and stick the landing.','broad','done'),ex('outS1Bound','Bounding Sprint Starts',3,'4 bounds','85 sec','Open field acceleration power, bodyweight only.','tenYard','done'),ex('outS1Push','Explosive Push Up',3,'6 to 8 reps','70 sec','Hands on grass. Push fast and clean.','floorPress','reps'),ex('outS1Carry','Backpack Or Sandbag Carry',3,'25 yards','65 sec','Load a backpack with books or sand for resistance.','farmer','weight'),ex('outS1Rdl','Single Leg RDL Bodyweight',3,'6 each leg','75 sec','No weight needed. Balance and hamstrings.','singleRdl','done'),ex('outS1Plank','Hard Style Plank',3,'30 to 40 sec','45 sec','Brace like contact is coming.','plank','seconds')],
+  [ex('outS2Pogo','Pogo Power Series',3,'20 seconds','45 sec','Ankle stiffness, just grass under the feet.','pogo','seconds'),ex('outS2Jump','Band Or Bodyweight Squat Jump',3,'5 reps','80 sec','Use a light band if you have one, bodyweight works too.','goblet','done'),ex('outS2Push','Push Up Power Set',3,'max clean minus two','70 sec','Stop before ugly reps.','floorPress','reps'),ex('outS2Carry','Suitcase Backpack Carry',3,'25 yards each side','60 sec','One handed carry, anti lean trunk strength.','farmer','weight'),ex('outS2Slam','Rock Or Ball Slam',3,'6 reps','60 sec','Any weighted rock or ball you can find outdoors.','medball','done'),ex('outS2Dead','Dead Bug Brace',3,'8 each side','35 sec','Core locks the hips.','deadbug','done')],
+  [ex('outS3Skater','Skater Bound Stick',3,'5 each side','70 sec','Open field lateral power.','lateralBound','done'),ex('outS3Lunge','Walking Lunge',3,'8 each leg','75 sec','Bodyweight, add a backpack if ready.','split','done'),ex('outS3Side','Side Plank',3,'25 sec each side','40 sec','Lateral trunk for cutting.','plank','seconds'),ex('outS3Rdl','Single Leg RDL Bodyweight',3,'6 each leg','75 sec','Balance and hamstrings.','singleRdl','done'),ex('outS3Push','Explosive Push Up',3,'6 reps','70 sec','Upper body pop.','floorPress','reps'),ex('outS3Carry','Backpack Carry',3,'25 yards','65 sec','Posture and grip.','farmer','weight')],
+  [ex('outS4Iso','Split Squat Iso Hold To Drive',3,'15 sec hold plus 3 drives','80 sec','Hold then explode, bodyweight only.','split','seconds'),ex('outS4Speed','Band Or Bodyweight Squat Speed Reps',3,'5 reps','80 sec','Fast intent up.','goblet','done'),ex('outS4Dead','Dead Bug Iso',3,'30 sec','40 sec','Bracing for footwork.','deadbug','seconds'),ex('outS4Push','Push Up',3,'8 reps','70 sec','Strong lockout.','floorPress','reps'),ex('outS4Pogo','Low Pogo Reset',3,'20 sec','45 sec','Elastic ankles.','pogo','seconds'),ex('outS4Carry','Suitcase Carry',3,'25 yards each side','65 sec','Anti rotation, backpack or sandbag.','farmer','weight')],
+  [ex('outS5Complex','Squat To Jump Pattern',3,'5 reps','80 sec','Bodyweight only. Pattern into power.','goblet','done'),ex('outS5Broad','Broad Jump Singles',3,'2 jumps','90 sec','Low volume power.','broad','done'),ex('outS5Split','Walking Split Squat',3,'6 each leg','75 sec','Leg strength and control.','split','done'),ex('outS5Slam','Rock Or Ball Slam',3,'6 reps','60 sec','Power finish, whatever weighted object you have.','medball','done'),ex('outS5Push','Push Up Power',3,'8 reps','70 sec','Clean power reps.','floorPress','reps'),ex('outS5Plank','Plank Shoulder Tap',3,'16 taps','45 sec','Anti rotation.','plank','reps')],
+  [ex('outS6Test','Broad Jump Quality Check',3,'2 jumps','100 sec','Best controlled jump.','broad','done'),ex('outS6Push','Push Up Quality Check',3,'max clean minus two','100 sec','No ugly reps.','floorPress','reps'),ex('outS6Plank','Plank Quality Check',3,'max clean seconds','none','Stop when form breaks.','plank','seconds'),ex('outS6Rdl','Single Leg RDL Control',3,'5 each leg','70 sec','Symmetry check.','singleRdl','done'),ex('outS6Carry','Carry Challenge',3,'max clean distance','90 sec','Posture stays tall, backpack or sandbag.','farmer','distance'),ex('outS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Recovery core.','deadbug','done')],
+  [ex('outS7Mobility','Mobility And Core Reset',1,'10 minutes','none','Recover and prepare, no equipment.','warm','done'),ex('outS7Pogo','Easy Pogos',3,'15 sec','40 sec','Light bounce.','pogo','seconds'),ex('outS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Ribs down.','deadbug','done'),ex('outS7Plank','Easy Plank',3,'30 sec','40 sec','Clean posture.','plank','seconds'),ex('outS7Carry','Light Backpack Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('outS7Stretch','Hip And Ankle Reset',1,'6 minutes','none','Leave better.','warm','done')]
+ ];
+ // Gym (real weight room): barbells, dumbbells, and machines — genuinely
+ // different load and tooling from both Facility and the new Outdoor plan.
  plans.gym=[
-  [ex('gymS1Trap','Heavy Goblet Squat Or Trap Bar Pattern',4,'4 to 6 reps','120 sec','Heavy but fast.','goblet','weight'),ex('gymS1Box','Box Jump Or Broad Jump',4,'3 jumps','100 sec','Explosive landing.','broad','done'),ex('gymS1Rdl','DB RDL Or Single Leg RDL',3,'6 reps','90 sec','Hamstrings and glutes.','singleRdl','weight'),ex('gymS1Split','DB Split Squat Power Drive',3,'5 each leg','90 sec','Single leg force.','split','weight'),ex('gymS1Med','Med Ball Slam Or Chest Pass',4,'5 reps','75 sec','Power throw.','medball','done'),ex('gymS1Carry','Heavy Farmer Carry',3,'20 to 30 yards','85 sec','Grip and trunk.','farmer','weight')],
-  [ex('gymS2Speed','Goblet Squat Speed Reps',4,'5 reps','95 sec','Explosive up.','goblet','weight'),ex('gymS2Press','DB Floor Press Or Explosive Push Up',3,'6 to 8 reps','85 sec','Fast press.','floorPress','weight'),ex('gymS2Lunge','Reverse Lunge To Knee Drive',3,'6 each leg','80 sec','Drive up.','split','weight'),ex('gymS2Sled','Sled Push Or Heavy Carry',4,'10 to 15 yards','90 sec','Power.','farmer','weight'),ex('gymS2Rdl','Single Leg RDL',3,'6 each leg','75 sec','Balance.','singleRdl','weight'),ex('gymS2Core','Hard Style Plank',3,'35 sec','45 sec','Brace hard.','plank','seconds')],
-  [ex('gymS3Skater','Skater Bound Stick',4,'5 each side','75 sec','Lateral force.','lateralBound','done'),ex('gymS3Split','Lateral Lunge Or Split Squat',3,'6 each leg','85 sec','Cut power.','split','weight'),ex('gymS3Rot','Rotational Med Ball Slam',4,'5 each side','75 sec','Trunk power.','medball','done'),ex('gymS3Carry','Suitcase Carry',3,'25 yards each side','70 sec','Anti lean.','farmer','weight'),ex('gymS3Push','Explosive Push Up',3,'6 to 8','70 sec','Contact pop.','floorPress','reps'),ex('gymS3Side','Side Plank',3,'25 each side','40 sec','Lateral core.','plank','seconds')],
-  [ex('gymS4Iso','Split Squat Iso To Drive',3,'15 sec plus 3 drives','85 sec','Hold then explode.','split','seconds'),ex('gymS4Box','Low Box Quick Contacts',4,'8 contacts','60 sec','Foot stiffness.','hurdleHop','done'),ex('gymS4Press','Floor Press Power',3,'6 reps','85 sec','Fast lockout.','floorPress','weight'),ex('gymS4Rdl','DB RDL',3,'6 reps','90 sec','Posterior chain.','singleRdl','weight'),ex('gymS4Med','Med Ball Slam',4,'5 reps','75 sec','Violent reset.','medball','done'),ex('gymS4Dead','Dead Bug Iso',3,'30 sec','40 sec','Brace.','deadbug','seconds')],
-  [ex('gymS5Complex','Sled Push To Box Jump',4,'1 push plus 2 jumps','120 sec','Contrast power.','resisted','done'),ex('gymS5Squat','Goblet Squat Fast Up',3,'5 reps','95 sec','Speed strength.','goblet','weight'),ex('gymS5Push','Explosive Push Up Or DB Press',3,'8 reps','75 sec','Power.','floorPress','weight'),ex('gymS5Carry','Heavy Farmer Carry',3,'25 yards','85 sec','Armor.','farmer','weight'),ex('gymS5Rdl','Single Leg RDL',3,'6 each leg','80 sec','Control.','singleRdl','weight'),ex('gymS5Plank','Plank Shoulder Tap',3,'16 taps','45 sec','Anti rotation.','plank','reps')],
-  [ex('gymS6Test','Box Or Broad Jump Test',3,'2 jumps','120 sec','Best controlled jump.','broad','done'),ex('gymS6Squat','Goblet Strength Quality',3,'max clean reps at safe load','120 sec','No grinders.','goblet','reps'),ex('gymS6Push','Push Up Or Press Test',3,'max clean minus two','120 sec','Quality reps.','floorPress','reps'),ex('gymS6Carry','Carry Challenge',3,'max clean distance','90 sec','Posture.','farmer','distance'),ex('gymS6Core','Plank Test',3,'max clean seconds','none','Stop when form breaks.','plank','seconds'),ex('gymS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Core reset.','deadbug','done')],
-  [ex('gymS7Mobility','Mobility And Tissue Reset',1,'10 minutes','none','Recover.','warm','done'),ex('gymS7EasyJump','Easy Jump Singles',3,'2 jumps','85 sec','Light pop.','broad','done'),ex('gymS7Wall','Wall Drive Holds',3,'20 sec each','35 sec','Posture.','wallDrive','seconds'),ex('gymS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Core.','deadbug','done'),ex('gymS7Carry','Light Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('gymS7Stretch','Hip And Ankle Reset',1,'6 minutes','none','Prep.','warm','done')]
+  [ex('gymS1Squat','Barbell Or DB Back Squat',4,'5 reps','120 sec','Real load. Controlled down, strong up.','goblet','weight'),ex('gymS1Box','Box Jump',4,'3 jumps','100 sec','Step down, do not jump down.','broad','done'),ex('gymS1Press','Leg Press Machine',3,'8 reps','100 sec','Full range, control the negative.','goblet','weight'),ex('gymS1Bulg','DB Bulgarian Split Squat',3,'6 each leg','90 sec','Rear foot elevated, single leg force.','split','weight'),ex('gymS1Chop','Med Ball Slam Or Cable Chop',4,'5 reps','75 sec','Power throw or rotational chop.','medball','done'),ex('gymS1Carry','Heavy DB Farmer Carry',3,'20 to 30 yards','85 sec','Grip and trunk, real dumbbells.','farmer','weight')],
+  [ex('gymS2Goblet','DB Goblet Squat Speed',4,'5 reps','95 sec','Explosive up with a real dumbbell.','goblet','weight'),ex('gymS2Bench','Flat Bench DB Press',3,'6 to 8 reps','85 sec','Fast press, control the descent.','floorPress','weight'),ex('gymS2Pulldown','Lat Pulldown Machine',3,'8 reps','80 sec','Pull to the chest, control up.','wallDrive','weight'),ex('gymS2Lunge','DB Reverse Lunge',3,'6 each leg','80 sec','Drive up through the front leg.','split','weight'),ex('gymS2Row','Seated Cable Row',3,'8 reps','80 sec','Squeeze the shoulder blades.','wallDrive','weight'),ex('gymS2Chop','Cable Or DB Woodchop',3,'6 each side','70 sec','Rotate from the trunk, not the arms.','medball','done')],
+  [ex('gymS3Skater','Lateral Bound Stick',4,'5 each side','75 sec','Lateral power, bodyweight in the gym.','lateralBound','done'),ex('gymS3Lunge','DB Lateral Lunge',3,'6 each leg','85 sec','Cut power with real load.','split','weight'),ex('gymS3Rot','Cable Rotational Chop',4,'5 each side','75 sec','Trunk power on the cable stack.','medball','done'),ex('gymS3Incline','Incline DB Press',3,'6 to 8','80 sec','Upper body power on an incline bench.','floorPress','weight'),ex('gymS3Curl','Leg Curl Machine',3,'8 reps','80 sec','Hamstring strength for speed.','singleRdl','weight'),ex('gymS3Side','Side Plank On Bench',3,'25 each side','40 sec','Feet elevated on the bench.','plank','seconds')],
+  [ex('gymS4Iso','DB Split Squat Iso',3,'15 sec plus 3 drives','85 sec','Hold then explode with dumbbells.','split','seconds'),ex('gymS4Box','Low Box Quick Contacts',4,'8 contacts','60 sec','Foot stiffness on a low box.','hurdleHop','done'),ex('gymS4Bench','Flat Bench Barbell Or DB Press',3,'6 reps','85 sec','Fast lockout, real weight.','floorPress','weight'),ex('gymS4Rdl','DB Romanian Deadlift',3,'6 reps','90 sec','Hinge pattern, hamstrings and glutes.','singleRdl','weight'),ex('gymS4Slam','Med Ball Slam',4,'5 reps','75 sec','Violent reset.','medball','done'),ex('gymS4Dead','Cable Or DB Dead Bug',3,'8 each side','40 sec','Anti extension under light load.','deadbug','done')],
+  [ex('gymS5Trap','Trap Bar Deadlift To Box Jump',4,'3 reps plus 2 jumps','120 sec','Contrast strength into power, real bar.','singleRdl','weight'),ex('gymS5Goblet','DB Goblet Squat Speed',3,'5 reps','95 sec','Speed strength.','goblet','weight'),ex('gymS5Press','DB Shoulder Press',3,'8 reps','75 sec','Strict then push press if strong.','floorPress','weight'),ex('gymS5Carry','Heavy DB Farmer Carry',3,'25 yards','85 sec','Armor, real dumbbells.','farmer','weight'),ex('gymS5Rdl','Single Leg DB RDL',3,'6 each leg','80 sec','Control with light dumbbells.','singleRdl','weight'),ex('gymS5Plank','Weighted Plank Shoulder Tap',3,'16 taps','45 sec','Light plate on the back if ready.','plank','reps')],
+  [ex('gymS6Test','Box Jump Test',3,'2 jumps','120 sec','Best controlled jump.','broad','done'),ex('gymS6Squat','Goblet Or Barbell Squat Quality',3,'max clean reps at safe load','120 sec','No grinders.','goblet','reps'),ex('gymS6Bench','DB Bench Press Test',3,'max clean minus two','120 sec','Quality reps, real weight.','floorPress','reps'),ex('gymS6Carry','Farmer Carry Challenge',3,'max clean distance','90 sec','Posture, real dumbbells.','farmer','distance'),ex('gymS6Core','Plank Test',3,'max clean seconds','none','Stop when form breaks.','plank','seconds'),ex('gymS6Dead','Dead Bug Reset',3,'8 each side','35 sec','Core reset.','deadbug','done')],
+  [ex('gymS7Roll','Foam Roll And Mobility Reset',1,'10 minutes','none','Recover on the mats.','warm','done'),ex('gymS7Step','Easy Box Step Ups',3,'8 each leg','60 sec','Low box, light pop.','broad','done'),ex('gymS7Pull','Band Pull Aparts',3,'12 reps','40 sec','Shoulder health, light band.','wallDrive','reps'),ex('gymS7Dead','Dead Bug Breathing',3,'8 each side','30 sec','Core.','deadbug','done'),ex('gymS7Carry','Light DB Carry',3,'20 yards','50 sec','Blood flow.','farmer','weight'),ex('gymS7Stretch','Hip And Ankle Reset',1,'6 minutes','none','Prep.','warm','done')]
  ];
  // BUGFIX: plans.home above is an object keyed 1..7 (not a 0-indexed
  // array like facility/outdoor/gym), but the return below indexes with
@@ -614,7 +639,7 @@ function touchPlan(){
   [touch('dbHands','CB Backpedal Break Catch',adjusted(24),'Pedal, plant, break downhill, finish catch.','oneHandTwoHands'),touch('dbWBall','CB W Drill With Ball Finish',adjusted(18),'W pattern with catch at the break. Stay low.','oneHandTwoHands')],
   [touch('deHands','DE Hand Strike Reaction',adjusted(30),'Strike fast like hand fighting at the line. Hands win the rep.','handFight'),touch('deGetoff','DE Get Off Reaction',adjusted(25),'Explode on movement or sound. First step wins.','deGetoff')],
   [touch('tightEnd','TE High Catch And Tuck',adjusted(30),'Big body hands. High catch, squeeze, tuck through contact.','oneHandTwoHands'),touch('overShoulder','Over The Shoulder Catch',adjusted(20),'Both shoulders. Smooth run, late eyes, soft hands.','overShoulder')],
-  [touch('cleanTuck','Clean Tuck Finishes',adjusted(50),'Every catch ends high and tight. Catch means nothing if he does not secure it.','tossUpsGrip'),touch('dropReset','Drop Reset Tiny Catch Work',adjusted(25),'For every drop, add a perfect tiny catch. Correct the mistake immediately.','circleDrops')]
+  [touch('cleanTuck','Clean Tuck Finishes',adjusted(50),'Every catch ends high and tight. The catch means nothing if it is not secured.','tossUpsGrip'),touch('dropReset','Drop Reset Tiny Catch Work',adjusted(25),'For every drop, add a perfect tiny catch. Correct the mistake immediately.','circleDrops')]
  ];
  const activePools=activePositionPools();
  if(activePools && activePools.length===2){
@@ -775,6 +800,7 @@ const FOODS={
  groundBeef:{label:'Ground Beef',cal:217,p:26,c:0,f:12},
  steak:{label:'Steak',cal:201,p:30,c:0,f:8},
  chicken:{label:'Chicken',cal:165,p:31,c:0,f:3.6},
+ eggs:{label:'Eggs',cal:155,p:13,c:1.1,f:11},
  kale:{label:'Kale',cal:49,p:4.3,c:9,f:0.9},
  greenBeans:{label:'Green Beans',cal:35,p:1.8,c:8,f:0.2},
  broccoli:{label:'Broccoli',cal:35,p:2.4,c:7,f:0.4},
@@ -787,7 +813,7 @@ const FOODS={
  berries:{label:'Berries',cal:57,p:0.7,c:14,f:0.3}
 };
 const CARBS=['rice','oatmeal','whiteBread','wheatBread','waffles','pancakes','potato'];
-const PROTEINS=['whiteFish','shrimp','groundTurkey','groundBeef','steak','chicken'];
+const PROTEINS=['whiteFish','shrimp','groundTurkey','groundBeef','steak','chicken','eggs'];
 const VEGGIES=['kale','greenBeans','broccoli','spinach'];
 const FATS=['avocado','oliveOil'];
 const UNITS=['oz','g'];
@@ -831,11 +857,24 @@ function perMealShare(){
 // categories (e.g. fat in a lean protein, carbs in avocado) is intentional
 // and realistic, not a bug — the running "remaining today" total still
 // nets out close to the target across a full day.
+// Realistic serving caps (grams, weighed AFTER cooking). Every value in
+// FOODS is already a post-cooking macro density, so these caps keep a
+// single food from being asked to cover an entire macro target by itself
+// (that was producing things like 29-38oz of oatmeal). Whatever a cap
+// trims off simply is not logged, so it shows back up in "remaining
+// today" and rolls forward into the next meal or shake automatically —
+// no other change needed since nutritionRemaining() always recomputes
+// from what was actually logged.
+const PORTION_CAP_CARB=300, PORTION_CAP_PROTEIN=260, PORTION_CAP_FAT_OIL=30, PORTION_CAP_FAT=120;
 function solidMealPortions(picks,share){
  const proteinFood=FOODS[picks.protein],carbFood=FOODS[picks.carb],fatFood=FOODS[picks.fat],veggieFood=FOODS[picks.veggie];
- const proteinGrams=proteinFood&&proteinFood.p>0?(share.protein/proteinFood.p)*100:0;
- const carbGrams=carbFood&&carbFood.c>0?(share.carb/carbFood.c)*100:0;
- const fatGrams=fatFood&&fatFood.f>0?(share.fat/fatFood.f)*100:0;
+ let proteinGrams=proteinFood&&proteinFood.p>0?(share.protein/proteinFood.p)*100:0;
+ let carbGrams=carbFood&&carbFood.c>0?(share.carb/carbFood.c)*100:0;
+ let fatGrams=fatFood&&fatFood.f>0?(share.fat/fatFood.f)*100:0;
+ proteinGrams=Math.min(proteinGrams,PORTION_CAP_PROTEIN);
+ carbGrams=Math.min(carbGrams,PORTION_CAP_CARB);
+ const fatCap=(fatFood&&fatFood.f>=50)?PORTION_CAP_FAT_OIL:PORTION_CAP_FAT;
+ fatGrams=Math.min(fatGrams,fatCap);
  const veggieGrams=100;
  const parts=[[proteinGrams,proteinFood],[carbGrams,carbFood],[fatGrams,fatFood],[veggieGrams,veggieFood]];
  const macros={cal:0,protein:0,carb:0,fat:0};
@@ -1176,7 +1215,7 @@ function setLogHTML(e,type){
      const wv=l[wk]||((e.metric==='reps'||e.metric==='done'||e.metric==='seconds')?body:'');
      rows+=`<div class="setLog"><span>Set ${n}</span><input value="${l[rk]||''}" data-log="${rk}" placeholder="reps or time" oninput="stageInput(this)"><input value="${wv}" data-log="${wk}" placeholder="weight or bodyweight" oninput="stageInput(this)"></div>`;
    }
-   return `<div class="inner"><div class="small">Log each set. Bodyweight work should use his body weight as the weight.</div>${rows}</div>`;
+   return `<div class="inner"><div class="small">Log each set. Bodyweight work should use the athlete's body weight as the weight.</div>${rows}</div>`;
  }
  const key=type+'_'+e.id;
  let placeholder=e.metric==='weight'?'weight used or completed':e.metric==='seconds'?'seconds completed':e.metric==='reps'?'reps completed':e.metric==='distance'?'distance completed':'time, reps, or completed';
@@ -1309,7 +1348,7 @@ function renderHome(){
    <div class="stat"><b>${state.maxUnlocked}</b><span>Unlocked</span></div>
  </div>
  <details class="clean"><summary>Today's nutrition targets</summary><div class="detailBody">
- ${nt?`<table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz target</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table>`:`<p class="small">Save his weight above to unlock targets.</p>`}
+ ${nt?`<table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz target</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table>`:`<p class="small">Save the athlete's weight above to unlock targets.</p>`}
  </div></details>
  ${dayProgressFooterHTML()}
  <div class="inner"><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap the 🎮 icon above.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
@@ -1354,7 +1393,7 @@ function renderStrength(){
  if(guided.strength.idx>=list.length)guided.strength.idx=0;
  const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout • ${modeLabel()}</div><h2>Explosive Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
  ${soloPartnerBadgeHTML('strength')}
- <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">Changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set — bodyweight work uses his body weight.</p></div></details>
+ <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">Changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set — bodyweight work uses the athlete's own body weight.</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
  document.getElementById('screen_strength').innerHTML=header+renderGuidedCard('strength',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Strength work')">Save Strength Work</button>`+dayProgressFooterHTML();
  flushMediaBoxes();
@@ -1375,18 +1414,23 @@ function renderTouches(){
  flushMediaBoxes();
 }
 function remainingTodayHTML(rem){
+ const remain=remainingSlots();
+ const nextLine=remain.length
+  ?`Next up: log <b>${remain.map(slotLabel).join(', ')}</b> to keep this countdown moving.`
+  :`All 5 meals are logged for today — nice work. This resets fresh tomorrow.`;
  return `<div class="inner"><h3>Remaining Today</h3><p class="small">Updates every time a meal below gets logged.</p>
  <div class="statCards">
   <div class="stat"><b>${rem.calLeft}</b><span>Calories left</span></div>
   <div class="stat"><b>${rem.proteinLeft}g</b><span>Protein left</span></div>
   <div class="stat"><b>${rem.carbLeft}g</b><span>Carbs left</span></div>
   <div class="stat"><b>${rem.fatLeft}g</b><span>Fat left</span></div>
- </div></div>`;
+ </div>
+ <p class="small" style="margin-top:8px">${nextLine}</p></div>`;
 }
 function pickChipHTML(cat,key){ return `<button class="scrollChip ${state.nutriPicks[cat]===key?'active':''}" onclick="setNutriPick('${cat}','${key}')">${FOODS[key].label}</button>`; }
 function unitChipHTML(u){ return `<button class="scrollChip ${state.nutriUnit===u?'active':''}" onclick="setNutriUnit('${u}')">${UNIT_LABELS[u]}</button>`; }
 function portionResultHTML(slot,picks,unit,portions){
- return `<div class="coachBubble" style="margin-top:10px"><strong>Your Plate</strong>
+ return `<div class="coachBubble" style="margin-top:10px"><strong>Your Plate</strong> <span class="tiny">(weighed after cooking)</span>
  <div class="completionList" style="margin-top:6px">
   <div class="checkItem"><span>${FOODS[picks.protein].label}</span><span class="badge good">${fmtPortion(portions.proteinGrams,unit)}</span></div>
   <div class="checkItem"><span>${FOODS[picks.carb].label}</span><span class="badge good">${fmtPortion(portions.carbGrams,unit)}</span></div>
@@ -1394,6 +1438,7 @@ function portionResultHTML(slot,picks,unit,portions){
   <div class="checkItem"><span>${FOODS[picks.veggie].label}</span><span class="badge goldTxt">${fmtPortion(portions.veggieGrams,unit)} (no strict limit)</span></div>
  </div>
  <p class="tiny" style="margin-top:6px">≈ ${Math.round(portions.macros.cal)} cal • ${Math.round(portions.macros.protein)}g protein • ${Math.round(portions.macros.carb)}g carbs • ${Math.round(portions.macros.fat)}g fat</p>
+ <p class="tiny" style="margin-top:4px">Cook it first, then weigh or measure the portion above — no raw or dry weighing needed.</p>
  </div>
  <button class="green full" style="margin-top:8px" onclick="logMeal('${slot}')">Log ${slotLabel(slot)}</button>`;
 }
@@ -1436,7 +1481,7 @@ function mealBuilderHTML(){
   const s=nutriActiveSlot;
   body=ml[s]?loggedMealSummaryHTML(s,ml[s]):(isShakeSlot(s)?shakeBuilderHTML(s):solidMealBuilderHTML(s));
  }
- return `<div class="inner"><h3>Build Today's Meals</h3><p class="small">5 meals a day — 3 solid, 2 shakes. Tap one to build it.</p>
+ return `<div class="inner"><h3>Build Today's Meals</h3><p class="small">5 meals a day — 3 solid, 2 shakes. Tap one to build it. All portions below are sized to be weighed after cooking, not raw.</p>
  <div class="scrollPicker">${chips}</div>
  ${body}
  </div>`;
@@ -1447,29 +1492,49 @@ function waterHTML(l,nt){
 }
 function vitaminsHTML(){
  return `<details class="clean"><summary>Vitamins</summary><div class="detailBody">
-  <div class="inner"><h3>Vitamin D</h3><p class="small">600-1000 IU/day is a common general target for a growing athlete, more if he gets little sun. Supports bone strength and immune function.</p></div>
+  <div class="inner"><h3>Vitamin D</h3><p class="small">600-1000 IU/day is a common general target for a growing athlete, more if the athlete gets little sun. Supports bone strength and immune function.</p></div>
   <div class="inner"><h3>Calcium</h3><p class="small">Around 1,300 mg/day (ages 9-18) from food first — milk, yogurt, cheese, leafy greens. Bones are still building at this age.</p></div>
-  <div class="inner"><h3>Iron</h3><p class="small">Roughly 8-11 mg/day is a common general range for a teen boy. Red meat, chicken, and spinach all help. Low iron often shows up as tired legs and low energy.</p></div>
+  <div class="inner"><h3>Iron</h3><p class="small">Roughly 8-11 mg/day is a common general range for a teen athlete. Red meat, chicken, and spinach all help. Low iron often shows up as tired legs and low energy.</p></div>
   <div class="inner"><h3>Omega-3</h3><p class="small">Fish twice a week, or a general 500-1000 mg combined EPA/DHA supplement, supports joint and brain recovery from contact.</p></div>
   <div class="inner"><h3>Daily Multivitamin</h3><p class="small">A basic age-appropriate multivitamin covers the gaps on a busy training day — a backup, not a replacement for real meals.</p></div>
-  <div class="coachBubble"><strong>Check with the pediatrician first</strong><p>These are general, commonly-cited ranges for a growing athlete, not a prescription. Confirm anything new with his doctor, especially since he is still growing.</p></div>
+  <div class="coachBubble"><strong>Check with the pediatrician first</strong><p>These are general, commonly-cited ranges for a growing athlete, not a prescription. Confirm anything new with the athlete's doctor, especially since the athlete is still growing.</p></div>
  </div></details>`;
+}
+// Ties supplement timing to whatever the athlete actually completed today
+// (Speed & Agility / Workout / Football Touches) instead of generic advice
+// that ignores the day's actual training, and flags anything not yet
+// logged so the timing guidance stays honest.
+function todaysCompletedModules(){
+ return {morning:reqWorkoutComplete('morning'),strength:reqWorkoutComplete('strength'),touches:reqTouchesComplete()};
 }
 function supplementStackHTML(){
  const d=supplementDoses(state.age);
+ const done=todaysCompletedModules();
+ const doneNames=[done.morning&&'Speed & Agility',done.strength&&'Workout',done.touches&&'Football Touches'].filter(Boolean);
+ const missingNames=[!done.morning&&'Speed & Agility',!done.strength&&'Workout',!done.touches&&'Football Touches'].filter(Boolean);
+ const eaaTiming=doneNames.length
+  ?`Today's completed session${doneNames.length>1?'s are':' is'} <b>${doneNames.join(' and ')}</b> — sip it during whichever one is still ahead today, or right before the next one starts.`
+  :`Nothing is logged as done yet today — sip it during Speed & Agility, Workout, or Football Touches, whichever happens first.`;
+ const postTiming=doneNames.length
+  ?`<b>${doneNames.join(' and ')}</b> ${doneNames.length>1?'are':'is'} already done today — have this within an hour of finishing that session.`
+  :`Have this within an hour of finishing today's first training session.`;
+ const flagBlock=missingNames.length
+  ?`<div class="inner"><h3>Not Yet Logged Today</h3><p class="small"><b>${missingNames.join(', ')}</b> ${missingNames.length>1?"haven't":"hasn't"} been marked complete yet. The timing above will shift once that session happens — check back here after logging it.</p></div>`
+  :`<div class="inner"><h3>All Sessions Logged</h3><p class="small">Speed & Agility, Workout, and Football Touches are all done for today — the timing above reflects the actual training that happened.</p></div>`;
  return `<details class="clean"><summary>Supplement Timing Stack</summary><div class="detailBody">
-  <div class="inner"><h3>Anytime, Daily — Creatine Monohydrate</h3><p class="small"><b>${d.creatine}g every day</b>, any time, with a meal. No loading, no cycling off. Scaled down from the standard 5g adult dose for age ${d.age}. Confirm with his pediatrician before starting, then it is a daily habit.</p></div>
-  <div class="inner"><h3>During Training — EAA / Aminos (optional)</h3><p class="small"><b>${d.eaa}g mixed in water</b>, sipped during Speed & Agility, Workout, or Touches. Only useful if he is not already hitting the protein target from food — convenience, not magic.</p></div>
-  <div class="inner"><h3>Post-Workout — Protein + Collagen</h3><p class="small">A protein shake (see Shake 1 or Shake 2 above) within an hour of finishing, plus <b>${d.collagen}g collagen</b> if joint recovery is a focus this block.</p></div>
-  <div class="inner"><h3>BCAAs</h3><p class="small">Skip these if he is already hitting the protein target above from real food — whole food protein already contains them.</p></div>
-  <div class="coachBubble"><strong>The real ranking</strong><p>Food, sleep, and consistency beat every supplement combined. These numbers scale with the Athlete Age saved in Settings (currently ${d.age}) — update it there if that changes. Always confirm anything new with his doctor first, since he is still growing.</p></div>
+  <div class="inner"><h3>Anytime, Daily — Creatine Monohydrate</h3><p class="small"><b>${d.creatine}g every day</b>, any time, with a meal. No loading, no cycling off. Scaled down from the standard 5g adult dose for age ${d.age}. Confirm with the athlete's pediatrician before starting, then it is a daily habit.</p></div>
+  <div class="inner"><h3>During Training — EAA / Aminos (optional)</h3><p class="small"><b>${d.eaa}g mixed in water</b>. ${eaaTiming} Only useful if the athlete is not already hitting the protein target from food — convenience, not magic.</p></div>
+  <div class="inner"><h3>Post-Workout — Protein + Collagen</h3><p class="small">A protein shake (see Shake 1 or Shake 2 above) plus <b>${d.collagen}g collagen</b> if joint recovery is a focus this block. ${postTiming}</p></div>
+  ${flagBlock}
+  <div class="inner"><h3>BCAAs</h3><p class="small">Skip these if the athlete is already hitting the protein target above from real food — whole food protein already contains them.</p></div>
+  <div class="coachBubble"><strong>The real ranking</strong><p>Food, sleep, and consistency beat every supplement combined. These numbers scale with the Athlete Age saved in Settings (currently ${d.age}) — update it there if that changes. Always confirm anything new with the athlete's doctor first, since the athlete is still growing.</p></div>
  </div></details>`;
 }
 function renderNutrition(){
  const l=logFor(), nt=nutritionTargets();
  if(!nt){
    document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Required setup</div><h2>Enter Athlete Weight</h2></div><span class="badge bad">Locked</span></div>
-   <div class="coachBubble"><strong>Fuel starts with body weight</strong><p>Before the app recommends calories, carbs, protein, fat, and water, save his current body weight. This keeps the numbers based on him instead of a random default.</p></div>
+   <div class="coachBubble"><strong>Fuel starts with body weight</strong><p>Before the app recommends calories, carbs, protein, fat, and water, save the athlete's current body weight. This keeps the numbers based on the athlete instead of a random default.</p></div>
    <div class="inner"><div class="label">Current body weight in pounds</div><input id="profileWeightInput" type="number" min="60" max="350" placeholder="Example 145"><button class="green full" style="margin-top:10px" onclick="saveProfileWeight()">Save Athlete Weight</button></div>`;
    return;
  }
@@ -1647,7 +1712,7 @@ function dataCoach(days,logs){
  const lastDrops=Object.keys(last).filter(k=>k.includes('_drops')).reduce((a,k)=>a+(Number(last[k])||0),0);
  const prevDrops=Object.keys(prev).filter(k=>k.includes('_drops')).reduce((a,k)=>a+(Number(prev[k])||0),0);
  out.push(lastDrops>prevDrops?'Drops went up, so eyes and late hands need extra work.':'Drops are controlled or improving.');
- if(Number(last.pain)>=4)out.push('Pain showed up, so the next plan should protect him while keeping him moving.');
+ if(Number(last.pain)>=4)out.push('Pain showed up, so the next plan should protect the athlete while keeping them moving.');
  const nt=nutritionTargets(); if(nt && Number(last.waterOz)<nt.water)out.push('Hydration is under target, so cramps and energy dips can sneak up.');
  return out.join(' ');
 }
@@ -1683,12 +1748,12 @@ function skipToday(){
 }
 function renderSettings(){
  const colors=['#facc15','#22c55e','#38bdf8','#3b82f6','#a78bfa','#8b5cf6','#fb7185','#ef4444','#f97316','#14b8a6','#06b6d4','#84cc16','#eab308','#ffffff','#0ea5e9','#d946ef'];
- document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">He can change the vibe, training environment, and athlete tier any day. The next day is earned by finishing Speed & Agility, Workout, and Touches — Check-In runs every 5 completed days.</p>
+ document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">The athlete can change the vibe, training environment, and athlete tier any day. The next day is earned by finishing Speed & Agility, Workout, and Touches — Check-In runs every 5 completed days.</p>
  <div class="inner"><h3>Install As An App</h3><p class="small">Gets a real home-screen icon, opens full-screen with no browser bar, and still works with no signal at the field. Not on the App Store or Play Store — installs straight from this page.</p>
  <button id="installBtn" class="gold full hidden" onclick="promptInstall()">Install Athlete Hub</button>
  <p class="tiny" style="margin-top:8px"><b>iPhone:</b> tap the Share icon in Safari, then "Add to Home Screen."<br><b>Android:</b> tap the button above, or the browser menu, then "Install app" / "Add to Home Screen."</p></div>
  <div class="inner"><h3>App Color</h3><p class="small">This changes the full background, cards, glow, and contrast, not just a few letters.</p><div class="row">${colors.map(c=>`<button class="colorDot" style="background:${c}" onclick="setColor('${c}')" aria-label="Color"></button>`).join('')}</div><div class="grid" style="margin-top:10px"><input id="customColor" type="color" value="${state.accent||'#3b82f6'}"><button class="gold" onclick="setColor(document.getElementById('customColor').value)">Save Color</button></div></div>
- <div class="inner"><h3>Training Environment</h3><p class="small">Pick where he is actually training. The speed work and strength work change based on this.</p><div class="grid">
+ <div class="inner"><h3>Training Environment</h3><p class="small">The athlete should pick where they are actually training. The speed work, strength work, and equipment used all change based on this.</p><div class="grid">
  <button class="${state.mode==='outdoor'?'active':''}" onclick="state.mode='outdoor';save();render()">Outdoor Field</button>
  <button class="${state.mode==='home'?'active':''}" onclick="state.mode='home';save();render()">Home Indoor</button>
  <button class="${state.mode==='facility'?'active':''}" onclick="state.mode='facility';save();render()">Indoor Facility</button>
@@ -2087,7 +2152,7 @@ async function renderMediaBox(uid){
   const rec=await loadClip(uid);
   if(rec&&rec.blob){
    const url=URL.createObjectURL(rec.blob);
-   recHtml=`<div class="mediaBox"><div class="mediaLabel">His rep</div><video controls playsinline src="${url}"></video></div><button class="red full" style="margin-top:6px" onclick="removeClip('${uid}')">Delete this recording</button>`;
+   recHtml=`<div class="mediaBox"><div class="mediaLabel">The athlete's rep</div><video controls playsinline src="${url}"></video></div><button class="red full" style="margin-top:6px" onclick="removeClip('${uid}')">Delete this recording</button>`;
   }
  }
  let refHtml='';
