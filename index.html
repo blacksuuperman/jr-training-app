@@ -246,13 +246,13 @@ body.timerFlash{animation:flashPulse .7s ease}
 <script>
 const STORE='jr_level13_earned_day_v3';
 const OLD_STORES=['jr_level13_earned_day_v2','jr_level13_earned_day_v1','jr_level13_day_cycle_v1','jr_level13_simplified_v1','jr_level13_ai_v1','jr_level9_state'];
-const DAYS_TOTAL=63;
+const DAYS_TOTAL=30;
 // DEV RESET SWITCH — while this app is still being built out, bump this
 // string with every shipped round so each update opens like brand new
 // (full onboarding + launcher) instead of carrying over test data from the
 // last round. Once this is the final version, stop bumping it (or set
 // FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v3-round3';
+const BUILD_VERSION='v3-round4';
 const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
@@ -432,11 +432,13 @@ function focusForDay(d){
  const names=['Acceleration and ankle stiffness','Agility and route footwork','Plyo power and grip','Position skill and total body power','Reaction, conditioning and trunk strength','Recovery strength and clean touch volume','Testing polish and mobility'];
  return names[(d-1)%7];
 }
+// 30-day program, split into 5 equal 6-day phases instead of the old
+// 9-week/63-day arc — same shape (build, load, peak, taper), compressed.
+const PHASE_NAMES=['Foundation Speed Build','Acceleration And Power Phase','Game Speed And COD Phase','Peak Speed And Combine Phase','Polish, Taper, Prove It Phase'];
+function phaseIndexForDay(d){ return Math.min(PHASE_NAMES.length-1,Math.floor((d-1)/6)); }
 function phaseForDay(d){
- const week=Math.floor((d-1)/7)+1;
- const day=((d-1)%7)+1;
- const phase=week<=2?'Foundation Speed Build':week<=4?'Acceleration And Power Phase':week<=6?'Game Speed And COD Phase':week<=8?'Peak Speed And Combine Phase':'Polish, Taper, Prove It Phase';
- return 'Week '+week+' • Day '+day+' • '+phase;
+ const idx=phaseIndexForDay(d);
+ return 'Phase '+(idx+1)+' of '+PHASE_NAMES.length+' • Day '+d+' of '+DAYS_TOTAL+' • '+PHASE_NAMES[idx];
 }
 function dayTheme(d){
  const day=((d-1)%7)+1;
@@ -451,12 +453,7 @@ function dayTheme(d){
  ][day-1];
 }
 function weekBonus(){
- const week=Math.floor((state.day-1)/7)+1;
- if(week<=2)return 0;
- if(week<=4)return 1;
- if(week<=6)return 1;
- if(week<=8)return 2;
- return 0;
+ return [0,1,1,2,0][phaseIndexForDay(state.day)];
 }
 function adjusted(n,kind='reps'){
  const level=levelData[state.level]||levelData.varsity;
@@ -514,8 +511,8 @@ function levelNotice(){
  return name+' is the collegiate challenge with the most volume, longest intent, and the highest standard. No lazy reps.';
 }
 function morningPlan(){
- const d=state.day, day=((d-1)%7)+1, week=Math.floor((d-1)/7)+1, mode=state.mode;
- const prog=week<=2?'mechanics':week<=4?'power':week<=6?'game speed':week<=8?'peak':'polish';
+ const d=state.day, day=((d-1)%7)+1, mode=state.mode;
+ const prog=['mechanics','power','game speed','peak','polish'][phaseIndexForDay(d)];
  const warm=[
    ex('warm'+day,'Elite Dynamic Warm Up',1,'8 minutes','none','A skips, high knees, ankle pops, hamstring sweeps, hip openers, leg swings, and two smooth build ups. Start like a track athlete.','warm'),
    ex('mechanics'+day,'Sprint Mechanics Primer',3,'15 yards or 20 seconds','30 sec','Tall posture, toe up, knee up, foot under the hips, arms cheek to pocket. Clean mechanics before speed.','youthSpeed')
@@ -625,7 +622,7 @@ function touchPlan(){
  return base.concat(extras[cycle]);
 }
 const OFF_POSITIONS=[['QB','Quarterback'],['RB','Running Back'],['WR','Wide Receiver'],['TE','Tight End'],['OL','Offensive Line']];
-const DEF_POSITIONS=[['DL','D-Line / Edge'],['LB','Linebacker'],['CB','Cornerback'],['S','Safety']];
+const DEF_POSITIONS=[['EDGE','Edge Rusher'],['DL','Interior D-Line'],['LB','Linebacker'],['CB','Cornerback'],['S','Safety']];
 function posLabel(code){
  const f=OFF_POSITIONS.find(p=>p[0]===code)||DEF_POSITIONS.find(p=>p[0]===code);
  return f?f[1]:code;
@@ -681,12 +678,19 @@ function positionDrillPools(){
    touch('posOlHandFight','Hand Fighting At The Point',adjusted(35),'Strike, control, reset. Hands win the rep at the line.','handFight'),
    touch('posOlCore','Core Brace For Contact',adjusted(30),'Brace like contact is coming on every rep.','plank','seconds')
   ],
+  EDGE:[
+   touch('posEdgeGetoff','Edge Get Off Reaction',adjusted(25),'Explode on movement or sound. First step wins the rep — speed rushers live or die here.','deGetoff'),
+   touch('posEdgeHands','Speed-To-Power Hand Strike',adjusted(35),'Strike fast, disengage, relocate. Hands win the rep whether you are bending the edge or converting to power.','deHands'),
+   touch('posEdgeBend','Edge Bend And Turn The Corner',adjusted(20),'Flatten out and turn the corner low and fast. This is the speed rusher rep.','linearCod'),
+   touch('posEdgeShed','Block Shed Hand Fight',adjusted(30),'Strike, extend, shed, and find the ball.','handFight'),
+   touch('posEdgePursuit','Pursuit Angle Burst',adjusted(22),'Take the right angle and finish the play from the backside.','falling')
+  ],
   DL:[
-   touch('posDlGetoff','DE Get Off Reaction',adjusted(25),'Explode on movement or sound. First step wins the rep.','deGetoff'),
-   touch('posDlHands','Hand Strike Reaction',adjusted(35),'Strike fast, disengage, relocate. Hands win the rep.','deHands'),
-   touch('posDlBend','Edge Bend And Turn The Corner',adjusted(20),'Flatten out and turn the corner low and fast.','linearCod'),
-   touch('posDlShed','Block Shed Hand Fight',adjusted(30),'Strike, extend, shed, and find the ball.','handFight'),
-   touch('posDlPursuit','Pursuit Angle Burst',adjusted(22),'Take the right angle and finish the play.','falling')
+   touch('posDlPunch','Bull Rush Punch And Drive',adjusted(30),'Two hand punch on the rise, drive through the sled or bag, finish with leg drive. This is the power rusher rep.','wallDrive'),
+   touch('posDlAnchor','Double Team Anchor And Split',adjusted(20),'Heavy anchor hold, do not get moved, split the double team and find the ball.','farmer'),
+   touch('posDlGetoff','Interior Get Off On The Snap',adjusted(25),'React to the snap count, not a guess. First movement wins the gap.','deGetoff'),
+   touch('posDlHandFight','Hand Fight And Shed At The Point',adjusted(35),'Strike, control, shed, find the ball. Hands win the rep at the point of attack.','handFight'),
+   touch('posDlPursuit','Backside Pursuit And Chase',adjusted(22),'Chase the play down from the backside, take the right angle every time.','falling')
   ],
   LB:[
    touch('posLbShed','Block Shed And Locate',adjusted(30),'Strike, shed, find the ball fast.','handFight'),
@@ -1153,8 +1157,8 @@ function renderTouches(){
  const list=touchPlanForSession();
  if(guided.touches.idx>=list.length)guided.touches.idx=0;
  const custom=state.posMode==='custom' && (state.offPos||state.defPos);
- const badgeTxt=custom?[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' / '):'WR RB TE DE CB';
- const whyTxt=custom?`Tailored to ${[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' and ')}, blended with the core catching fundamentals every athlete needs.`:'Blends receiver hands, running back security, tight end high catches, cornerback ball skills, and defensive end hand reaction.';
+ const badgeTxt=custom?[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' / '):'WR RB TE EDGE CB';
+ const whyTxt=custom?`Tailored to ${[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' and ')}, blended with the core catching fundamentals every athlete needs.`:'Blends receiver hands, running back security, tight end high catches, cornerback ball skills, and edge-rusher hand reaction.';
  const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Football skill</div><h2>Football Touches</h2></div><span class="badge goldTxt">${badgeTxt}</span></div>
  ${soloPartnerBadgeHTML('touches')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">${whyTxt}</p></div></details>
