@@ -50,7 +50,8 @@ p,li{color:var(--text);line-height:1.42}.small{font-size:12px;color:var(--muted)
 .card{background:rgba(17,17,24,.97);border:1px solid var(--line);border-radius:24px;padding:14px;margin-bottom:12px}
 .inner{background:var(--panel3);border:1px solid var(--line);border-radius:19px;padding:12px;margin:10px 0}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-.tileGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tileGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.backRow{margin-bottom:8px}.backBtn{min-height:38px;padding:8px 15px;font-size:13px;border-radius:12px}
 #tileCard.tilesCompact{padding:8px}
 #tileCard.tilesCompact .tileGrid{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
 .tileMini{flex:0 0 auto;width:50px;height:50px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:21px;background:linear-gradient(180deg,var(--panel2),var(--panel3));border:1px solid var(--line);cursor:pointer}
@@ -86,13 +87,13 @@ input,textarea,select{background:color-mix(in srgb,var(--panel3) 86%,#000 14%);c
 .cue{color:var(--text)}
 button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .badge{background:color-mix(in srgb,var(--panel3) 88%,#000 12%);color:var(--text)}
-.bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr 1.25fr;gap:7px}.bottomNav button{min-height:43px;border-radius:14px;font-size:12px}.bottomNav .green{font-size:13px}
+.bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.bottomNav button{min-height:43px;border-radius:14px;font-size:12px}.bottomNav .green{font-size:13px}
 @media(max-width:640px){
   body{padding:9px 9px 126px}h1{font-size:22px}.hero{border-radius:23px;padding:13px}.topLine{align-items:center}.status{min-width:88px;padding:8px}
   .musicTop{grid-template-columns:1fr auto}.musicTop .hideSmall{display:none}.musicTop .chooseSmall{grid-column:1 / -1}.playerWrap{grid-template-columns:110px 1fr}.ytFrame{width:110px;height:62px}.eightBall{width:min(88vw,315px)}.eightWindowContent{font-size:13px}.eightBall.advice .eightWindowContent{font-size:11px}
-  .tileGrid{grid-template-columns:repeat(3,1fr);gap:8px}.tile{min-height:88px;border-radius:21px;padding:10px 6px}.tileIcon{font-size:24px}.tile b{font-size:12px}.tile small{font-size:10px}
+  .tileGrid{grid-template-columns:repeat(2,1fr);gap:8px}.tile{min-height:88px;border-radius:21px;padding:10px 6px}.tileIcon{font-size:24px}.tile b{font-size:12px}.tile small{font-size:10px}
   .grid,.grid3,.logGrid{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.statCards{grid-template-columns:1fr 1fr}.card{border-radius:22px;padding:12px}.exercise{grid-template-columns:1fr}.num{margin-bottom:-3px}
-  .bottomNav{grid-template-columns:1fr 1fr 1fr 1.1fr}.bottomNav button{font-size:11px}
+  .bottomNav{grid-template-columns:1fr 1fr 1fr}.bottomNav button{font-size:11px}
 }
 body.timerFlash{animation:flashPulse .7s ease}
 @keyframes flashPulse{0%{background-color:var(--bg)}30%{background-color:color-mix(in srgb,var(--accent) 55%,var(--bg))}100%{background-color:var(--bg)}}
@@ -169,7 +170,7 @@ body.timerFlash{animation:flashPulse .7s ease}
       <div>
         <div class="tag">BlackSuperman Youth Performance</div>
         <h1>Jr Level 13 Athlete Hub</h1>
-        <p class="small" id="heroSub">Earn each day. Train twice. Log the work. Let Dad Talk update the next mission.</p>
+        <p class="small" id="heroSub">Finish Speed & Agility, Workout, and Touches to earn the next day. Check-In unlocks every 5 days.</p>
       </div>
       <div class="status"><b id="dayLabel">Day 1</b><span class="small" id="readinessLabel">Green Light</span></div>
     </div>
@@ -182,6 +183,8 @@ body.timerFlash{animation:flashPulse .7s ease}
     </div>
   </div>
 
+  <div class="backRow hidden" id="backRow"><button class="backBtn" onclick="goBack()">← Back</button></div>
+
   <div class="card" id="tileCard">
     <div class="tileGrid" id="tiles"></div>
   </div>
@@ -192,7 +195,6 @@ body.timerFlash{animation:flashPulse .7s ease}
   <div id="screen_touches" class="card screen"></div>
   <div id="screen_nutrition" class="card screen"></div>
   <div id="screen_dadtalk" class="card screen"></div>
-  <div id="screen_data" class="card screen"></div>
   <div id="screen_settings" class="card screen"></div>
 </div>
 
@@ -205,11 +207,10 @@ body.timerFlash{animation:flashPulse .7s ease}
   </div>
 </div>
 
-<div class="bottomNav">
-  <button onclick="showScreen('home')">Home</button>
-  <button onclick="showScreen('dadtalk')">Dad Talk</button>
-  <button onclick="showScreen('data')">Data</button>
-  <button id="completeBtn" class="green" onclick="completeDay()">Complete</button>
+<div class="bottomNav" id="bottomNav">
+  <button id="navHome" onclick="showScreen('home')">🏠 Home</button>
+  <button id="navSettings" onclick="showScreen('settings')">🎨 Settings</button>
+  <button id="navNutrition" onclick="showScreen('nutrition')">🍽️ Nutrition</button>
 </div>
 
 <script>
@@ -279,24 +280,20 @@ const musicPresets=[
  {key:'goggins',label:'David Goggins Motivation',src:YT_HOST+'videoseries?list=PLTaMkgKv5vlza7KP6-3ZbdWItiC_vk0Pq&rel=0&playsinline=1&enablejsapi=0'}
 ];
 const tiles=[
- ['home','🏠','Today','Mission card'],
- ['morning','⚡','Morning','Speed and plyos'],
- ['strength','🏋️','Strength','Core and power'],
- ['touches','🏈','Touches','Hands and ball skill'],
- ['nutrition','🍽️','Nutrition','Fuel and water'],
- ['dadtalk','🎱','Dad Talk','Earn tomorrow'],
- ['data','📊','Data','Trends and weak spots'],
- ['settings','🎨','Settings','Mode and color']
+ ['morning','⚡','Speed & Agility','Warm up, quick feet, acceleration, COD, cooldown'],
+ ['strength','🏋️','Workout','Strength, power, and core'],
+ ['touches','🏈','Football Touches','Catching and ball skill ladder'],
+ ['dadtalk','🎮','Check-In','Every 5 days — adjusts your next block']
 ];
 
 const levelData={
- foundation:{name:'8th Grade 5 Star',mult:1,sets:0,extra:'Elite middle school athlete. Clean mechanics, serious work, safer volume.'},
- varsity:{name:'High School 5 Star',mult:1.25,sets:1,extra:'Five star high school athlete. More volume, more intensity, more complete work.'},
- savage:{name:'Collegiate 5 Star',mult:1.5,sets:2,extra:'College level challenge. Highest volume, longest rest, fastest intent, no garbage reps.'}
+ foundation:{name:'5 Star Recruit',mult:1,sets:0,extra:'Elite recruit-level work. Clean mechanics, serious work, safer volume.'},
+ varsity:{name:'D-1',mult:1.25,sets:1,extra:'D-1 caliber volume. More volume, more intensity, more complete work.'},
+ savage:{name:'NFL Ready',mult:1.5,sets:2,extra:'NFL-ready challenge. Highest volume, longest rest, fastest intent, no garbage reps.'}
 };
 
 function defaultState(){
- return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0};
+ return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',height:'',age:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},skipped:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0,checkinDraft:{},checkinHistory:[],lastCheckinAt:0};
 }
 function migrateOld(){
  let raw=localStorage.getItem(STORE);
@@ -326,6 +323,13 @@ state.musicUrl = state.musicUrl || '';
 state.musicOpen = state.musicOpen !== false;
 if(state.mode==='indoor')state.mode='home';
 if(!['outdoor','home','facility','gym'].includes(state.mode))state.mode='outdoor';
+state.height = state.height || '';
+state.age = state.age || '';
+state.skipped = state.skipped || {};
+state.checkinDraft = state.checkinDraft || {};
+state.checkinHistory = state.checkinHistory || [];
+state.lastCheckinAt = state.lastCheckinAt || 0;
+if(!['home','morning','strength','touches','nutrition','dadtalk','settings'].includes(state.screen)) state.screen='home';
 
 function modeLabel(){
  return {outdoor:'Outdoor Field',home:'Home Indoor',facility:'Indoor Facility',gym:'Gym'}[state.mode]||'Outdoor Field';
@@ -336,7 +340,12 @@ function clamp(n,min,max){return Math.max(min,Math.min(max,Number(n)||min));}
 function currentKey(){return 'day'+state.day;}
 function logFor(day=state.day){const k='day'+day; if(!state.logs[k])state.logs[k]={}; return state.logs[k];}
 function prevLog(){return state.logs['day'+(state.day-1)]||{}}
-function todayAdapt(){return state.adapt[currentKey()]||state.adapt['day'+(state.day-1)]||{status:'Green Light',mult:1,note:'Move with quality.'};}
+function todayAdapt(){
+ for(let d=state.day; d>=1; d--){
+  if(state.adapt['day'+d]) return state.adapt['day'+d];
+ }
+ return {status:'Green Light',mult:1,note:'Move with quality.'};
+}
 
 function hexToRgb(hex){
  hex=(hex||'#facc15').replace('#','');
@@ -613,29 +622,61 @@ function reqTouchesComplete(){
  const l=logFor();
  return touchPlan().every(t=>String(l['touch_'+t.id]||'').trim()!=='');
 }
-function reqNutritionComplete(){
- const l=logFor();
- return athleteWeight()>0 && ['weight','waterOz','protein','carbs','fat','calories','addedSugar'].every(k=>String(l[k]||'').trim()!=='');
+function reqNutritionCompleteForDay(d){
+ const l=state.logs['day'+d]||{};
+ return Number(l.weight||state.profileWeight||0)>0 && ['weight','waterOz','protein','carbs','fat','calories','addedSugar'].every(k=>String(l[k]||'').trim()!=='');
 }
-function reqDadComplete(){
- const l=logFor();
- return !!l.dadComplete;
+function reqNutritionComplete(){ return reqNutritionCompleteForDay(state.day); }
+function nutritionLoggedRecentCount(days=7){
+ let count=0;
+ for(let d=Math.max(1,state.day-days+1); d<=state.day; d++){ if(reqNutritionCompleteForDay(d)) count++; }
+ return count;
 }
+// CHECK-IN CADENCE — every 5 completed workout days (not calendar days,
+// and not skipped days). state.completed only grows when a day's 3
+// sessions actually finish, so its size doubles as the completed-day count.
+function checkinCompletedCount(){ return Object.keys(state.completed).length; }
+function nextCheckinTarget(){ return (state.lastCheckinAt||0)+5; }
+function checkinDue(){ return checkinCompletedCount()>0 && checkinCompletedCount()>=nextCheckinTarget(); }
+function reqDadComplete(){ return !checkinDue(); }
 function dayRequirements(){
  return [
-  ['Morning speed and plyos completed', reqWorkoutComplete('morning')],
-  ['Strength and core', reqWorkoutComplete('strength')],
+  ['Speed & Agility completed', reqWorkoutComplete('morning')],
+  ['Workout completed', reqWorkoutComplete('strength')],
   ['Football touches', reqTouchesComplete()],
-  ['Nutrition and water', reqNutritionComplete()],
-  ['Dad Talk check in', reqDadComplete()]
+  ['Nutrition logged (does not block advancing)', reqNutritionComplete()],
+  ['Check-In up to date', reqDadComplete()]
  ];
 }
-function canComplete(){return dayRequirements().every(x=>x[1]);}
+// Only the 3 workout modules gate advancing to the next day. Nutrition and
+// Check-In are tracked for visibility and for Check-In's own 5-day cadence,
+// but a "Team Priority"-style block on those two would make no sense here —
+// nutrition logging and a once-every-5-days check-in shouldn't hold up a
+// day the athlete actually trained.
+function canComplete(){
+ const req=dayRequirements();
+ return req[0][1] && req[1][1] && req[2][1];
+}
 
-function showScreen(id){state.screen=id;save();render();}
+let navStack=['home'];
+function showScreen(id){
+ if(id!==state.screen) navStack.push(state.screen);
+ state.screen=id; save(); render();
+}
+function goBack(){
+ const prev=navStack.pop()||'home';
+ state.screen=prev; save(); render();
+}
 function renderTiles(){
  const card=document.getElementById('tileCard'), el=document.getElementById('tiles');
- const compact=state.screen!=='home';
+ const backRow=document.getElementById('backRow');
+ const onHome=state.screen==='home';
+ const moduleScreens=['morning','strength','touches','dadtalk'];
+ const onModule=moduleScreens.includes(state.screen);
+ if(backRow) backRow.classList.toggle('hidden',onHome);
+ card.classList.toggle('hidden', !(onHome||onModule));
+ if(!onHome && !onModule) return;
+ const compact=!onHome;
  card.classList.toggle('tilesCompact',compact);
  if(compact){
   el.innerHTML=tiles.map(t=>`<div class="tileMini ${state.screen===t[0]?'active':''}" onclick="showScreen('${t[0]}')" title="${t[2]}"><div class="tileIcon">${t[1]}</div></div>`).join('');
@@ -736,9 +777,9 @@ function renderHome(){
   </div>
   <div class="label" style="margin-top:9px">Difficulty</div>
   <div class="chipRow">
-   <button class="chip ${state.level==='foundation'?'active':''}" onclick="quickSetLevel('foundation')">8th Grade</button>
-   <button class="chip ${state.level==='varsity'?'active':''}" onclick="quickSetLevel('varsity')">High School</button>
-   <button class="chip ${state.level==='savage'?'active':''}" onclick="quickSetLevel('savage')">Collegiate</button>
+   <button class="chip ${state.level==='foundation'?'active':''}" onclick="quickSetLevel('foundation')">5 Star Recruit</button>
+   <button class="chip ${state.level==='varsity'?'active':''}" onclick="quickSetLevel('varsity')">D-1</button>
+   <button class="chip ${state.level==='savage'?'active':''}" onclick="quickSetLevel('savage')">NFL Ready</button>
   </div>
   <div class="label" style="margin-top:9px">Body Weight</div>
   ${homeWeightHTML()}
@@ -751,7 +792,10 @@ function renderHome(){
  <details class="clean"><summary>Today's nutrition targets</summary><div class="detailBody">
  ${nt?`<table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz target</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table>`:`<p class="small">Save his weight above to unlock targets.</p>`}
  </div></details>
- <div class="inner"><h3>Earn Day ${state.day+1}</h3>${completionHTML()}</div>`;
+ <div class="inner"><h3>Today's 3 Sessions</h3>${completionHTML()}
+ <button id="completeBtn" class="green full" style="margin-top:10px" onclick="completeDay()">Complete</button>
+ </div>
+ <div class="inner"><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap the 🎮 icon above.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
 }
 function outlineRow(item){
  if(item.target!==undefined){
@@ -887,19 +931,26 @@ function pickChip(btn,key,n){
  if(row)row.querySelectorAll('.yardChip').forEach(b=>b.classList.remove('active'));
  btn.classList.add('active');
 }
+// CHECK-IN (was daily "Dad Talk") now runs every 5 completed workout days
+// instead of every day. Answers live in state.checkinDraft while in
+// progress, and land in state.checkinHistory once finished — not in the
+// per-day log, since a check-in no longer belongs to just one day.
 function renderDadTalk(){
- const l=logFor(), step=state.dadStep||0, total=dadQuestions.length;
- if(l.dadComplete){
-   const msg=escapeHTML(l.dadMessage||dadMessage(l));
+ const completedCount=checkinCompletedCount(), target=nextCheckinTarget(), due=checkinDue();
+ const history=state.checkinHistory||[], last=history[history.length-1];
+ if(!due){
+   const remaining=Math.max(0,target-completedCount);
    document.getElementById('screen_dadtalk').innerHTML=`
-   ${fieldHTML(total,total)}
-   <div class="touchdownCard"><div class="big">🏈🎉</div><h2>Touchdown!</h2><p class="small">Dad Talk complete — tomorrow's plan just updated.</p></div>
-   <div class="coachBubble"><strong>Dad Word</strong><p>${msg}</p></div>
-   <button class="blue full" onclick="restartDadTalk()">Redo Dad Talk</button>`;
+   <div class="row" style="justify-content:space-between"><div><div class="small">Every 5 completed days</div><h2>Check-In</h2></div><span class="badge goldTxt">${completedCount}/${target} days</span></div>
+   ${fieldHTML(completedCount-(state.lastCheckinAt||0),5)}
+   <div class="coachBubble"><strong>Not due yet</strong><p>${remaining<=0?'Unlocking now — head back to Home and reopen this to begin.':`Finish ${remaining} more completed day${remaining===1?'':'s'} of Speed & Agility, Workout, and Touches to unlock your next Check-In.`}</p></div>
+   ${last?`<details class="clean"><summary>Review your last Check-In</summary><div class="detailBody"><div class="coachBubble"><strong>Dad Word</strong><p>${escapeHTML(last.message)}</p></div></div></details>`:''}`;
    return;
  }
+ const step=state.dadStep||0, total=dadQuestions.length;
+ const draft=state.checkinDraft=state.checkinDraft||{};
  const q=dadQuestions[Math.min(step,total-1)];
- let val=l[q.key]||'';
+ let val=draft[q.key]||'';
  const safeQ=escapeHTML(q.q);
  const inputHtml=q.type==='number'
    ? numberChipsHTML(q,val)
@@ -909,9 +960,9 @@ function renderDadTalk(){
  <div class="questionCard"><div class="qCount">Question ${step+1} of ${total}</div><div class="qText">${safeQ}</div></div>
  <div class="inner">
    ${inputHtml}
-   <div class="grid" style="margin-top:10px"><button ${step<=0?'disabled':''} onclick="dadBack()">Back</button><button class="gold" onclick="dadNext()">${step===total-1?'Score! Finish Dad Talk':'Next'}</button></div>
+   <div class="grid" style="margin-top:10px"><button ${step<=0?'disabled':''} onclick="dadBack()">Back</button><button class="gold" onclick="dadNext()">${step===total-1?'Score! Finish Check-In':'Next'}</button></div>
  </div>
- <p class="tiny" style="text-align:center;margin-top:6px">Every honest answer moves the ball. The next day stays locked until this drive is finished.</p>`;
+ <p class="tiny" style="text-align:center;margin-top:6px">Every honest answer moves the ball.</p>`;
 }
 function dadBack(){state.dadStep=Math.max(0,(state.dadStep||0)-1);save();render();}
 function dadNext(){
@@ -919,18 +970,24 @@ function dadNext(){
  let val=(input.value||'').trim();
  if(!val){alert('Answer this first. No empty reps.'); return;}
  if(q.type==='number'){let n=clamp(Number(val),q.min??0,q.max??99); val=String(n);}
- let l=logFor(); l[q.key]=val;
+ const draft=state.checkinDraft=state.checkinDraft||{};
+ draft[q.key]=val;
  if(step<dadQuestions.length-1){state.dadStep=step+1;}
  else{
-   const ready=readinessFromLog(l);
-   l.dadComplete=true;
-   l.dadMessage=dadMessage(l);
+   const ready=readinessFromLog(draft);
+   const completedCount=checkinCompletedCount();
+   let message=dadMessage(draft);
+   const nutriCount=nutritionLoggedRecentCount(7);
+   if(nutriCount<3) message+=' One more thing — nutrition has only been logged '+nutriCount+' of the last 7 days. Log at least 3 a week so the next block can actually be tuned to how you are eating, not a guess.';
+   state.checkinHistory=state.checkinHistory||[];
+   state.checkinHistory.push({completedAt:completedCount,message,answers:draft,date:new Date().toISOString()});
    state.adapt['day'+(state.day+1)]={status:ready.status,mult:ready.mult,note:ready.note};
+   state.lastCheckinAt=completedCount;
+   state.checkinDraft={};
    state.dadStep=0;
  }
  save(); render();
 }
-function restartDadTalk(){logFor().dadComplete=false; state.dadStep=0; save(); render();}
 
 function dadMessage(l){
  const r=readinessFromLog(l);
@@ -955,22 +1012,22 @@ function dadMessage(l){
  const closer='I love you. I am proud of you. Now act like the version of you that your future self is counting on.';
  return [opener].concat(listen).concat(advice).concat([closer]).join(' ');
 }
-function renderData(){
+// Was its own "Data" tab; folded into Settings as a Progress section since
+// the new nav only has room for 4 module icons under Home. Returns HTML
+// instead of setting it directly so Settings can embed it.
+function dataLabHTML(){
  const logs=state.logs;
  const days=Object.keys(logs).map(k=>Number(k.replace('day',''))).filter(Boolean).sort((a,b)=>a-b);
- const bestLower=(field)=>{let best=null,day=null;days.forEach(d=>{let v=parseFloat(logs['day'+d][field]);if(!isNaN(v)&&(best===null||v<best)){best=v;day=d}});return best===null?'No data':best+' on Day '+day}
- const bestHigher=(field)=>{let best=null,day=null;days.forEach(d=>{let v=parseFloat(logs['day'+d][field]);if(!isNaN(v)&&(best===null||v>best)){best=v;day=d}});return best===null?'No data':best+' on Day '+day}
- const total=(prefix,exact=false)=>days.reduce((a,d)=>{const l=logs['day'+d];return a+Object.keys(l).filter(k=>exact?k===prefix:k.startsWith(prefix)).reduce((s,k)=>s+(Number(l[k])||0),0)},0);
  const touchCounts=days.reduce((a,d)=>a+Object.keys(logs['day'+d]).filter(k=>k.startsWith('touch_')&&!k.includes('_drops')).reduce((s,k)=>s+(Number(logs['day'+d][k])||0),0),0);
  const catches=touchCounts;
  const drops=days.reduce((a,d)=>a+Object.keys(logs['day'+d]).filter(k=>k.includes('_drops')).reduce((s,k)=>s+(Number(logs['day'+d][k])||0),0),0);
  const catchRate=(catches+drops)>0?Math.round(catches/(catches+drops)*100)+'%':'No data';
- document.getElementById('screen_data').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Progress</div><h2>Data Lab</h2></div><span class="badge goldTxt">${days.length} logged days</span></div>
+ return `<div class="row" style="justify-content:space-between"><div><div class="small">Progress</div><h2>Data Lab</h2></div><span class="badge goldTxt">${days.length} logged days</span></div>
  <div class="inner"><h3>Trend Lines</h3><p class="small">Each testing number gets its own chart because they're different units — you can't put seconds and inches on one axis and have it mean anything. Tap any point for the exact day and number.</p>
  ${renderAllTrendCharts()}
  </div>
  <table class="dataTable"><tr><td>Total touch reps</td><td>${touchCounts}</td></tr><tr><td>Estimated catch rate</td><td>${catchRate}</td></tr><tr><td>Total drops or misses</td><td>${drops}</td></tr></table>
- <details class="clean" open><summary>Testing Numbers</summary><div class="detailBody">${testingInputs()}</div></details>
+ <details class="clean"><summary>Testing Numbers</summary><div class="detailBody">${testingInputs()}</div></details>
  <div class="coachBubble"><strong>Strong and Weak Read</strong><p>${dataCoach(days,logs)}</p></div>
  <details class="clean"><summary>Day by Day Records</summary><div class="detailBody">${days.length?days.map(d=>recordCard(d,logs['day'+d])).join(''):'<p class="small">No saved records yet.</p>'}</div></details>
  <div class="grid"><button class="blue full" onclick="exportData()">Export Data</button><button class="red full" onclick="resetConfirm()">Reset App</button></div>`;
@@ -995,9 +1052,35 @@ function recordCard(d,l){
  const ready=readinessFromLog(l);
  return `<div class="inner"><div class="row" style="justify-content:space-between"><h3>Day ${d}</h3><span class="badge ${readinessClass(ready.status)}">${ready.status}</span></div><p class="small">Energy ${l.energy||' '} • Pain ${l.pain||' '} • Water ${l.waterOz||' '} oz • Calories ${l.calories||' '} • Protein ${l.protein||' '} g • Carbs ${l.carbs||' '} g • Sugar ${l.addedSugar||' '} g</p><p>${(l.dadMessage||l.dadInput||l.testingNotes||'No notes saved.').slice(0,240)}</p></div>`;
 }
+function formatHeight(inches){
+ const n=Number(inches);
+ if(!n) return 'not saved yet';
+ const ft=Math.floor(n/12), inch=Math.round(n%12);
+ return `${ft}'${inch}" (${n} in)`;
+}
+function saveSettingsHeight(){
+ const input=document.getElementById('settingsHeightInput');
+ const h=Number(input&&input.value);
+ if(!h||h<36||h>90){alert('Enter a realistic height in inches first (roughly 36 to 90).');return;}
+ state.height=String(h); save(); render();
+}
+function saveSettingsAge(){
+ const input=document.getElementById('settingsAgeInput');
+ const a=Number(input&&input.value);
+ if(!a||a<10||a>25){alert('Enter a realistic age (10 to 25).');return;}
+ state.age=String(a); save(); render();
+}
+function skipToday(){
+ if(!confirm('Skip Day '+state.day+'? This moves to the next day without requiring today’s sessions — use it for injury or a day you truly cannot train.'))return;
+ state.skipped[currentKey()]=new Date().toISOString();
+ if(state.day<DAYS_TOTAL){state.day++; state.maxUnlocked=Math.max(state.maxUnlocked,state.day);}
+ state.screen='home';
+ resetGuidedProgress();
+ save(); render(); window.scrollTo({top:0,behavior:'smooth'});
+}
 function renderSettings(){
  const colors=['#facc15','#22c55e','#38bdf8','#3b82f6','#a78bfa','#8b5cf6','#fb7185','#ef4444','#f97316','#14b8a6','#06b6d4','#84cc16','#eab308','#ffffff','#0ea5e9','#d946ef'];
- document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">He can change the vibe, training environment, and athlete tier. The next day is still earned, but the coach cycle changes daily and progresses weekly.</p>
+ document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">He can change the vibe, training environment, and athlete tier any day. The next day is earned by finishing Speed & Agility, Workout, and Touches — Check-In runs every 5 completed days.</p>
  <div class="inner"><h3>Install As An App</h3><p class="small">Gets a real home-screen icon, opens full-screen with no browser bar, and still works with no signal at the field. Not on the App Store or Play Store — installs straight from this page.</p>
  <button id="installBtn" class="gold full hidden" onclick="promptInstall()">Install Athlete Hub</button>
  <p class="tiny" style="margin-top:8px"><b>iPhone:</b> tap the Share icon in Safari, then "Add to Home Screen."<br><b>Android:</b> tap the button above, or the browser menu, then "Install app" / "Add to Home Screen."</p></div>
@@ -1008,8 +1091,11 @@ function renderSettings(){
  <button class="${state.mode==='facility'?'active':''}" onclick="state.mode='facility';save();render()">Indoor Facility</button>
  <button class="${state.mode==='gym'?'active':''}" onclick="state.mode='gym';save();render()">Gym</button>
  </div><p class="small">${modeNotice()}</p></div>
- <div class="inner"><h3>Difficulty</h3><div class="row"><button class="${state.level==='foundation'?'active':''}" onclick="state.level='foundation';save();render()">8th Grade 5 Star</button><button class="${state.level==='varsity'?'active':''}" onclick="state.level='varsity';save();render()">High School 5 Star</button><button class="${state.level==='savage'?'active':''}" onclick="state.level='savage';save();render()">Collegiate 5 Star</button></div><p class="small">${levelData[state.level].extra}</p></div>
- <div class="inner"><h3>Athlete Weight</h3><p class="small">Nutrition and bodyweight logs use this first. Current saved weight: ${state.profileWeight||'not saved yet'} lb.</p><div class="grid"><input id="settingsWeightInput" type="number" min="60" max="350" value="${state.profileWeight||''}" placeholder="Enter weight"><button class="gold" onclick="saveSettingsWeight()">Save Weight</button></div></div><div class="inner"><h3>Weekly Coach Cycle</h3><div class="completionList">
+ <div class="inner"><h3>Difficulty</h3><div class="row"><button class="${state.level==='foundation'?'active':''}" onclick="state.level='foundation';save();render()">5 Star Recruit</button><button class="${state.level==='varsity'?'active':''}" onclick="state.level='varsity';save();render()">D-1</button><button class="${state.level==='savage'?'active':''}" onclick="state.level='savage';save();render()">NFL Ready</button></div><p class="small">${levelData[state.level].extra}</p></div>
+ <div class="inner"><h3>Athlete Weight</h3><p class="small">Nutrition and bodyweight logs use this first. Current saved weight: ${state.profileWeight||'not saved yet'} lb.</p><div class="grid"><input id="settingsWeightInput" type="number" min="60" max="350" value="${state.profileWeight||''}" placeholder="Enter weight"><button class="gold" onclick="saveSettingsWeight()">Save Weight</button></div></div>
+ <div class="inner"><h3>Athlete Height</h3><p class="small">Feeds the nutrition calculation alongside weight. Current saved height: ${formatHeight(state.height)}.</p><div class="grid"><input id="settingsHeightInput" type="number" min="36" max="90" value="${state.height||''}" placeholder="Height in inches, e.g. 65"><button class="gold" onclick="saveSettingsHeight()">Save Height</button></div></div>
+ <div class="inner"><h3>Athlete Age</h3><p class="small">Feeds the supplement and vitamin dosing tables in Nutrition, so a younger and older athlete each get the right numbers instead of one fixed dose. Current saved age: ${state.age||'not saved yet'}.</p><div class="grid"><input id="settingsAgeInput" type="number" min="10" max="25" value="${state.age||''}" placeholder="Age in years"><button class="gold" onclick="saveSettingsAge()">Save Age</button></div></div>
+ <div class="inner"><h3>Weekly Coach Cycle</h3><div class="completionList">
  <div class="checkItem"><span>Day 1</span><span class="badge goldTxt">Acceleration Power</span></div>
  <div class="checkItem"><span>Day 2</span><span class="badge goldTxt">Max Velocity Mechanics</span></div>
  <div class="checkItem"><span>Day 3</span><span class="badge goldTxt">Lateral Quickness And COD</span></div>
@@ -1017,11 +1103,14 @@ function renderSettings(){
  <div class="checkItem"><span>Day 5</span><span class="badge goldTxt">Game Speed Blend</span></div>
  <div class="checkItem"><span>Day 6</span><span class="badge goldTxt">Test, Contrast, Recovery Power</span></div>
  <div class="checkItem"><span>Day 7</span><span class="badge goldTxt">Mobility, Elastic Reset, Prep</span></div>
- </div><p class="small">Every new week keeps this structure but progresses volume, intensity, and the coach expectation.</p></div><div class="inner"><h3>Progress Lock</h3><p class="small">Current day is Day ${state.day}. Max unlocked is Day ${state.maxUnlocked}. Complete all required logs and Dad Talk to unlock the next day.</p></div>`;
+ </div><p class="small">Every new week keeps this structure but progresses volume, intensity, and the coach expectation.</p></div>
+ <div class="inner"><h3>Progress</h3><p class="small">Current day is Day ${state.day}. Max unlocked is Day ${state.maxUnlocked}. Finishing Speed & Agility, Workout, and Touches earns the next day. Check-In comes up every 5 completed days — currently ${checkinCompletedCount()} of ${nextCheckinTarget()}.</p>
+ <button class="orange full" onclick="skipToday()">Skip Today (injury or unavailable)</button></div>
+ <details class="clean"><summary>Progress — Data Lab</summary><div class="detailBody">${dataLabHTML()}</div></details>`;
 }
 function saveSettingsWeight(){const input=document.getElementById('settingsWeightInput');const weight=Number(input&&input.value);if(!weight||weight<60||weight>350){alert('Enter a realistic athlete weight first.');return;}state.profileWeight=String(weight);logFor().weight=String(weight);save();render();}
 function setColor(c){state.accent=c;save();render();}
-const screenRenderers={home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,data:renderData,settings:renderSettings};
+const screenRenderers={home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,settings:renderSettings};
 // Perf note: only the screen the athlete is actually looking at gets rebuilt.
 // The other seven stay untouched until he navigates to them (they always
 // redraw fresh from state at that point, so nothing goes stale).

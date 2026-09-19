@@ -1,7 +1,7 @@
 // Jr Level 13 Athlete Hub — service worker
 // Bump CACHE_NAME any time index.html or the icons change so devices
 // pick up the new version instead of serving a stale offline copy.
-const CACHE_NAME = 'jr-level13-shell-v2';
+const CACHE_NAME = 'jr-level13-shell-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
