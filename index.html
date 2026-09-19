@@ -22,15 +22,15 @@
   --soft:#222230;
   --text:#ffffff;
   --muted:#b9b9c6;
-  --accent:#facc15;
-  --accent2:#fff3a3;
+  --accent:#3b82f6;
+  --accent2:#bfdbfe;
   --green:#22c55e;
   --red:#ef4444;
   --orange:#fb923c;
   --blue:#38bdf8;
   --purple:#a78bfa;
-  --buttonText:#050507;
-  --themeGlow:#3a3207;
+  --buttonText:#ffffff;
+  --themeGlow:#0d1e3a;
 }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -133,6 +133,10 @@ body.timerFlash{animation:flashPulse .7s ease}
 .chipRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .chip{border:1px solid var(--line);background:#0d0d12;border-radius:999px;padding:9px 13px;font-size:12px;font-weight:900;color:#fff;cursor:pointer;min-height:38px}
 .chip.active{background:var(--accent);color:var(--buttonText);border-color:transparent}
+.scrollPicker{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;margin-top:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.scrollPicker::-webkit-scrollbar{height:0}
+.scrollChip{flex:0 0 auto;border:1px solid var(--line);background:#0d0d12;border-radius:999px;padding:10px 16px;font-size:13px;font-weight:900;color:#fff;cursor:pointer;min-height:40px;scroll-snap-align:start;white-space:nowrap}
+.scrollChip.active{background:var(--accent);color:var(--buttonText);border-color:transparent}
 .fieldWrap{margin:6px 0 10px}
 .field{position:relative;height:56px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#1d7a3a,#154f26);border:2px solid #0c3016;box-shadow:inset 0 0 22px rgba(0,0,0,.4)}
 .field:before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.32) 0 2px, transparent 2px calc(10% - 2px))}
@@ -252,7 +256,7 @@ const DAYS_TOTAL=30;
 // (full onboarding + launcher) instead of carrying over test data from the
 // last round. Once this is the final version, stop bumping it (or set
 // FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v3-round4';
+const BUILD_VERSION='v3-round6';
 const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
@@ -323,7 +327,7 @@ const levelData={
 };
 
 function defaultState(){
- return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',height:'',age:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},skipped:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0,checkinDraft:{},checkinHistory:[],lastCheckinAt:0,onboarded:false,onboardStep:0,posMode:'hybrid',offPos:'',defPos:'',buildVersion:BUILD_VERSION};
+ return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#3b82f6',profileWeight:'',height:'',age:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},skipped:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0,checkinDraft:{},checkinHistory:[],lastCheckinAt:0,onboarded:false,onboardStep:0,posMode:'hybrid',offPos:'',defPos:'',nutriUnit:'oz',nutriPicks:{carb:'',protein:'',veggie:'',fat:''},buildVersion:BUILD_VERSION};
 }
 function migrateOld(){
  let raw=localStorage.getItem(STORE);
@@ -360,6 +364,8 @@ if(!['outdoor','home','facility','gym'].includes(state.mode))state.mode='outdoor
 state.height = state.height || '';
 state.age = state.age || '';
 state.musicQuery = state.musicQuery || '';
+state.nutriUnit = state.nutriUnit==='g' ? 'g' : 'oz';
+state.nutriPicks = state.nutriPicks || {carb:'',protein:'',veggie:'',fat:''};
 state.skipped = state.skipped || {};
 state.checkinDraft = state.checkinDraft || {};
 state.checkinHistory = state.checkinHistory || [];
@@ -392,7 +398,7 @@ function todayAdapt(){
 }
 
 function hexToRgb(hex){
- hex=(hex||'#facc15').replace('#','');
+ hex=(hex||'#3b82f6').replace('#','');
  if(hex.length===3)hex=hex.split('').map(x=>x+x).join('');
  const n=parseInt(hex,16);return {r:(n>>16)&255,g:(n>>8)&255,b:n&255};
 }
@@ -400,7 +406,7 @@ function rgbToHex(r,g,b){return '#'+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.
 function mix(hex,hex2,p){const a=hexToRgb(hex),b=hexToRgb(hex2);return rgbToHex(a.r*(1-p)+b.r*p,a.g*(1-p)+b.g*p,a.b*(1-p)+b.b*p)}
 function luminance(hex){const c=hexToRgb(hex);return (0.2126*c.r+0.7152*c.g+0.0722*c.b)/255;}
 function applyTheme(){
- const accent=state.accent||'#facc15';
+ const accent=state.accent||'#3b82f6';
  const bg=mix(accent,'#020204',.82);
  const panel=mix(accent,'#101018',.78);
  const panel2=mix(accent,'#181824',.72);
@@ -746,6 +752,163 @@ function nutritionTargets(){
  return {weight,calLow,calHigh,proteinLow,proteinHigh,carbLow,carbHigh,fatLow,fatHigh,water,addedSugarMax};
 }
 
+/* =========================================================
+   NUTRITION MEAL BUILDER
+   Pick one carb, one protein, one veggie, one good fat, and a
+   unit of measurement — the app sizes an exact portion of each
+   to hit that meal's share of what's left for the day. Macro
+   values below are approximate per-100g reference figures (or
+   per scoop/piece where noted), meant for everyday training
+   guidance, not a clinical diet tool.
+   ========================================================= */
+const FOODS={
+ rice:{label:'Jasmine Rice',cal:130,p:2.7,c:28,f:0.3},
+ oatmeal:{label:'Oatmeal',cal:71,p:2.5,c:12,f:1.5},
+ whiteBread:{label:'White Bread',cal:265,p:9,c:49,f:3.2},
+ wheatBread:{label:'Wheat Bread',cal:247,p:13,c:41,f:3.4},
+ waffles:{label:'Waffles',cal:291,p:7.9,c:33,f:14},
+ pancakes:{label:'Pancakes',cal:227,p:6,c:28,f:9.7},
+ potato:{label:'Potatoes',cal:93,p:2.5,c:21,f:0.1},
+ whiteFish:{label:'White Fish',cal:105,p:23,c:0,f:1.2},
+ shrimp:{label:'Shrimp',cal:99,p:24,c:0.2,f:0.3},
+ groundTurkey:{label:'Ground Turkey',cal:176,p:22,c:0,f:9},
+ groundBeef:{label:'Ground Beef',cal:217,p:26,c:0,f:12},
+ steak:{label:'Steak',cal:201,p:30,c:0,f:8},
+ chicken:{label:'Chicken',cal:165,p:31,c:0,f:3.6},
+ kale:{label:'Kale',cal:49,p:4.3,c:9,f:0.9},
+ greenBeans:{label:'Green Beans',cal:35,p:1.8,c:8,f:0.2},
+ broccoli:{label:'Broccoli',cal:35,p:2.4,c:7,f:0.4},
+ spinach:{label:'Spinach',cal:23,p:3,c:3.6,f:0.3},
+ avocado:{label:'Avocado',cal:160,p:2,c:9,f:15},
+ oliveOil:{label:'Olive Oil',cal:884,p:0,c:0,f:100},
+ proteinPowder:{label:'Protein Powder',cal:400,p:83,c:10,f:5},
+ banana:{label:'Banana',cal:89,p:1.1,c:23,f:0.3},
+ oatsDry:{label:'Oats',cal:389,p:16.9,c:66,f:6.9},
+ berries:{label:'Berries',cal:57,p:0.7,c:14,f:0.3}
+};
+const CARBS=['rice','oatmeal','whiteBread','wheatBread','waffles','pancakes','potato'];
+const PROTEINS=['whiteFish','shrimp','groundTurkey','groundBeef','steak','chicken'];
+const VEGGIES=['kale','greenBeans','broccoli','spinach'];
+const FATS=['avocado','oliveOil'];
+const UNITS=['oz','g'];
+const UNIT_LABELS={oz:'Ounces (oz)',g:'Grams (g)'};
+function gramsToUnit(g,unit){ return unit==='oz'?g/28.3495:g; }
+function fmtPortion(g,unit){ const v=gramsToUnit(g,unit); return (Math.round(Math.max(0,v)*10)/10)+' '+(unit==='oz'?'oz':'g'); }
+function bananaLabel(g){
+ const count=Math.max(0.25,Math.round((g/118)*4)/4);
+ const whole=Math.floor(count), frac=Math.round((count-whole)*4)/4;
+ const fracSym=frac===0.25?'¼':frac===0.5?'½':frac===0.75?'¾':'';
+ return (whole>0?whole+' ':'')+(fracSym?fracSym+' ':'')+'banana'+(count>1?'s':'');
+}
+function mealSlots(){ return ['breakfast','lunch','dinner','shake1','shake2']; }
+function slotLabel(s){ return {breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',shake1:'Shake 1',shake2:'Shake 2'}[s]||s; }
+function isShakeSlot(s){ return s==='shake1'||s==='shake2'; }
+function mealLogFor(){ const l=logFor(); if(!l.mealLog)l.mealLog={}; return l.mealLog; }
+function remainingSlots(){ const ml=mealLogFor(); return mealSlots().filter(s=>!ml[s]); }
+// Target = midpoint of each range from nutritionTargets(), minus whatever
+// has already been logged today across breakfast/lunch/dinner/shakes.
+function nutritionRemaining(){
+ const nt=nutritionTargets(); if(!nt)return null;
+ const ml=mealLogFor();
+ let cal=0,p=0,c=0,f=0;
+ Object.values(ml).forEach(m=>{ cal+=m.macros.cal; p+=m.macros.protein; c+=m.macros.carb; f+=m.macros.fat; });
+ const calT=Math.round((nt.calLow+nt.calHigh)/2), pT=Math.round((nt.proteinLow+nt.proteinHigh)/2), cT=Math.round((nt.carbLow+nt.carbHigh)/2), fT=Math.round((nt.fatLow+nt.fatHigh)/2);
+ return {calTarget:calT,proteinTarget:pT,carbTarget:cT,fatTarget:fT,
+  calEaten:Math.round(cal),proteinEaten:Math.round(p),carbEaten:Math.round(c),fatEaten:Math.round(f),
+  calLeft:Math.max(0,Math.round(calT-cal)),proteinLeft:Math.max(0,Math.round(pT-p)),carbLeft:Math.max(0,Math.round(cT-c)),fatLeft:Math.max(0,Math.round(fT-f))};
+}
+// Splits what's left today evenly across whatever meals have not been
+// logged yet, so the first meal of the day gets roughly a fifth of the
+// full target and a meal logged late in the day absorbs whatever remains.
+function perMealShare(){
+ const r=nutritionRemaining(); if(!r)return null;
+ const slots=Math.max(1,remainingSlots().length);
+ return {protein:r.proteinLeft/slots,carb:r.carbLeft/slots,fat:r.fatLeft/slots};
+}
+// Plate method: size the protein food to the protein share, the carb food
+// to the carb share, the fat food to the fat share, veggies stay a fixed
+// modest amount since they are not macro-gated. Macro overlap between
+// categories (e.g. fat in a lean protein, carbs in avocado) is intentional
+// and realistic, not a bug — the running "remaining today" total still
+// nets out close to the target across a full day.
+function solidMealPortions(picks,share){
+ const proteinFood=FOODS[picks.protein],carbFood=FOODS[picks.carb],fatFood=FOODS[picks.fat],veggieFood=FOODS[picks.veggie];
+ const proteinGrams=proteinFood&&proteinFood.p>0?(share.protein/proteinFood.p)*100:0;
+ const carbGrams=carbFood&&carbFood.c>0?(share.carb/carbFood.c)*100:0;
+ const fatGrams=fatFood&&fatFood.f>0?(share.fat/fatFood.f)*100:0;
+ const veggieGrams=100;
+ const parts=[[proteinGrams,proteinFood],[carbGrams,carbFood],[fatGrams,fatFood],[veggieGrams,veggieFood]];
+ const macros={cal:0,protein:0,carb:0,fat:0};
+ parts.forEach(([g,food])=>{ macros.cal+=(g/100)*food.cal; macros.protein+=(g/100)*food.p; macros.carb+=(g/100)*food.c; macros.fat+=(g/100)*food.f; });
+ return {proteinGrams,carbGrams,fatGrams,veggieGrams,macros};
+}
+// Shake recipe is fixed (protein powder, oats, banana, berries) — only the
+// amounts scale, sized to that shake's share of what's left for the day.
+function shakePortions(share){
+ const powder=FOODS.proteinPowder,banana=FOODS.banana,oats=FOODS.oatsDry,berries=FOODS.berries;
+ const proteinNeeded=Math.max(share.protein,10);
+ const powderGramsRaw=(proteinNeeded/powder.p)*100;
+ const scoops=Math.max(1,Math.round((powderGramsRaw/30)*2)/2);
+ const powderGrams=scoops*30;
+ const powderMacros={cal:(powderGrams/100)*powder.cal,protein:(powderGrams/100)*powder.p,carb:(powderGrams/100)*powder.c,fat:(powderGrams/100)*powder.f};
+ const carbRemaining=Math.max(0,share.carb-powderMacros.carb);
+ const oatsGrams=oats.c>0?((carbRemaining*.5)/oats.c)*100:0;
+ const bananaGrams=banana.c>0?((carbRemaining*.5)/banana.c)*100:0;
+ const berriesGrams=60;
+ const macros={
+  cal:powderMacros.cal+(oatsGrams/100)*oats.cal+(bananaGrams/100)*banana.cal+(berriesGrams/100)*berries.cal,
+  protein:powderMacros.protein+(oatsGrams/100)*oats.p+(bananaGrams/100)*banana.p+(berriesGrams/100)*berries.p,
+  carb:powderMacros.carb+(oatsGrams/100)*oats.c+(bananaGrams/100)*banana.c+(berriesGrams/100)*berries.c,
+  fat:powderMacros.fat+(oatsGrams/100)*oats.f+(bananaGrams/100)*banana.f+(berriesGrams/100)*berries.f
+ };
+ return {scoops,oatsGrams,bananaGrams,berriesGrams,macros};
+}
+// Rolls today's logged meals up into the same l.calories/protein/carbs/fat
+// fields the rest of the app (Check-In adequacy, Data Lab day cards) already
+// reads, so nothing downstream needed to change.
+function recalcNutritionRollup(){
+ const l=logFor(), ml=mealLogFor();
+ let cal=0,p=0,c=0,f=0;
+ Object.values(ml).forEach(m=>{ cal+=m.macros.cal; p+=m.macros.protein; c+=m.macros.carb; f+=m.macros.fat; });
+ l.calories=String(Math.round(cal)); l.protein=String(Math.round(p)); l.carbs=String(Math.round(c)); l.fat=String(Math.round(f));
+ if(l.addedSugar===undefined||l.addedSugar==='')l.addedSugar='0';
+}
+function setNutriPick(cat,key){ state.nutriPicks[cat]=key; save(); render(); }
+function setNutriUnit(u){ state.nutriUnit=u; save(); render(); }
+let nutriActiveSlot=null;
+function selectNutriSlot(slot){ nutriActiveSlot=(nutriActiveSlot===slot?null:slot); render(); }
+function logMeal(slot){
+ const share=perMealShare(); if(!share)return;
+ let entry;
+ if(isShakeSlot(slot)){
+  const s=shakePortions(share);
+  entry={macros:s.macros,summary:`${s.scoops} scoop${s.scoops===1?'':'s'} protein powder, ${fmtPortion(s.oatsGrams,state.nutriUnit)} oats, ${bananaLabel(s.bananaGrams)}, ${fmtPortion(s.berriesGrams,state.nutriUnit)} berries.`};
+ } else {
+  const picks=state.nutriPicks;
+  if(!(picks.carb&&picks.protein&&picks.fat&&picks.veggie)){ alert('Pick a carb, protein, veggie, and fat first.'); return; }
+  const portions=solidMealPortions(picks,share);
+  entry={macros:portions.macros,summary:`${fmtPortion(portions.proteinGrams,state.nutriUnit)} ${FOODS[picks.protein].label}, ${fmtPortion(portions.carbGrams,state.nutriUnit)} ${FOODS[picks.carb].label}, ${fmtPortion(portions.fatGrams,state.nutriUnit)} ${FOODS[picks.fat].label}, ${fmtPortion(portions.veggieGrams,state.nutriUnit)} ${FOODS[picks.veggie].label}.`};
+ }
+ mealLogFor()[slot]=entry;
+ recalcNutritionRollup();
+ nutriActiveSlot=null;
+ save(); render();
+}
+function unlogMeal(slot){
+ delete mealLogFor()[slot];
+ recalcNutritionRollup();
+ save(); render();
+}
+function supplementDoses(age){
+ const a=Number(age)||14;
+ let creatine,eaa,collagen;
+ if(a<=13){creatine=3;eaa=5;collagen=5;}
+ else if(a<=15){creatine=3.5;eaa=7;collagen=5;}
+ else if(a<=17){creatine=4;eaa=8;collagen=8;}
+ else {creatine=5;eaa=10;collagen=10;}
+ return {creatine,eaa,collagen,age:a};
+}
+
 // SOLO / PARTNER — asked once per module per day. Stored on that day's log
 // since it's a session-shape choice, not a global setting.
 function soloPartnerFor(type){ return logFor()['sp_'+type] || ''; }
@@ -802,9 +965,16 @@ function reqTouchesComplete(){
  if(!soloPartnerFor('touches')) return false;
  return touchPlanForSession().every(t=>String(l['touch_'+t.id]||'').trim()!=='');
 }
+// "Logged" for a day now means: a known body weight (profile-level — it
+// does not need re-entering daily, Settings/Home already handle updating
+// it), water logged, and at least one meal actually built and logged
+// through the meal builder below (which auto-fills calories/protein/
+// carbs/fat from what got logged, so those never need separate typing).
 function reqNutritionCompleteForDay(d){
  const l=state.logs['day'+d]||{};
- return Number(l.weight||state.profileWeight||0)>0 && ['weight','waterOz','protein','carbs','fat','calories','addedSugar'].every(k=>String(l[k]||'').trim()!=='');
+ if(!(Number(state.profileWeight||l.weight||0)>0))return false;
+ if(String(l.waterOz||'').trim()==='')return false;
+ return !!(l.mealLog && Object.keys(l.mealLog).length>0);
 }
 function reqNutritionComplete(){ return reqNutritionCompleteForDay(state.day); }
 function nutritionLoggedRecentCount(days=7){
@@ -821,9 +991,9 @@ function checkinDue(){ return checkinCompletedCount()>0 && checkinCompletedCount
 function reqDadComplete(){ return !checkinDue(); }
 function dayRequirements(){
  return [
-  ['Speed & Agility completed', reqWorkoutComplete('morning')],
-  ['Workout completed', reqWorkoutComplete('strength')],
-  ['Football touches', reqTouchesComplete()],
+  ['Speed & Agility', reqWorkoutComplete('morning')],
+  ['Workout', reqWorkoutComplete('strength')],
+  ['Football Touches', reqTouchesComplete()],
   ['Nutrition logged (does not block advancing)', reqNutritionComplete()],
   ['Check-In up to date', reqDadComplete()]
  ];
@@ -1042,19 +1212,59 @@ function renderTouch(t,i){
  </div>`;
 }
 function stageInput(el){logFor()[el.dataset.log]=el.value; save(); updateCompleteButton();}
+// Gives honest, specific feedback instead of a blanket "saved" message —
+// the old version always said "saved" even when some exercises/drills
+// still had no reps logged, which read as "done" when it wasn't.
 function saveSection(name){
- if(name==='Morning work')logFor().morningComplete=true;
+ if(name==='Morning work'){
+  logFor().morningComplete=true;
+  save(); render();
+  alert('Speed & Agility saved and complete for Day '+state.day+'.');
+  return;
+ }
+ if(name==='Strength work'){
+  save(); render();
+  if(reqWorkoutComplete('strength')) alert('Workout saved and complete for Day '+state.day+'.');
+  else alert('Workout saved so far — but it is not complete yet. Every exercise still needs reps logged for every set before the day can advance. Scroll back through the drills above to find what is missing.');
+  return;
+ }
+ if(name==='Football touches'){
+  save(); render();
+  if(reqTouchesComplete()) alert('Football Touches saved and complete for Day '+state.day+'.');
+  else alert('Touches saved so far — but it is not complete yet. Every drill still needs a number logged before the day can advance. Scroll back through the drills above to find what is missing.');
+  return;
+ }
  save(); alert(name+' saved for Day '+state.day); render();
 }
 function updateCompleteButton(){
- const btn=document.getElementById('completeBtn');
- if(!btn)return;
- btn.disabled=!canComplete();
- btn.textContent=canComplete()?'Complete Day':'Locked';
+ const can=canComplete();
+ document.querySelectorAll('.completeDayBtn').forEach(btn=>{
+  btn.disabled=!can;
+  btn.textContent=can?'Complete Day':'Locked';
+ });
+ document.querySelectorAll('.completeDayNote').forEach(note=>{ note.textContent=missingSummary(); });
 }
 function completionHTML(){
  const req=dayRequirements();
- return `<div class="completionList">${req.map(r=>`<div class="checkItem"><span>${r[0]}</span><span class="${r[1]?'badge good':'badge bad'}">${r[1]?'Saved':'Needed'}</span></div>`).join('')}</div>`;
+ return `<div class="completionList">${req.map(r=>`<div class="checkItem"><span>${r[0]}</span><span class="${r[1]?'badge good':'badge bad'}">${r[1]?'Done':'Not yet'}</span></div>`).join('')}</div>`;
+}
+// Plain-language version of what's still blocking the day from advancing —
+// shown right under the Complete Day button on every module screen so it's
+// obvious from wherever you are, not just from Home.
+function missingSummary(){
+ const req=dayRequirements();
+ const missing=[!req[0][1]&&'Speed & Agility',!req[1][1]&&'Workout',!req[2][1]&&'Football Touches'].filter(Boolean);
+ if(!missing.length)return 'All 3 sessions are done — tap Complete Day to move to the next day.';
+ return 'Still needed before the day can advance: '+missing.join(', ')+'.';
+}
+// Shared Complete Day control, dropped at the bottom of Home and all three
+// workout module screens so the day can be advanced from wherever you
+// finish last, without navigating back to Home first.
+function dayProgressFooterHTML(){
+ const cd=canComplete();
+ return `<div class="inner" style="margin-top:10px"><h3>Day Progress</h3>${completionHTML()}
+ <p class="tiny completeDayNote" style="margin:8px 0 10px">${missingSummary()}</p>
+ <button class="green full completeDayBtn" ${cd?'':'disabled'} onclick="completeDay()">${cd?'Complete Day':'Locked'}</button></div>`;
 }
 let homeWeightEditing=false;
 function homeWeightHTML(){
@@ -1101,9 +1311,7 @@ function renderHome(){
  <details class="clean"><summary>Today's nutrition targets</summary><div class="detailBody">
  ${nt?`<table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz target</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table>`:`<p class="small">Save his weight above to unlock targets.</p>`}
  </div></details>
- <div class="inner"><h3>Today's 3 Sessions</h3>${completionHTML()}
- <button id="completeBtn" class="green full" style="margin-top:10px" onclick="completeDay()">Complete</button>
- </div>
+ ${dayProgressFooterHTML()}
  <div class="inner"><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap the 🎮 icon above.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
 }
 function outlineRow(item){
@@ -1136,7 +1344,7 @@ function renderMorning(){
  ${soloPartnerBadgeHTML('morning')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">The coach cycle changes every day and progresses every week. ${modeNotice()} ${levelNotice()} No time, rep, or completed boxes during speed work — train straight through, rest like an athlete, then tap Save once at the end.</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
- document.getElementById('screen_morning').innerHTML=header+renderGuidedCard('morning',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Morning work')">Save Morning Work</button>`;
+ document.getElementById('screen_morning').innerHTML=header+renderGuidedCard('morning',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Morning work')">Save Morning Work</button>`+dayProgressFooterHTML();
  flushMediaBoxes();
 }
 function renderStrength(){
@@ -1148,7 +1356,7 @@ function renderStrength(){
  ${soloPartnerBadgeHTML('strength')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">Changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set — bodyweight work uses his body weight.</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
- document.getElementById('screen_strength').innerHTML=header+renderGuidedCard('strength',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Strength work')">Save Strength Work</button>`;
+ document.getElementById('screen_strength').innerHTML=header+renderGuidedCard('strength',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Strength work')">Save Strength Work</button>`+dayProgressFooterHTML();
  flushMediaBoxes();
 }
 function renderTouches(){
@@ -1163,61 +1371,120 @@ function renderTouches(){
  ${soloPartnerBadgeHTML('touches')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">${whyTxt}</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
- document.getElementById('screen_touches').innerHTML=header+renderGuidedCard('touches',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Football touches')">Save Football Touches</button>`;
+ document.getElementById('screen_touches').innerHTML=header+renderGuidedCard('touches',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Football touches')">Save Football Touches</button>`+dayProgressFooterHTML();
  flushMediaBoxes();
 }
-function portionGuide(nt){
- const palmG=25, fistG=35, thumbG=9;
- return {
-  protein:Math.max(1,Math.round(((nt.proteinLow+nt.proteinHigh)/2)/palmG)),
-  carbs:Math.max(1,Math.round(((nt.carbLow+nt.carbHigh)/2)/fistG)),
-  fat:Math.max(1,Math.round(((nt.fatLow+nt.fatHigh)/2)/thumbG))
- };
+function remainingTodayHTML(rem){
+ return `<div class="inner"><h3>Remaining Today</h3><p class="small">Updates every time a meal below gets logged.</p>
+ <div class="statCards">
+  <div class="stat"><b>${rem.calLeft}</b><span>Calories left</span></div>
+  <div class="stat"><b>${rem.proteinLeft}g</b><span>Protein left</span></div>
+  <div class="stat"><b>${rem.carbLeft}g</b><span>Carbs left</span></div>
+  <div class="stat"><b>${rem.fatLeft}g</b><span>Fat left</span></div>
+ </div></div>`;
 }
-function portionGuideHTML(nt){
- const p=portionGuide(nt);
- return `<div class="inner"><h3>How To Measure It — No Scale Needed</h3><p class="small">Use his hand. Spread these across 4-5 meals and snacks in the day.</p>
- <div class="completionList">
-  <div class="checkItem"><span>🤚 Protein — palm-sized</span><span class="badge goldTxt">~${p.protein}x today</span></div>
-  <div class="checkItem"><span>✊ Carbs — fist-sized</span><span class="badge goldTxt">~${p.carbs}x today</span></div>
-  <div class="checkItem"><span>👍 Fat — thumb-sized</span><span class="badge goldTxt">~${p.fat}x today</span></div>
-  <div class="checkItem"><span>✋ Veggies — fist-sized, every meal</span><span class="badge good">No limit</span></div>
+function pickChipHTML(cat,key){ return `<button class="scrollChip ${state.nutriPicks[cat]===key?'active':''}" onclick="setNutriPick('${cat}','${key}')">${FOODS[key].label}</button>`; }
+function unitChipHTML(u){ return `<button class="scrollChip ${state.nutriUnit===u?'active':''}" onclick="setNutriUnit('${u}')">${UNIT_LABELS[u]}</button>`; }
+function portionResultHTML(slot,picks,unit,portions){
+ return `<div class="coachBubble" style="margin-top:10px"><strong>Your Plate</strong>
+ <div class="completionList" style="margin-top:6px">
+  <div class="checkItem"><span>${FOODS[picks.protein].label}</span><span class="badge good">${fmtPortion(portions.proteinGrams,unit)}</span></div>
+  <div class="checkItem"><span>${FOODS[picks.carb].label}</span><span class="badge good">${fmtPortion(portions.carbGrams,unit)}</span></div>
+  <div class="checkItem"><span>${FOODS[picks.fat].label}</span><span class="badge good">${fmtPortion(portions.fatGrams,unit)}</span></div>
+  <div class="checkItem"><span>${FOODS[picks.veggie].label}</span><span class="badge goldTxt">${fmtPortion(portions.veggieGrams,unit)} (no strict limit)</span></div>
  </div>
- <p class="tiny" style="margin-top:8px">Protein: chicken, eggs, fish, greek yogurt, ground turkey. Carbs: rice, potatoes, oats, fruit, bread. Fat: peanut butter, oil, cheese, nuts.</p>
+ <p class="tiny" style="margin-top:6px">≈ ${Math.round(portions.macros.cal)} cal • ${Math.round(portions.macros.protein)}g protein • ${Math.round(portions.macros.carb)}g carbs • ${Math.round(portions.macros.fat)}g fat</p>
+ </div>
+ <button class="green full" style="margin-top:8px" onclick="logMeal('${slot}')">Log ${slotLabel(slot)}</button>`;
+}
+function solidMealBuilderHTML(slot){
+ const share=perMealShare(), picks=state.nutriPicks, unit=state.nutriUnit;
+ const ready=picks.carb&&picks.protein&&picks.fat&&picks.veggie;
+ const portions=ready?solidMealPortions(picks,share):null;
+ return `<div class="label" style="margin-top:10px">Carb</div><div class="scrollPicker">${CARBS.map(k=>pickChipHTML('carb',k)).join('')}</div>
+ <div class="label">Protein</div><div class="scrollPicker">${PROTEINS.map(k=>pickChipHTML('protein',k)).join('')}</div>
+ <div class="label">Veggie</div><div class="scrollPicker">${VEGGIES.map(k=>pickChipHTML('veggie',k)).join('')}</div>
+ <div class="label">Good Fat</div><div class="scrollPicker">${FATS.map(k=>pickChipHTML('fat',k)).join('')}</div>
+ <div class="label">Unit Of Measurement</div><div class="scrollPicker">${UNITS.map(unitChipHTML).join('')}</div>
+ ${portions?portionResultHTML(slot,picks,unit,portions):'<p class="tiny" style="margin-top:8px">Pick a carb, protein, veggie, and fat above to calculate the plate.</p>'}`;
+}
+function shakeBuilderHTML(slot){
+ const share=perMealShare(), unit=state.nutriUnit, s=shakePortions(share);
+ return `<div class="coachBubble" style="margin-top:10px"><strong>${slotLabel(slot)} Recipe</strong>
+ <div class="completionList" style="margin-top:6px">
+  <div class="checkItem"><span>🥤 Protein Powder</span><span class="badge good">${s.scoops} scoop${s.scoops===1?'':'s'}</span></div>
+  <div class="checkItem"><span>🌾 Oats</span><span class="badge good">${fmtPortion(s.oatsGrams,unit)}</span></div>
+  <div class="checkItem"><span>🍌 Banana</span><span class="badge good">${bananaLabel(s.bananaGrams)}</span></div>
+  <div class="checkItem"><span>🫐 Berries</span><span class="badge goldTxt">${fmtPortion(s.berriesGrams,unit)}</span></div>
+ </div>
+ <p class="tiny" style="margin-top:6px">Blend with water, milk, or ice. ≈ ${Math.round(s.macros.cal)} cal • ${Math.round(s.macros.protein)}g protein • ${Math.round(s.macros.carb)}g carbs • ${Math.round(s.macros.fat)}g fat</p>
+ </div>
+ <button class="green full" style="margin-top:8px" onclick="logMeal('${slot}')">Log ${slotLabel(slot)}</button>`;
+}
+function loggedMealSummaryHTML(slot,entry){
+ return `<div class="coachBubble" style="margin-top:10px"><strong>${slotLabel(slot)} — logged ✅</strong>
+ <p class="small" style="margin-top:4px">${entry.summary}</p>
+ <p class="tiny">≈ ${Math.round(entry.macros.cal)} cal • ${Math.round(entry.macros.protein)}g protein • ${Math.round(entry.macros.carb)}g carbs • ${Math.round(entry.macros.fat)}g fat</p>
+ </div>
+ <button class="orange full" style="margin-top:8px" onclick="unlogMeal('${slot}')">Undo</button>`;
+}
+function mealBuilderHTML(){
+ const ml=mealLogFor();
+ const chips=mealSlots().map(s=>`<button class="scrollChip ${nutriActiveSlot===s?'active':''}" onclick="selectNutriSlot('${s}')">${ml[s]?'✅ ':''}${slotLabel(s)}</button>`).join('');
+ let body='';
+ if(nutriActiveSlot){
+  const s=nutriActiveSlot;
+  body=ml[s]?loggedMealSummaryHTML(s,ml[s]):(isShakeSlot(s)?shakeBuilderHTML(s):solidMealBuilderHTML(s));
+ }
+ return `<div class="inner"><h3>Build Today's Meals</h3><p class="small">5 meals a day — 3 solid, 2 shakes. Tap one to build it.</p>
+ <div class="scrollPicker">${chips}</div>
+ ${body}
  </div>`;
 }
-function supplementsHTML(){
- return `<details class="clean"><summary>Creatine, BCAAs & Aminos</summary><div class="detailBody">
-  <div class="inner"><h3>Creatine Monohydrate — worth taking</h3><p class="small"><b>3-5g every single day</b>, any time, with a meal is fine. No loading phase, no cycling off — just a daily habit, not only on training days. Drink a little extra water. It's one of the most researched supplements there is for strength and power. Get a quick OK from his pediatrician before starting since he's still growing, then it's set-it-and-forget-it.</p></div>
-  <div class="inner"><h3>BCAAs — usually not needed</h3><p class="small">If he's already hitting the protein target above from real food, BCAAs add very little — whole food protein already contains them. Skip spending money here unless he's genuinely short on protein on a given day.</p></div>
-  <div class="inner"><h3>EAAs / Aminos — optional convenience</h3><p class="small">Same idea as BCAAs but more complete. Useful as a quick way to hit protein grams on a busy day: <b>5-10g mixed in water, around training</b>. Convenience, not magic.</p></div>
-  <div class="coachBubble"><strong>The real ranking</strong><p>Food, sleep, and showing up consistently beat every supplement combined. Supplements are the last 5%, not the foundation. Always loop in his doctor before adding anything new for a growing athlete.</p></div>
+function waterHTML(l,nt){
+ return `<div class="inner"><h3>Water</h3><p class="small">Target: ${nt.water} oz today.</p>
+ <input type="number" data-log="waterOz" value="${l.waterOz||''}" placeholder="Ounces drank so far" oninput="stageInput(this)"></div>`;
+}
+function vitaminsHTML(){
+ return `<details class="clean"><summary>Vitamins</summary><div class="detailBody">
+  <div class="inner"><h3>Vitamin D</h3><p class="small">600-1000 IU/day is a common general target for a growing athlete, more if he gets little sun. Supports bone strength and immune function.</p></div>
+  <div class="inner"><h3>Calcium</h3><p class="small">Around 1,300 mg/day (ages 9-18) from food first — milk, yogurt, cheese, leafy greens. Bones are still building at this age.</p></div>
+  <div class="inner"><h3>Iron</h3><p class="small">Roughly 8-11 mg/day is a common general range for a teen boy. Red meat, chicken, and spinach all help. Low iron often shows up as tired legs and low energy.</p></div>
+  <div class="inner"><h3>Omega-3</h3><p class="small">Fish twice a week, or a general 500-1000 mg combined EPA/DHA supplement, supports joint and brain recovery from contact.</p></div>
+  <div class="inner"><h3>Daily Multivitamin</h3><p class="small">A basic age-appropriate multivitamin covers the gaps on a busy training day — a backup, not a replacement for real meals.</p></div>
+  <div class="coachBubble"><strong>Check with the pediatrician first</strong><p>These are general, commonly-cited ranges for a growing athlete, not a prescription. Confirm anything new with his doctor, especially since he is still growing.</p></div>
+ </div></details>`;
+}
+function supplementStackHTML(){
+ const d=supplementDoses(state.age);
+ return `<details class="clean"><summary>Supplement Timing Stack</summary><div class="detailBody">
+  <div class="inner"><h3>Anytime, Daily — Creatine Monohydrate</h3><p class="small"><b>${d.creatine}g every day</b>, any time, with a meal. No loading, no cycling off. Scaled down from the standard 5g adult dose for age ${d.age}. Confirm with his pediatrician before starting, then it is a daily habit.</p></div>
+  <div class="inner"><h3>During Training — EAA / Aminos (optional)</h3><p class="small"><b>${d.eaa}g mixed in water</b>, sipped during Speed & Agility, Workout, or Touches. Only useful if he is not already hitting the protein target from food — convenience, not magic.</p></div>
+  <div class="inner"><h3>Post-Workout — Protein + Collagen</h3><p class="small">A protein shake (see Shake 1 or Shake 2 above) within an hour of finishing, plus <b>${d.collagen}g collagen</b> if joint recovery is a focus this block.</p></div>
+  <div class="inner"><h3>BCAAs</h3><p class="small">Skip these if he is already hitting the protein target above from real food — whole food protein already contains them.</p></div>
+  <div class="coachBubble"><strong>The real ranking</strong><p>Food, sleep, and consistency beat every supplement combined. These numbers scale with the Athlete Age saved in Settings (currently ${d.age}) — update it there if that changes. Always confirm anything new with his doctor first, since he is still growing.</p></div>
  </div></details>`;
 }
 function renderNutrition(){
  const l=logFor(), nt=nutritionTargets();
  if(!nt){
    document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Required setup</div><h2>Enter Athlete Weight</h2></div><span class="badge bad">Locked</span></div>
-   <div class="coachBubble"><strong>Fuel starts with body weight</strong><p>Before the app recommends calories, carbs, protein, fat, added sugar, and water, save his current body weight. This keeps the numbers based on him instead of a random default.</p></div>
+   <div class="coachBubble"><strong>Fuel starts with body weight</strong><p>Before the app recommends calories, carbs, protein, fat, and water, save his current body weight. This keeps the numbers based on him instead of a random default.</p></div>
    <div class="inner"><div class="label">Current body weight in pounds</div><input id="profileWeightInput" type="number" min="60" max="350" placeholder="Example 145"><button class="green full" style="margin-top:10px" onclick="saveProfileWeight()">Save Athlete Weight</button></div>`;
    return;
  }
- document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Fuel for performance</div><h2>Nutrition and Water</h2></div><span class="badge goldTxt">${nt.weight} lb</span></div>
- ${portionGuideHTML(nt)}
- <details class="clean"><summary>See exact numbers</summary><div class="detailBody"><table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table><p class="small">These are training targets, not a medical diet. Hard days push calories and carbs higher. Red or yellow days still protect recovery without overdoing it.</p></div></details>
- ${supplementsHTML()}
- <div class="inner"><h3>Log Today</h3>
- <div class="grid"><div><div class="label">Today body weight</div><input type="number" data-log="weight" value="${l.weight||state.profileWeight||''}" oninput="stageInput(this)"></div><div><div class="label">Water drank oz</div><input type="number" data-log="waterOz" value="${l.waterOz||''}" oninput="stageInput(this)"></div><div><div class="label">Calories eaten</div><input type="number" data-log="calories" value="${l.calories||''}" oninput="stageInput(this)"></div><div><div class="label">Protein grams</div><input type="number" data-log="protein" value="${l.protein||''}" oninput="stageInput(this)"></div><div><div class="label">Carbs grams</div><input type="number" data-log="carbs" value="${l.carbs||''}" oninput="stageInput(this)"></div><div><div class="label">Fat grams</div><input type="number" data-log="fat" value="${l.fat||''}" oninput="stageInput(this)"></div><div><div class="label">Added sugar grams</div><input type="number" data-log="addedSugar" value="${l.addedSugar||''}" oninput="stageInput(this)"></div><div><div class="label">Fruit or natural sugar notes</div><input data-log="naturalSugarNotes" value="${l.naturalSugarNotes||''}" oninput="stageInput(this)" placeholder="fruit, milk, smoothie, etc"></div></div>
- <div class="label">Meals eaten and appetite</div><textarea data-log="mealNotes" oninput="stageInput(this)" placeholder="What did you eat today?">${l.mealNotes||''}</textarea>
- </div>
- <button class="green full" onclick="saveNutrition()">Save Nutrition</button>`;
-}
-function saveNutrition(){
- const l=logFor();
- if(l.weight)state.profileWeight=String(l.weight);
- save();
- alert('Nutrition saved for Day '+state.day);
- render();
+ const rem=nutritionRemaining();
+ document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Fuel for performance</div><h2>Nutrition</h2></div><span class="badge goldTxt">${nt.weight} lb</span></div>
+ ${remainingTodayHTML(rem)}
+ <details class="clean"><summary>Today's full targets</summary><div class="detailBody"><table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr></table><p class="small">These are training targets built for strong, big, fast, and mobile all at once — not a medical diet. Hard days push calories and carbs higher.</p></div></details>
+ ${mealBuilderHTML()}
+ ${waterHTML(l,nt)}
+ ${vitaminsHTML()}
+ ${supplementStackHTML()}
+ <details class="clean"><summary>Anything else today?</summary><div class="detailBody">
+  <div class="label">Added sugar or treats (grams, optional)</div><input type="number" data-log="addedSugar" value="${l.addedSugar||''}" oninput="stageInput(this)" placeholder="0 if none">
+  <div class="label" style="margin-top:8px">Notes</div><textarea data-log="mealNotes" oninput="stageInput(this)" placeholder="Anything worth remembering about today's eating?">${l.mealNotes||''}</textarea>
+ </div></details>`;
 }
 
 const dadQuestions=[
@@ -1420,7 +1687,7 @@ function renderSettings(){
  <div class="inner"><h3>Install As An App</h3><p class="small">Gets a real home-screen icon, opens full-screen with no browser bar, and still works with no signal at the field. Not on the App Store or Play Store — installs straight from this page.</p>
  <button id="installBtn" class="gold full hidden" onclick="promptInstall()">Install Athlete Hub</button>
  <p class="tiny" style="margin-top:8px"><b>iPhone:</b> tap the Share icon in Safari, then "Add to Home Screen."<br><b>Android:</b> tap the button above, or the browser menu, then "Install app" / "Add to Home Screen."</p></div>
- <div class="inner"><h3>App Color</h3><p class="small">This changes the full background, cards, glow, and contrast, not just a few letters.</p><div class="row">${colors.map(c=>`<button class="colorDot" style="background:${c}" onclick="setColor('${c}')" aria-label="Color"></button>`).join('')}</div><div class="grid" style="margin-top:10px"><input id="customColor" type="color" value="${state.accent||'#facc15'}"><button class="gold" onclick="setColor(document.getElementById('customColor').value)">Save Color</button></div></div>
+ <div class="inner"><h3>App Color</h3><p class="small">This changes the full background, cards, glow, and contrast, not just a few letters.</p><div class="row">${colors.map(c=>`<button class="colorDot" style="background:${c}" onclick="setColor('${c}')" aria-label="Color"></button>`).join('')}</div><div class="grid" style="margin-top:10px"><input id="customColor" type="color" value="${state.accent||'#3b82f6'}"><button class="gold" onclick="setColor(document.getElementById('customColor').value)">Save Color</button></div></div>
  <div class="inner"><h3>Training Environment</h3><p class="small">Pick where he is actually training. The speed work and strength work change based on this.</p><div class="grid">
  <button class="${state.mode==='outdoor'?'active':''}" onclick="state.mode='outdoor';save();render()">Outdoor Field</button>
  <button class="${state.mode==='home'?'active':''}" onclick="state.mode='home';save();render()">Home Indoor</button>
