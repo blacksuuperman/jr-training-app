@@ -247,6 +247,13 @@ body.timerFlash{animation:flashPulse .7s ease}
 const STORE='jr_level13_earned_day_v3';
 const OLD_STORES=['jr_level13_earned_day_v2','jr_level13_earned_day_v1','jr_level13_day_cycle_v1','jr_level13_simplified_v1','jr_level13_ai_v1','jr_level9_state'];
 const DAYS_TOTAL=63;
+// DEV RESET SWITCH — while this app is still being built out, bump this
+// string with every shipped round so each update opens like brand new
+// (full onboarding + launcher) instead of carrying over test data from the
+// last round. Once this is the final version, stop bumping it (or set
+// FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
+const BUILD_VERSION='v3-round3';
+const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
 const vids={
@@ -316,7 +323,7 @@ const levelData={
 };
 
 function defaultState(){
- return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',height:'',age:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},skipped:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0,checkinDraft:{},checkinHistory:[],lastCheckinAt:0,onboarded:false,onboardStep:0,posMode:'hybrid',offPos:'',defPos:''};
+ return {day:1,maxUnlocked:1,mode:'outdoor',level:'varsity',accent:'#facc15',profileWeight:'',height:'',age:'',screen:'home',musicOpen:false,musicSrc:'',musicUrl:'',logs:{},completed:{},skipped:{},adapt:{day1:{status:'Green Light',mult:1,note:'Start clean. Earn the next day with details.'}},dadStep:0,checkinDraft:{},checkinHistory:[],lastCheckinAt:0,onboarded:false,onboardStep:0,posMode:'hybrid',offPos:'',defPos:'',buildVersion:BUILD_VERSION};
 }
 function migrateOld(){
  let raw=localStorage.getItem(STORE);
@@ -340,6 +347,10 @@ function migrateOld(){
  return s;
 }
 let state=migrateOld();
+if(FORCE_RESET_ON_UPDATE && state.buildVersion!==BUILD_VERSION){
+ state=defaultState();
+}
+state.buildVersion=BUILD_VERSION;
 state.profileWeight = state.profileWeight || (state.logs && state.logs.day1 && state.logs.day1.weight && state.logs.day1.weight !== '145' ? state.logs.day1.weight : '');
 state.musicSrc = state.musicSrc || '';
 state.musicUrl = state.musicUrl || '';
@@ -1416,6 +1427,10 @@ function renderSettings(){
  <div class="inner"><h3>Athlete Weight</h3><p class="small">Nutrition and bodyweight logs use this first. Current saved weight: ${state.profileWeight||'not saved yet'} lb.</p><div class="grid"><input id="settingsWeightInput" type="number" min="60" max="350" value="${state.profileWeight||''}" placeholder="Enter weight"><button class="gold" onclick="saveSettingsWeight()">Save Weight</button></div></div>
  <div class="inner"><h3>Athlete Height</h3><p class="small">Feeds the nutrition calculation alongside weight. Current saved height: ${formatHeight(state.height)}.</p><div class="grid"><input id="settingsHeightInput" type="number" min="36" max="90" value="${state.height||''}" placeholder="Height in inches, e.g. 65"><button class="gold" onclick="saveSettingsHeight()">Save Height</button></div></div>
  <div class="inner"><h3>Athlete Age</h3><p class="small">Feeds the supplement and vitamin dosing tables in Nutrition, so a younger and older athlete each get the right numbers instead of one fixed dose. Current saved age: ${state.age||'not saved yet'}.</p><div class="grid"><input id="settingsAgeInput" type="number" min="10" max="25" value="${state.age||''}" placeholder="Age in years"><button class="gold" onclick="saveSettingsAge()">Save Age</button></div></div>
+ <div class="inner"><h3>Position</h3><p class="small">Changes which position-specific catches show up in Football Touches and which accessory work leans into Workout. Current: <b>${positionSummary()}</b>.</p>
+ <p class="label">Offense</p><div class="grid">${OFF_POSITIONS.map(([code,label])=>`<button class="${state.offPos===code?'active':''}" onclick="setPosition('off','${code}')">${label}</button>`).join('')}<button class="${!state.offPos?'active':''}" onclick="setPosition('off','')">None</button></div>
+ <p class="label">Defense</p><div class="grid">${DEF_POSITIONS.map(([code,label])=>`<button class="${state.defPos===code?'active':''}" onclick="setPosition('def','${code}')">${label}</button>`).join('')}<button class="${!state.defPos?'active':''}" onclick="setPosition('def','')">None</button></div>
+ <button class="orange full" style="margin-top:10px" onclick="setJustAthlete()">Just Athlete (clear both, all-around rotation)</button></div>
  <div class="inner"><h3>Weekly Coach Cycle</h3><div class="completionList">
  <div class="checkItem"><span>Day 1</span><span class="badge goldTxt">Acceleration Power</span></div>
  <div class="checkItem"><span>Day 2</span><span class="badge goldTxt">Max Velocity Mechanics</span></div>
@@ -1431,6 +1446,26 @@ function renderSettings(){
 }
 function saveSettingsWeight(){const input=document.getElementById('settingsWeightInput');const weight=Number(input&&input.value);if(!weight||weight<60||weight>350){alert('Enter a realistic athlete weight first.');return;}state.profileWeight=String(weight);logFor().weight=String(weight);save();render();}
 function setColor(c){state.accent=c;save();render();}
+// Position can be changed anytime from Settings, not just once during
+// onboarding — picking either side flips posMode to 'custom' automatically;
+// clearing both (directly or via Just Athlete) drops back to the original
+// all-position hybrid rotation.
+function positionSummary(){
+ if(state.posMode!=='custom' || (!state.offPos && !state.defPos)) return 'Just Athlete (all-around rotation)';
+ const parts=[];
+ if(state.offPos) parts.push('Offense: '+posLabel(state.offPos));
+ if(state.defPos) parts.push('Defense: '+posLabel(state.defPos));
+ return parts.join(' · ');
+}
+function setPosition(side,code){
+ if(side==='off') state.offPos=code; else state.defPos=code;
+ state.posMode=(state.offPos||state.defPos)?'custom':'hybrid';
+ save(); render();
+}
+function setJustAthlete(){
+ state.posMode='hybrid'; state.offPos=''; state.defPos='';
+ save(); render();
+}
 const screenRenderers={home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,settings:renderSettings};
 // Perf note: only the screen the athlete is actually looking at gets rebuilt.
 // The other seven stay untouched until he navigates to them (they always
