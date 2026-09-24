@@ -74,6 +74,7 @@ details.clean{border:1px solid var(--line);background:#0b0b10;border-radius:20px
 .coachBubble{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 17%,transparent),rgba(34,197,94,.08));border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:22px;padding:13px;margin-top:10px}.coachBubble strong{color:var(--accent)}
 .dataTable{width:100%;border-collapse:separate;border-spacing:0 7px}.dataTable td{background:#101018;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px;font-size:13px}.dataTable td:first-child{border-left:1px solid var(--line);border-radius:13px 0 0 13px;color:var(--muted);font-weight:800}.dataTable td:last-child{border-right:1px solid var(--line);border-radius:0 13px 13px 0;text-align:right;font-weight:900}
 .statCards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#0a0a0f;border:1px solid var(--line);border-radius:18px;padding:10px;text-align:center}.stat b{font-size:18px;color:var(--accent);display:block}.stat span{font-size:11px;color:var(--muted);font-weight:800}
+.statPill{background:#0a0a0f;border:1px solid var(--line);border-radius:16px;padding:8px 14px;text-align:center}.statPill b{font-size:18px;color:var(--accent);display:block}.statPill span{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
 .completionList{display:grid;gap:7px;margin-top:9px}.checkItem{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0d0d12;border:1px solid var(--line);border-radius:15px;padding:9px 10px;font-size:13px;font-weight:800}.checkItem span:last-child{font-size:12px}
 .dadOrb{min-height:160px;width:min(92vw,360px);border-radius:32px;margin:10px auto;background:radial-gradient(circle at 20% 12%,#fff,var(--accent) 18%,var(--panel) 70%);box-shadow:0 0 30px color-mix(in srgb,var(--accent) 42%,transparent);display:flex;align-items:center;justify-content:center;color:var(--text);font-weight:900;font-size:18px;text-align:center;padding:22px;line-height:1.25}.dadOrb small{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
 .eightBallWrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0 14px}.eightBall{position:relative;width:min(88vw,360px);aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 28% 18%,rgba(255,255,255,.48),rgba(255,255,255,.10) 12%,#15151b 34%,#020204 72%,#000 100%);box-shadow:inset -24px -28px 44px rgba(0,0,0,.72),inset 14px 14px 28px rgba(255,255,255,.08),0 0 42px color-mix(in srgb,var(--accent) 42%,transparent);border:2px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}.eightBall:before{content:'8';position:absolute;top:8%;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:#f8fafc;color:#050507;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:31px;box-shadow:0 6px 18px rgba(0,0,0,.45)}.eightWindow{position:absolute;top:30%;left:50%;transform:translateX(-50%);width:78%;min-height:48%;clip-path:none;border-radius:30px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 72%,#fff 28%),#0f172a 66%,#020617);display:flex;align-items:center;justify-content:center;padding:18px 18px;color:#fff;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.75);font-weight:900;line-height:1.2}.eightWindowContent{max-height:170px;overflow:auto;font-size:clamp(12px,3.3vw,15px);padding:2px}.eightWindow small{display:block;color:#fff;font-size:10px;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}.questionCard{width:100%;max-width:520px;margin:-2px auto 8px;background:rgba(2,6,23,.94);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:20px;padding:12px 13px;text-align:center;box-shadow:0 10px 24px rgba(0,0,0,.3)}.questionCard .qCount{font-size:11px;color:var(--accent);font-weight:1000;text-transform:uppercase;letter-spacing:.08em}.questionCard .qText{margin-top:5px;font-size:15px;line-height:1.32;font-weight:900;color:#fff}.eightBall.advice .eightWindow{clip-path:none;border-radius:28px;width:80%;min-height:54%;top:28%;padding:16px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 36%,#111827 64%),#020204)}.eightBall.advice .eightWindowContent{font-size:11.5px;max-height:166px;text-align:left}.shake{animation:shakeBall .52s ease both}@keyframes shakeBall{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-8px) rotate(-4deg)}30%{transform:translateX(8px) rotate(4deg)}45%{transform:translateX(-6px) rotate(-3deg)}60%{transform:translateX(6px) rotate(3deg)}75%{transform:translateX(-3px) rotate(-1deg)}}
@@ -150,6 +151,18 @@ body.timerFlash{animation:flashPulse .7s ease}
 .touchdownCard{text-align:center;padding:16px 14px}
 .touchdownCard .big{font-size:44px;line-height:1}
 @media(max-width:640px){.yardChips{grid-template-columns:repeat(5,1fr)}}
+
+/* ===== Today — one-task-at-a-time feed ===== */
+.todayTopBar{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.feedDots{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;padding:0 2px}
+.feedDot{width:7px;height:7px;border-radius:50%;background:#33343f;cursor:pointer;flex-shrink:0}
+.feedDot.on{background:var(--accent);width:18px;border-radius:4px}
+.feedDot.done{background:#2ecc71}
+.todayFeed{height:calc(100dvh - 260px);min-height:340px;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;border-radius:24px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 60%,transparent)}
+.feedCard{scroll-snap-align:start;scroll-snap-stop:always;min-height:calc(100dvh - 260px);padding:16px 14px 26px;display:flex;flex-direction:column;justify-content:flex-start}
+.feedCardHeader{text-align:center;padding:10px 6px 6px}
+.feedCardIcon{font-size:44px;line-height:1}
+.attentionOverlay{position:fixed;inset:0;background:rgba(4,4,8,.94);z-index:850;display:flex;flex-direction:column;padding:20px 16px calc(20px + env(safe-area-inset-bottom));overflow-y:auto}
 
 /* ===== Onboarding + launcher gate ===== */
 .gateScreen{position:fixed;inset:0;background:#000;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 20px calc(26px + env(safe-area-inset-bottom))}
@@ -258,7 +271,7 @@ const DAYS_TOTAL=30;
 // (full onboarding + launcher) instead of carrying over test data from the
 // last round. Once this is the final version, stop bumping it (or set
 // FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v4-jrschedule-p1';
+const BUILD_VERSION='v5-compartmentalized';
 const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
@@ -345,7 +358,8 @@ function defaultState(){
   gameInfo:{opponent:'',kickoff:'17:30',location:'',teamArrival:'16:30',driveMinutes:40,trafficBuffer:15},
   trainerInfo:{start:'11:30',durationMin:90,driveMinutes:35},
   academic:defaultAcademicProfile(),
-  responsibilityAssignment:{},accountabilityLog:{}
+  responsibilityAssignment:{},accountabilityLog:{},
+  trainingGateDate:'',nutritionGateDate:'',nutritionGoal:''
  };
 }
 function migrateOld(){
@@ -402,6 +416,9 @@ state.accountabilityLog = state.accountabilityLog || {};
 state.posMode = state.posMode==='custom' ? 'custom' : 'hybrid';
 state.offPos = state.offPos || '';
 state.defPos = state.defPos || '';
+state.trainingGateDate = state.trainingGateDate || '';
+state.nutritionGateDate = state.nutritionGateDate || '';
+state.nutritionGoal = ['speed','size','hybrid'].includes(state.nutritionGoal) ? state.nutritionGoal : '';
 // Someone who already had a profile before this build shouldn't be forced
 // through onboarding — only genuinely new installs see it.
 if(state.onboarded===undefined){
@@ -796,13 +813,26 @@ function nutritionTargets(){
  let calHigh=Math.round(weight*(adapt.status==='Red Light'?18:adapt.status==='Yellow Light'?20:adapt.status==='Attack Day'?24:22));
  let proteinLow=Math.round(weight*.55), proteinHigh=Math.round(weight*.75);
  let fatLow=Math.round(weight*.30), fatHigh=Math.round(weight*.45);
+ // Goal (from the Nutrition entry gate) nudges the split, on top of the
+ // readiness-based numbers above — hybrid is the original, unadjusted
+ // baseline. These are deliberately modest, clearly-labeled shifts, not a
+ // clinical bulk/cut plan.
+ const goal=state.nutritionGoal||'hybrid';
+ if(goal==='size'){
+  calLow=Math.round(calLow*1.08); calHigh=Math.round(calHigh*1.10);
+  proteinHigh=Math.round(proteinHigh*1.05);
+  fatLow=Math.round(fatLow*1.05); fatHigh=Math.round(fatHigh*1.08);
+ } else if(goal==='speed'){
+  calLow=Math.round(calLow*0.95); calHigh=Math.round(calHigh*0.96);
+  fatLow=Math.round(fatLow*0.9); fatHigh=Math.round(fatHigh*0.92);
+ }
  let carbLow=Math.round((calLow-(proteinHigh*4)-(fatHigh*9))/4);
  let carbHigh=Math.round((calHigh-(proteinLow*4)-(fatLow*9))/4);
- carbLow=Math.max(Math.round(weight*1.6),carbLow);
+ carbLow=Math.max(Math.round(weight*(goal==='speed'?1.75:1.6)),carbLow);
  carbHigh=Math.max(carbLow+25,carbHigh);
  let water=Math.round(weight*.65 + (adapt.status==='Attack Day'?28:adapt.status==='Red Light'?8:18));
  let addedSugarMax=Math.round((calHigh*.10)/4);
- return {weight,calLow,calHigh,proteinLow,proteinHigh,carbLow,carbHigh,fatLow,fatHigh,water,addedSugarMax};
+ return {weight,goal,calLow,calHigh,proteinLow,proteinHigh,carbLow,carbHigh,fatLow,fatHigh,water,addedSugarMax};
 }
 
 /* =========================================================
@@ -1077,6 +1107,8 @@ function canComplete(){
 
 let navStack=['home'];
 function showScreen(id){
+ if(id==='home' && trainingGateNeeded()){ openTrainingGate(false); return; }
+ if(id==='nutrition' && nutritionGateNeeded()){ openNutritionGate(false); return; }
  if(id!==state.screen) navStack.push(state.screen);
  state.screen=id; save(); render();
 }
@@ -1207,8 +1239,181 @@ function renderLauncher(){
 }
 function enterApp(screen){
  appEntered=true;
- state.screen=screen;
  navStack=['today'];
+ save();
+ if(screen==='home' && trainingGateNeeded()){ openTrainingGate(false); return; }
+ if(screen==='nutrition' && nutritionGateNeeded()){ openNutritionGate(false); return; }
+ state.screen=screen;
+ save();
+ hideGate();
+ render();
+}
+
+/* =========================================================
+   TRAINING + NUTRITION ENTRY GATES
+   Same full-screen one-question-at-a-time pattern as onboarding
+   above, but asked once per real calendar day instead of once
+   ever. Answers are pre-filled from whatever was saved last time,
+   so most days it is a one-tap confirm instead of retyping
+   anything. A "Change" link inside each screen re-opens the same
+   gate on demand (force=true), any time, without waiting for
+   tomorrow.
+   ========================================================= */
+function trainingGateNeeded(){ return state.trainingGateDate!==localDateKey(); }
+function nutritionGateNeeded(){ return state.nutritionGateDate!==localDateKey(); }
+
+let trainingGateStep=0;
+let trainingGateDraft=null;
+function openTrainingGate(force){
+ if(!force && !trainingGateNeeded()){ state.screen='home'; save(); hideGate(); render(); return; }
+ trainingGateDraft={mode:state.mode,level:state.level,weight:state.profileWeight||''};
+ trainingGateStep=0;
+ showGate();
+ renderTrainingGate();
+}
+function renderTrainingGate(){
+ const el=document.getElementById('gateInner');
+ if(el) el.innerHTML=trainingGateStepHTML();
+}
+function trainingGateStepHTML(){
+ const modes=[['outdoor','🏟️ Outdoor Field'],['home','🏠 Home Indoor'],['facility','🏢 Indoor Facility'],['gym','🏋️ Gym']];
+ if(trainingGateStep===0){
+  return `<div class="gateDots">${[0,1,2].map(i=>`<span class="gateDot ${i===0?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 1 of 3</div>
+  <h1 class="gateTitle">Where are you training today?</h1>
+  <p class="gateSub">This changes the equipment and drills for every session today.</p>
+  <div class="gateGrid">${modes.map(([code,label])=>`<div class="gateOption ${trainingGateDraft.mode===code?'active':''}" onclick="trainingGatePick('mode','${code}')">${label}</div>`).join('')}</div>`;
+ }
+ if(trainingGateStep===1){
+  const levels=[['foundation','5 Star Recruit'],['varsity','D-1'],['savage','NFL Ready']];
+  return `<button class="gateBack" onclick="trainingGateBack()">← Back</button>
+  <div class="gateDots">${[0,1,2].map(i=>`<span class="gateDot ${i===1?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 2 of 3</div>
+  <h1 class="gateTitle">What level today?</h1>
+  <p class="gateSub">${levelData[trainingGateDraft.level].extra}</p>
+  <div class="gateGrid">${levels.map(([code,label])=>`<div class="gateOption ${trainingGateDraft.level===code?'active':''}" onclick="trainingGatePick('level','${code}')">${label}</div>`).join('')}</div>`;
+ }
+ return `<button class="gateBack" onclick="trainingGateBack()">← Back</button>
+  <div class="gateDots">${[0,1,2].map(i=>`<span class="gateDot ${i===2?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 3 of 3</div>
+  <h1 class="gateTitle">Body weight today?</h1>
+  <p class="gateSub">Feeds sets, nutrition, and supplement dosing for today's sessions.</p>
+  <input id="trainingGateWeight" class="gateInput" type="number" inputmode="numeric" min="60" max="350" placeholder="Weight (lbs)" value="${trainingGateDraft.weight}" />
+  <button class="gateBtn" onclick="trainingGateFinish()">Start Training</button>`;
+}
+function trainingGatePick(field,val){
+ trainingGateDraft[field]=val;
+ trainingGateStep++;
+ renderTrainingGate();
+}
+function trainingGateBack(){
+ trainingGateStep=Math.max(0,trainingGateStep-1);
+ renderTrainingGate();
+}
+function trainingGateFinish(){
+ const w=Number((document.getElementById('trainingGateWeight')||{}).value);
+ if(!w||w<60||w>350){alert('Enter a real body weight in pounds (60 to 350).');return;}
+ state.mode=trainingGateDraft.mode;
+ state.level=trainingGateDraft.level;
+ state.profileWeight=String(w);
+ state.trainingGateDate=localDateKey();
+ state.screen='home';
+ save();
+ hideGate();
+ render();
+}
+
+let nutritionGateStep=0;
+let nutritionGateDraft=null;
+const NUTRITION_GOALS=[['speed','⚡ Speed','Leaner, quicker fuel — built for acceleration and change of direction.'],['size','💪 Size','A real calorie surplus — built to add functional mass and strength.'],['hybrid','🔀 Hybrid','Balanced fuel for strong, fast, and mobile all at once — no hard lean either way.']];
+// A soft, historically-general lean on which of the 3 goals tends to serve
+// each position best. This is deliberately advisory, not a rule — it only
+// powers a dismissible heads-up, never blocks a choice. A finer, numbers-
+// based version of this (real 40 time, vertical, broad jump, 3-cone, shuttle,
+// 225 bench reps) is a good next layer for Settings once that data exists;
+// not built this round.
+const POSITION_GOAL_PROFILE={
+ QB:'hybrid', RB:'hybrid', WR:'speed', TE:'hybrid', OL:'size',
+ EDGE:'speed', DL:'size', LB:'hybrid', CB:'speed', S:'hybrid'
+};
+function positionGoalMismatchNote(goal){
+ // Hybrid is always the safe, blended choice — never worth a heads-up,
+ // even for a position that leans hard toward Speed or Size.
+ if(!goal || goal==='hybrid' || state.posMode!=='custom') return '';
+ const codes=[state.offPos,state.defPos].filter(Boolean);
+ if(!codes.length) return '';
+ const mismatched=codes.filter(c=>POSITION_GOAL_PROFILE[c] && POSITION_GOAL_PROFILE[c]!==goal && POSITION_GOAL_PROFILE[c]!=='hybrid');
+ if(!mismatched.length) return '';
+ const names=mismatched.map(c=>positionLabelFor(c));
+ const leans=mismatched.map(c=>POSITION_GOAL_PROFILE[c]);
+ const leanLabel=leans.includes('size')?'Size':'Speed';
+ return `Heads up — ${names.join(' and ')} has historically done best leaning toward ${leanLabel} rather than ${NUTRITION_GOALS.find(g=>g[0]===goal)[1].replace(/^\S+\s/,'')}. That is not a hard rule and plenty of athletes buck the trend on purpose — just flagging it so the choice is informed either way.`;
+}
+function positionLabelFor(code){
+ const f=OFF_POSITIONS.find(p=>p[0]===code)||DEF_POSITIONS.find(p=>p[0]===code);
+ return f?f[1]:code;
+}
+function openNutritionGate(force){
+ if(!force && !nutritionGateNeeded()){ state.screen='nutrition'; save(); hideGate(); render(); return; }
+ nutritionGateDraft={height:state.height||'',weight:state.profileWeight||'',goal:state.nutritionGoal||''};
+ nutritionGateStep=0;
+ showGate();
+ renderNutritionGate();
+}
+function renderNutritionGate(){
+ const el=document.getElementById('gateInner');
+ if(el) el.innerHTML=nutritionGateStepHTML();
+}
+function nutritionGateStepHTML(){
+ if(nutritionGateStep===0){
+  const totalIn=Number(nutritionGateDraft.height)||0;
+  const ft=totalIn?Math.floor(totalIn/12):5, inch=totalIn?Math.round(totalIn%12):0;
+  return `<div class="gateDots">${[0,1].map(i=>`<span class="gateDot ${i===0?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 1 of 2</div>
+  <h1 class="gateTitle">Height & weight today</h1>
+  <p class="gateSub">This is what today's nutrition targets get calculated from.</p>
+  <div class="gateRow">
+   <select id="nutritionGateFeet" class="gateInput">${[3,4,5,6,7].map(f=>`<option value="${f}" ${f===ft?'selected':''}>${f} ft</option>`).join('')}</select>
+   <select id="nutritionGateInches" class="gateInput">${Array.from({length:12},(_,i)=>i).map(i=>`<option value="${i}" ${i===inch?'selected':''}>${i} in</option>`).join('')}</select>
+  </div>
+  <input id="nutritionGateWeight" class="gateInput" type="number" inputmode="numeric" min="60" max="350" placeholder="Weight (lbs)" value="${nutritionGateDraft.weight}" />
+  <button class="gateBtn" onclick="nutritionGateNext()">Continue</button>`;
+ }
+ const note=positionGoalMismatchNote(nutritionGateDraft.goal);
+ return `<button class="gateBack" onclick="nutritionGateBack()">← Back</button>
+  <div class="gateDots">${[0,1].map(i=>`<span class="gateDot ${i===1?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 2 of 2</div>
+  <h1 class="gateTitle">What is today's goal?</h1>
+  <p class="gateSub">Changes how calories, carbs, protein, and fat are split — not just the total.</p>
+  <div class="gateGrid" style="grid-template-columns:1fr">${NUTRITION_GOALS.map(([code,label,desc])=>`<div class="gateOption" style="flex-direction:column;text-align:center;min-height:74px ${nutritionGateDraft.goal===code?';background:var(--accent);color:var(--buttonText);border-color:transparent':''}" onclick="nutritionGatePickGoal('${code}')"><b>${label}</b><div class="tiny" style="margin-top:4px;opacity:.85">${desc}</div></div>`).join('')}</div>
+  ${note?`<p class="tiny" style="color:var(--orange);margin-top:8px">⚠ ${note}</p>`:''}
+  <button class="gateBtn" style="margin-top:10px" onclick="nutritionGateFinish()" ${nutritionGateDraft.goal?'':'disabled'}>Calculate Plan</button>`;
+}
+function nutritionGateNext(){
+ const ft=Number((document.getElementById('nutritionGateFeet')||{}).value);
+ const inch=Number((document.getElementById('nutritionGateInches')||{}).value);
+ const w=Number((document.getElementById('nutritionGateWeight')||{}).value);
+ if(!w||w<60||w>350){alert('Enter a real body weight in pounds (60 to 350).');return;}
+ nutritionGateDraft.height=String(ft*12+inch);
+ nutritionGateDraft.weight=String(w);
+ nutritionGateStep=1;
+ renderNutritionGate();
+}
+function nutritionGateBack(){
+ nutritionGateStep=0;
+ renderNutritionGate();
+}
+function nutritionGatePickGoal(code){
+ nutritionGateDraft.goal=code;
+ renderNutritionGate();
+}
+function nutritionGateFinish(){
+ if(!nutritionGateDraft.goal) return;
+ state.height=nutritionGateDraft.height;
+ state.profileWeight=nutritionGateDraft.weight;
+ state.nutritionGoal=nutritionGateDraft.goal;
+ state.nutritionGateDate=localDateKey();
+ state.screen='nutrition';
  save();
  hideGate();
  render();
@@ -1220,7 +1425,10 @@ function renderTiles(){
  const onHome=state.screen==='home';
  const moduleScreens=['morning','strength','touches','dadtalk'];
  const onModule=moduleScreens.includes(state.screen);
- if(backRow) backRow.classList.toggle('hidden',onHome);
+ // Back only makes sense on a true sub-screen (a training module) — not on
+ // any of the 4 main tabs (Today/Training/Settings/Nutrition), which each
+ // have their own bottom-nav button already.
+ if(backRow) backRow.classList.toggle('hidden',!onModule);
  card.classList.toggle('hidden', !(onHome||onModule));
  if(!onHome && !onModule) return;
  const compact=!onHome;
@@ -1352,35 +1560,25 @@ function saveHomeWeight(){
 function quickSetMode(m){ state.mode=m; save(); render(); }
 function quickSetLevel(l){ state.level=l; save(); render(); }
 function renderHome(){
- const a=todayAdapt(), nt=nutritionTargets(), done=Object.keys(state.completed).length;
- document.getElementById('screen_home').innerHTML=`<div class="coachBubble"><strong>Today's Dad Coach Note</strong><p>${a.note}</p></div>
- <div class="inner"><h3>Quick Setup</h3>
-  <div class="label">Environment</div>
-  <div class="chipRow">
-   <button class="chip ${state.mode==='outdoor'?'active':''}" onclick="quickSetMode('outdoor')">🏟️ Outdoor</button>
-   <button class="chip ${state.mode==='home'?'active':''}" onclick="quickSetMode('home')">🏠 Home</button>
-   <button class="chip ${state.mode==='facility'?'active':''}" onclick="quickSetMode('facility')">🏢 Facility</button>
-   <button class="chip ${state.mode==='gym'?'active':''}" onclick="quickSetMode('gym')">🏋️ Gym</button>
-  </div>
-  <div class="label" style="margin-top:9px">Difficulty</div>
-  <div class="chipRow">
-   <button class="chip ${state.level==='foundation'?'active':''}" onclick="quickSetLevel('foundation')">5 Star Recruit</button>
-   <button class="chip ${state.level==='varsity'?'active':''}" onclick="quickSetLevel('varsity')">D-1</button>
-   <button class="chip ${state.level==='savage'?'active':''}" onclick="quickSetLevel('savage')">NFL Ready</button>
-  </div>
-  <div class="label" style="margin-top:9px">Body Weight</div>
-  ${homeWeightHTML()}
+ const a=todayAdapt(), done=Object.keys(state.completed).length, pct=Math.round(done/DAYS_TOTAL*100);
+ // The old always-visible Quick Setup panel (environment/level/weight
+ // chips) is gone — that's now asked once a day by the Training entry
+ // gate, right before landing here. This screen just confirms what was
+ // picked and offers a one-tap way to change it without waiting for
+ // tomorrow. The global hero card is hidden everywhere now, so the
+ // Day/Program stats that used to live up there get a small home here
+ // instead, since they're specifically Training's own numbers.
+ document.getElementById('screen_home').innerHTML=`<div class="row" style="justify-content:space-between;align-items:center">
+  <div><div class="small">Day ${state.day} • ${a.status}</div><h2 style="margin-top:2px">Training</h2></div>
+  <div class="statPill"><b>${pct}%</b><span>Program</span></div>
  </div>
- <div class="statCards">
-   <div class="stat"><b>${done}/${DAYS_TOTAL}</b><span>Days earned</span></div>
-   <div class="stat"><b>${Math.round(done/DAYS_TOTAL*100)}%</b><span>Program</span></div>
-   <div class="stat"><b>${state.maxUnlocked}</b><span>Unlocked</span></div>
- </div>
- <details class="clean"><summary>Today's nutrition targets</summary><div class="detailBody">
- ${nt?`<table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz target</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr><tr><td>Added sugar max</td><td>${nt.addedSugarMax} g</td></tr></table>`:`<p class="small">Save the athlete's weight above to unlock targets.</p>`}
- </div></details>
+ <div class="inner"><div class="row" style="justify-content:space-between;align-items:center">
+  <div><div class="small">Today's Setup</div><b>${modeLabel()} • ${levelData[state.level].name} • ${state.profileWeight||'?'} lb</b></div>
+  <button class="chip" onclick="openTrainingGate(true)">Change</button>
+ </div></div>
+ <div class="coachBubble"><strong>Today's Dad Coach Note</strong><p>${a.note}</p></div>
  ${dayProgressFooterHTML()}
- <div class="inner"><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap the 🎮 icon above.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
+ <div class="inner"><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap Check-In below.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
 }
 function outlineRow(item){
  if(item.target!==undefined){
@@ -1568,7 +1766,15 @@ function renderNutrition(){
    return;
  }
  const rem=nutritionRemaining();
+ const goalInfo=NUTRITION_GOALS.find(g=>g[0]===nt.goal)||NUTRITION_GOALS[2];
+ const mismatch=positionGoalMismatchNote(nt.goal);
  document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Fuel for performance</div><h2>Nutrition</h2></div><span class="badge goldTxt">${nt.weight} lb</span></div>
+ <div class="inner"><div class="row" style="justify-content:space-between;align-items:center">
+  <div><div class="small">Today's Setup</div><b>${formatHeight(state.height)} • ${nt.weight} lb • ${goalInfo[1]} goal</b></div>
+  <button class="chip" onclick="openNutritionGate(true)">Change</button>
+ </div>
+ ${mismatch?`<p class="tiny" style="color:var(--orange);margin-top:8px">⚠ ${mismatch}</p>`:''}
+ </div>
  ${remainingTodayHTML(rem)}
  <details class="clean"><summary>Today's full targets</summary><div class="detailBody"><table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr></table><p class="small">These are training targets built for strong, big, fast, and mobile all at once — not a medical diet. Hard days push calories and carbs higher.</p></div></details>
  ${mealBuilderHTML()}
@@ -2468,50 +2674,116 @@ function taskDetailHTML(t){
 function categoryIcon(cat){
  return {Hygiene:'🧼',Training:'🏈',Meal:'🍽️',Academic:'📘',Recovery:'💤',Responsibility:'🧹',Accountability:'💬',LifeSkills:'🛠️',Family:'👪',Travel:'🚗',Sleep:'🌙',Correction:'🎯'}[cat]||'•';
 }
-let todayExpandedId=null;
-function toggleTodayExpand(id){ todayExpandedId = todayExpandedId===id?null:id; render(); }
-let todayFullView=false;
-function toggleFullDay(){ todayFullView=!todayFullView; render(); }
+/* =========================================================
+   TODAY — full-screen, one-task-at-a-time feed (Stories/Reels
+   style instead of one long overwhelming list). Vertical
+   scroll-snap: one task fills the screen, swipe or scroll to
+   move to the next/previous one, in true chronological order.
+   Opens on whatever task fits right now based on the clock, not
+   always task #1. A small "Needs Attention" pill surfaces
+   important (priority 1-2) tasks that are already overdue and
+   not done, separately from the one-at-a-time flow, so nothing
+   important gets buried just because its moment passed.
+   ========================================================= */
+let todayCardIndex=null;
+let todayFollowingNow=true;
+let todayLiveTimer=null;
+let todayLastNowTaskId=null;
+let todayAttentionOpen=false;
+let todayLastKnownDefaultIdx=0;
 
-function taskCardHTML(t){
- const expanded=todayExpandedId===t.id;
- const statusIcon = t.status==='completed'?'✅':t.status==='skipped'?'⏭️':t.status==='inProgress'?'●':'○';
- const tight = t.tightWarning?`<p class="tiny" style="color:var(--orange)">⚠ Pushed later — could not fit before ${t.tightWarning}.</p>`:'';
+function todayDefaultIndex(sched){
+ const idx=sched.tasks.findIndex(t=>t.status!=='completed' && t.status!=='skipped');
+ return idx===-1?Math.max(0,sched.tasks.length-1):idx;
+}
+function todayAttentionItems(sched){
+ const now=nowMinutes();
+ return sched.tasks.filter(t=>t.status!=='completed' && t.status!=='skipped' && (t.priority||2)<=2 && t.schedStart!=null && t.schedStart<now);
+}
+function ensureTodayLiveTimer(){
+ if(todayLiveTimer) return;
+ todayLiveTimer=setInterval(()=>{
+  if(state.screen!=='today'){ clearInterval(todayLiveTimer); todayLiveTimer=null; return; }
+  const sched=computeTodaySchedule();
+  const idx=todayDefaultIndex(sched);
+  const nowId=sched.tasks[idx]?sched.tasks[idx].id:null;
+  if(todayFollowingNow && nowId!==todayLastNowTaskId) render();
+ },60000);
+}
+function todayScrollTo(idx){
+ const feed=document.getElementById('todayFeed');
+ const card=feed && feed.querySelector(`[data-idx="${idx}"]`);
+ if(card) card.scrollIntoView({block:'start',behavior:'auto'});
+}
+function onTodayFeedScroll(el){
+ const cards=el.querySelectorAll('.feedCard');
+ let closest=0, closestDist=Infinity;
+ cards.forEach((c,i)=>{
+  const dist=Math.abs(c.offsetTop-el.scrollTop);
+  if(dist<closestDist){ closestDist=dist; closest=i; }
+ });
+ if(closest!==todayCardIndex){
+  todayCardIndex=closest;
+  todayFollowingNow = (todayCardIndex===todayLastKnownDefaultIdx);
+  updateTodayDots();
+ }
+}
+function updateTodayDots(){
+ document.querySelectorAll('.feedDot').forEach((d,i)=>d.classList.toggle('on',i===todayCardIndex));
+}
+function todayGoTo(idx){
+ todayCardIndex=idx;
+ todayFollowingNow=false;
+ todayAttentionOpen=false;
+ render();
+}
+function toggleTodayAttention(){ todayAttentionOpen=!todayAttentionOpen; render(); }
+
+function feedCardHTML(t,idx,total){
+ const statusIcon = t.status==='completed'?'✅ Completed':t.status==='inProgress'?'● In Progress':'';
  const timeLabel = t.status==='skipped'?'Ran out of time today — skipped':clock12(minToHHMM(t.schedStart))+(t.duration?' • '+t.duration+' min':'')+(t.fixed?' • fixed':'');
- return `<div class="inner" style="margin-bottom:8px">
- <div class="row" style="justify-content:space-between;cursor:pointer" onclick="toggleTodayExpand('${t.id}')">
-  <div class="row" style="gap:8px"><span>${categoryIcon(t.category)}</span><div><b>${t.name}</b><div class="tiny">${timeLabel}</div></div></div>
-  <div class="small">${statusIcon}</div>
- </div>
- ${tight}
- ${expanded && t.status!=='skipped'?taskDetailHTML(t):''}
+ const tight = t.tightWarning?`<p class="tiny" style="color:var(--orange)">⚠ Running behind — pushed later, could not fit before ${t.tightWarning}.</p>`:'';
+ return `<div class="feedCard" data-idx="${idx}">
+  <div class="feedCardHeader">
+   <div class="feedCardIcon">${categoryIcon(t.category)}</div>
+   <div class="tiny" style="margin-top:2px">Task ${idx+1} of ${total} • ${timeLabel}</div>
+   <h2 style="margin-top:6px">${t.name}</h2>
+   ${statusIcon?`<div class="badge good" style="display:inline-block;margin-top:4px">${statusIcon}</div>`:''}
+  </div>
+  ${tight}
+  ${t.status==='skipped'?`<div class="coachBubble"><strong>Skipped</strong><p>The day ran behind and this was pure extra time, not a core task — it got dropped so meals, hygiene, and academics never had to move. Nothing to do here.</p></div>`:taskDetailHTML(t)}
  </div>`;
 }
-
 function renderToday(){
  const sched=computeTodaySchedule();
- const nn=scheduleNowNext(sched);
- const total=sched.tasks.length, done=sched.tasks.filter(t=>t.status==='completed').length;
- const pct=total?Math.round(done/total*100):0;
- const mins=nowMinutes();
- const greeting = mins<720?'Morning':mins<1080?'Afternoon':'Evening';
+ const total=sched.tasks.length;
+ const defaultIdx=todayDefaultIndex(sched);
+ todayLastKnownDefaultIdx=defaultIdx;
+ todayLastNowTaskId=sched.tasks[defaultIdx]?sched.tasks[defaultIdx].id:null;
+ if(todayCardIndex===null || todayFollowingNow) todayCardIndex=defaultIdx;
+ todayCardIndex=Math.max(0,Math.min(todayCardIndex,total-1));
  const dateStr=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
- let body=`<h2>Good ${greeting}, JR</h2>
- <p class="small">${dateStr} — ${DAY_TYPE_LABELS[sched.dayType]||sched.dayType}</p>
- <div class="inner"><div class="row" style="justify-content:space-between"><span class="small">Today</span><span class="small">${pct}%</span></div><div class="bar"><div class="fill" style="width:${pct}%"></div></div></div>`;
- if(nn.now){
-  body+=`<div class="label" style="margin-top:10px">Right Now</div>${taskCardHTML(nn.now)}`;
- } else {
-  body+=`<div class="coachBubble" style="margin-top:10px"><strong>All done for today 🎉</strong></div>`;
- }
- if(nn.next){
-  body+=`<div class="label" style="margin-top:6px">Next</div><div class="inner"><div class="row" style="justify-content:space-between"><div class="row" style="gap:8px"><span>${categoryIcon(nn.next.category)}</span><b>${nn.next.name}</b></div><span class="tiny">${clock12(minToHHMM(nn.next.schedStart))}</span></div></div>`;
- }
- body+=`<button class="gold full" style="margin-top:10px" onclick="toggleFullDay()">${todayFullView?'Hide Full Day':'View Full Day'}</button>`;
- if(todayFullView){
-  body+='<div style="margin-top:10px">'+sched.tasks.map(t=>taskCardHTML(t)).join('')+'</div>';
+ const attention=todayAttentionItems(sched);
+ const doneCount=sched.tasks.filter(t=>t.status==='completed').length;
+ const pct=total?Math.round(doneCount/total*100):0;
+ let body=`<div class="todayTopBar">
+  <div><div class="small">${dateStr}</div><b>${DAY_TYPE_LABELS[sched.dayType]||sched.dayType} • ${pct}% done</b></div>
+  ${attention.length?`<button class="chip" style="background:var(--orange);color:#000" onclick="toggleTodayAttention()">⚠ ${attention.length} Needs Attention</button>`:''}
+ </div>
+ <div class="feedDots">${sched.tasks.map((t,i)=>`<span class="feedDot ${i===todayCardIndex?'on':''} ${t.status==='completed'?'done':''}" onclick="todayGoTo(${i})"></span>`).join('')}</div>
+ <div class="todayFeed" id="todayFeed" onscroll="onTodayFeedScroll(this)">
+  ${sched.tasks.map((t,i)=>feedCardHTML(t,i,total)).join('')}
+ </div>`;
+ if(todayAttentionOpen){
+  body+=`<div class="attentionOverlay">
+   <div class="row" style="justify-content:space-between;align-items:center"><h2>Needs Attention</h2><button class="chip" onclick="toggleTodayAttention()">Close ✕</button></div>
+   <p class="small">These are important and already past their time today, but not done yet.</p>
+   ${attention.length?attention.map(t=>`<div class="inner" style="margin-top:8px;cursor:pointer" onclick="todayGoTo(${sched.tasks.indexOf(t)})"><div class="row" style="justify-content:space-between"><div class="row" style="gap:8px"><span>${categoryIcon(t.category)}</span><b>${t.name}</b></div><span class="tiny">${clock12(minToHHMM(t.schedStart))}</span></div></div>`).join(''):'<div class="coachBubble"><strong>Nothing overdue 🎉</strong></div>'}
+  </div>`;
  }
  document.getElementById('screen_today').innerHTML=body;
+ ensureTodayLiveTimer();
+ requestAnimationFrame(()=>todayScrollTo(todayCardIndex));
 }
 
 function setDayTypeOverride(val){
@@ -2619,6 +2891,13 @@ function renderShell(){
  document.getElementById('programFill').style.width=pct+'%';
  document.getElementById('playerWrap').classList.toggle('hidden',!state.musicOpen);
  ensureMusicPlayer();
+ // The big branding/Day/Program hero card is app-wide clutter once you're
+ // actually inside a section — each screen (Today's feed, Training, and
+ // Nutrition) now shows its own compact, compartmentalized context instead,
+ // so the hero itself never renders anymore. It's kept up to date above in
+ // case that ever changes, but stays hidden.
+ const hero=document.querySelector('.hero');
+ if(hero) hero.classList.add('hidden');
  renderTiles();
  updateCompleteButton();
 }
