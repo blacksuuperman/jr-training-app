@@ -158,10 +158,16 @@ body.timerFlash{animation:flashPulse .7s ease}
 .feedDot{width:7px;height:7px;border-radius:50%;background:#33343f;cursor:pointer;flex-shrink:0}
 .feedDot.on{background:var(--accent);width:18px;border-radius:4px}
 .feedDot.done{background:#2ecc71}
-.todayFeed{height:calc(100dvh - 260px);min-height:340px;overflow-y:auto;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;border-radius:24px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 60%,transparent)}
-.feedCard{scroll-snap-align:start;scroll-snap-stop:always;min-height:calc(100dvh - 260px);padding:16px 14px 26px;display:flex;flex-direction:column;justify-content:flex-start}
-.feedCardHeader{text-align:center;padding:10px 6px 6px}
-.feedCardIcon{font-size:44px;line-height:1}
+/* Horizontal swipe, not vertical — this way swiping to the next task never
+   fights with scrolling a long checklist inside the current one. Each card
+   is its own full-width page; if its revealed content is taller than the
+   card, that content scrolls internally (overflow-y) while the swipe
+   gesture stays horizontal. */
+.todayFeed{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;border-radius:24px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 60%,transparent)}
+.feedCard{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;max-height:calc(100dvh - 250px);min-height:340px;overflow-y:auto;padding:16px 14px 26px;box-sizing:border-box}
+.feedCover{text-align:center;padding:18px 10px 14px;cursor:pointer;border-radius:20px}
+.feedCover:active{background:rgba(255,255,255,.04)}
+.feedCardIcon{font-size:52px;line-height:1;width:92px;height:92px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:50%;background:color-mix(in srgb,var(--accent) 20%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
 .attentionOverlay{position:fixed;inset:0;background:rgba(4,4,8,.94);z-index:850;display:flex;flex-direction:column;padding:20px 16px calc(20px + env(safe-area-inset-bottom));overflow-y:auto}
 
 /* ===== Onboarding + launcher gate ===== */
@@ -271,7 +277,7 @@ const DAYS_TOTAL=30;
 // (full onboarding + launcher) instead of carrying over test data from the
 // last round. Once this is the final version, stop bumping it (or set
 // FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v5-compartmentalized';
+const BUILD_VERSION='v6-live-swipe-feed';
 const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
@@ -2674,16 +2680,45 @@ function taskDetailHTML(t){
 function categoryIcon(cat){
  return {Hygiene:'🧼',Training:'🏈',Meal:'🍽️',Academic:'📘',Recovery:'💤',Responsibility:'🧹',Accountability:'💬',LifeSkills:'🛠️',Family:'👪',Travel:'🚗',Sleep:'🌙',Correction:'🎯'}[cat]||'•';
 }
+// A specific, recognizable icon per task (brushing teeth, showering, running
+// a route, lights out...) instead of one generic icon per broad category —
+// this is the closest thing to "a picture of the activity" without using
+// real photos of the athlete. Falls back to the category icon for anything
+// not explicitly listed (new/custom tasks, special-day overrides, etc.).
+const TASK_ICONS={
+ wake:'⏰',movement:'🤸',showerAM:'🚿',breakfast:'🥣',schoolPrep:'🎒',
+ fastMath:'🧮',math:'🔢',break1:'🧘',break2:'🧘',break3:'🧘',
+ writing:'✍️',science:'🔬',lunch:'🥪',reading:'📖',language:'🗣️',
+ history:'🏛️',snackPrep:'🍎',training:'🏈',showerPM:'🚿',
+ responsibility:'🧹',dinner:'🍽️',correction:'🎯',accountability:'💬',
+ indepReading:'📚',tomorrowPrep:'🎒',nightRoutine:'🪥',bedtime:'🌙',
+ leaveHome:'🚗',trainer:'🏋️',trainPrep:'🥪',travelHome:'🚗',
+ leaveGame:'🚗',kickoff:'🏈',gamePrep:'🏈',pregameFood:'🍽️',
+ quietRecovery:'🧘',afterGame:'🎉',academicBlock:'📘',deepClean:'🧽',
+ familyChurch:'👪',familyTime:'👪',freeEvening:'🎮',afternoon:'🏈',
+ hygieneBreakfast:'🚿',hygieneRoom:'🧹',langHist:'🗣️',lifeSkills:'🛠️',
+ lunchRecover:'🥪',overflow:'🕐',rest:'😴',secondWeakest:'🎯',
+ travel:'🚗',weakest:'🎯',weeklyPlanning:'📝'
+};
+function taskHeroIcon(t){ return TASK_ICONS[t.id]||categoryIcon(t.category); }
+
 /* =========================================================
    TODAY — full-screen, one-task-at-a-time feed (Stories/Reels
-   style instead of one long overwhelming list). Vertical
-   scroll-snap: one task fills the screen, swipe or scroll to
-   move to the next/previous one, in true chronological order.
-   Opens on whatever task fits right now based on the clock, not
-   always task #1. A small "Needs Attention" pill surfaces
-   important (priority 1-2) tasks that are already overdue and
-   not done, separately from the one-at-a-time flow, so nothing
-   important gets buried just because its moment passed.
+   style instead of one long overwhelming list). Horizontal
+   swipe/scroll-snap: one task fills the screen, swipe left/right
+   to move to the next/previous one, in true chronological order.
+   Horizontal (not vertical) so swiping never fights with a tall
+   task's own checklist scrolling inside its card.
+   Opens on whichever task's real clock window contains right now
+   — genuinely time-driven (9pm opens on the 9pm task, 7am opens
+   on the 7am task), not just "the next undone thing." A small
+   "Needs Attention" pill separately surfaces important
+   (priority 1-2) tasks that are already overdue and not done, so
+   something real never gets buried just because its moment
+   passed and the live view has already moved on.
+   Each card opens as a simple cover (big icon + name + time) and
+   reveals its checklist/instructions/controls on tap — one card,
+   two states, instead of dumping everything at once.
    ========================================================= */
 let todayCardIndex=null;
 let todayFollowingNow=true;
@@ -2691,10 +2726,17 @@ let todayLiveTimer=null;
 let todayLastNowTaskId=null;
 let todayAttentionOpen=false;
 let todayLastKnownDefaultIdx=0;
+let todayRevealedIds=new Set();
 
 function todayDefaultIndex(sched){
- const idx=sched.tasks.findIndex(t=>t.status!=='completed' && t.status!=='skipped');
- return idx===-1?Math.max(0,sched.tasks.length-1):idx;
+ const now=nowMinutes();
+ const timed=sched.tasks.map((t,i)=>({t,i})).filter(x=>x.t.schedStart!=null);
+ if(!timed.length) return 0;
+ const active=timed.find(x=>now>=x.t.schedStart && now<x.t.schedEnd);
+ if(active) return active.i;
+ const next=timed.find(x=>x.t.schedStart>now);
+ if(next) return next.i;
+ return timed[timed.length-1].i;
 }
 function todayAttentionItems(sched){
  const now=nowMinutes();
@@ -2713,13 +2755,25 @@ function ensureTodayLiveTimer(){
 function todayScrollTo(idx){
  const feed=document.getElementById('todayFeed');
  const card=feed && feed.querySelector(`[data-idx="${idx}"]`);
- if(card) card.scrollIntoView({block:'start',behavior:'auto'});
+ if(card) card.scrollIntoView({inline:'start',block:'nearest',behavior:'auto'});
+}
+// The feed's card height is sized off the viewport (dvh). A phone's browser
+// chrome (address bar) showing or hiding — or anything else that resizes
+// the viewport — recomputes that height and can silently knock the
+// horizontal scroll position out of sync with which card is actually
+// "current." Re-snapping to the known-correct card on every resize keeps
+// the two from drifting apart.
+let todayResizeBound=false;
+function ensureTodayResizeSync(){
+ if(todayResizeBound) return;
+ todayResizeBound=true;
+ window.addEventListener('resize',()=>{ if(state.screen==='today') todayScrollTo(todayCardIndex); });
 }
 function onTodayFeedScroll(el){
  const cards=el.querySelectorAll('.feedCard');
  let closest=0, closestDist=Infinity;
  cards.forEach((c,i)=>{
-  const dist=Math.abs(c.offsetTop-el.scrollTop);
+  const dist=Math.abs(c.offsetLeft-el.scrollLeft);
   if(dist<closestDist){ closestDist=dist; closest=i; }
  });
  if(closest!==todayCardIndex){
@@ -2738,20 +2792,33 @@ function todayGoTo(idx){
  render();
 }
 function toggleTodayAttention(){ todayAttentionOpen=!todayAttentionOpen; render(); }
+function toggleTodayReveal(id){
+ if(todayRevealedIds.has(id)) todayRevealedIds.delete(id); else todayRevealedIds.add(id);
+ render();
+}
 
 function feedCardHTML(t,idx,total){
  const statusIcon = t.status==='completed'?'✅ Completed':t.status==='inProgress'?'● In Progress':'';
  const timeLabel = t.status==='skipped'?'Ran out of time today — skipped':clock12(minToHHMM(t.schedStart))+(t.duration?' • '+t.duration+' min':'')+(t.fixed?' • fixed':'');
  const tight = t.tightWarning?`<p class="tiny" style="color:var(--orange)">⚠ Running behind — pushed later, could not fit before ${t.tightWarning}.</p>`:'';
- return `<div class="feedCard" data-idx="${idx}">
-  <div class="feedCardHeader">
-   <div class="feedCardIcon">${categoryIcon(t.category)}</div>
-   <div class="tiny" style="margin-top:2px">Task ${idx+1} of ${total} • ${timeLabel}</div>
+ const revealed=todayRevealedIds.has(t.id);
+ const cover=`<div class="feedCover" onclick="toggleTodayReveal('${t.id}')">
+   <div class="feedCardIcon">${taskHeroIcon(t)}</div>
+   <div class="tiny" style="margin-top:4px">Task ${idx+1} of ${total} • ${timeLabel}</div>
    <h2 style="margin-top:6px">${t.name}</h2>
    ${statusIcon?`<div class="badge good" style="display:inline-block;margin-top:4px">${statusIcon}</div>`:''}
-  </div>
+   ${t.status!=='skipped'?`<div class="tiny" style="margin-top:10px;opacity:.75">${revealed?'▲ Tap to close':'▼ Tap to see what this involves'}</div>`:''}
+  </div>`;
+ let detail='';
+ if(revealed){
+  detail=t.status==='skipped'
+   ?`<div class="coachBubble"><strong>Skipped</strong><p>The day ran behind and this was pure extra time, not a core task — it got dropped so meals, hygiene, and academics never had to move. Nothing to do here.</p></div>`
+   :taskDetailHTML(t);
+ }
+ return `<div class="feedCard" data-idx="${idx}">
+  ${cover}
   ${tight}
-  ${t.status==='skipped'?`<div class="coachBubble"><strong>Skipped</strong><p>The day ran behind and this was pure extra time, not a core task — it got dropped so meals, hygiene, and academics never had to move. Nothing to do here.</p></div>`:taskDetailHTML(t)}
+  ${detail}
  </div>`;
 }
 function renderToday(){
@@ -2778,11 +2845,12 @@ function renderToday(){
   body+=`<div class="attentionOverlay">
    <div class="row" style="justify-content:space-between;align-items:center"><h2>Needs Attention</h2><button class="chip" onclick="toggleTodayAttention()">Close ✕</button></div>
    <p class="small">These are important and already past their time today, but not done yet.</p>
-   ${attention.length?attention.map(t=>`<div class="inner" style="margin-top:8px;cursor:pointer" onclick="todayGoTo(${sched.tasks.indexOf(t)})"><div class="row" style="justify-content:space-between"><div class="row" style="gap:8px"><span>${categoryIcon(t.category)}</span><b>${t.name}</b></div><span class="tiny">${clock12(minToHHMM(t.schedStart))}</span></div></div>`).join(''):'<div class="coachBubble"><strong>Nothing overdue 🎉</strong></div>'}
+   ${attention.length?attention.map(t=>`<div class="inner" style="margin-top:8px;cursor:pointer" onclick="todayGoTo(${sched.tasks.indexOf(t)})"><div class="row" style="justify-content:space-between"><div class="row" style="gap:8px"><span>${taskHeroIcon(t)}</span><b>${t.name}</b></div><span class="tiny">${clock12(minToHHMM(t.schedStart))}</span></div></div>`).join(''):'<div class="coachBubble"><strong>Nothing overdue 🎉</strong></div>'}
   </div>`;
  }
  document.getElementById('screen_today').innerHTML=body;
  ensureTodayLiveTimer();
+ ensureTodayResizeSync();
  requestAnimationFrame(()=>todayScrollTo(todayCardIndex));
 }
 
