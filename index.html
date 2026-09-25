@@ -290,13 +290,16 @@ body.timerFlash{animation:flashPulse .7s ease}
 const STORE='jr_level13_earned_day_v3';
 const OLD_STORES=['jr_level13_earned_day_v2','jr_level13_earned_day_v1','jr_level13_day_cycle_v1','jr_level13_simplified_v1','jr_level13_ai_v1','jr_level9_state'];
 const DAYS_TOTAL=30;
-// DEV RESET SWITCH — while this app is still being built out, bump this
-// string with every shipped round so each update opens like brand new
-// (full onboarding + launcher) instead of carrying over test data from the
-// last round. Once this is the final version, stop bumping it (or set
-// FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v9-realistic-durations';
-const FORCE_RESET_ON_UPDATE=true;
+// BUILD_VERSION still gets bumped every shipped round (useful for support/
+// debugging — it's shown in Settings and baked into the service worker
+// cache name so devices pick up the new files). FORCE_RESET_ON_UPDATE is
+// now OFF for good: real athlete progress (portion days, academic levels,
+// logs, accountability responses, the strike log, screen-time bank, etc.)
+// must survive every future update instead of getting wiped. Any new state
+// field a future round adds gets backfilled by an explicit migration line
+// below (state.x = state.x || ...) instead of relying on a full reset.
+const BUILD_VERSION='v10-screen-time-escalation-and-repeats';
+const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
 const vids={
@@ -446,7 +449,11 @@ function defaultState(){
   // done but weren't actually finished/correct when a parent checked in
   // person. Every rejected task lands here with what was wrong and what the
   // consequence was — a real paper trail instead of just "go do it again."
-  strikeLog:[]
+  strikeLog:[],
+  // Minutes of earned Screen Time (TV only) banked per day — every chore
+  // or academic block approved clean (no correction needed) adds to it.
+  // Keyed by date so it resets fresh each day.
+  screenTimeBank:{}
  };
 }
 function migrateOld(){
@@ -508,6 +515,7 @@ if(state.equipmentOwned.cones===undefined) state.equipmentOwned.cones=true;
 state.responsibilityAssignment = state.responsibilityAssignment || {};
 state.accountabilityLog = state.accountabilityLog || {};
 state.strikeLog = state.strikeLog || [];
+state.screenTimeBank = state.screenTimeBank || {};
 state.posMode = state.posMode==='custom' ? 'custom' : 'hybrid';
 state.offPos = state.offPos || '';
 state.defPos = state.defPos || '';
@@ -2257,47 +2265,129 @@ const TOMORROW_PREP_CHECKLIST=['Clothes','Training clothes','Shoes','School supp
 // whichever template is assigned that day, instead of a flat 60 minutes
 // regardless of whether the job is "wash dishes" or "deep-clean a room."
 const RESPONSIBILITY_TEMPLATES={
- bathroom:{name:'Clean Bathroom',minutes:30,steps:['Remove unnecessary items','Start at the ceiling — clear cobwebs','Clean mirror','Clean counter','Clean sink','Clean toilet exterior','Clean toilet interior','Scrub bathtub','Clean baseboards','Sweep from the farthest corner toward the doorway','Mop','Return supplies'],
-  consequence:'Saying it’s done when the toilet, mirror, counter, or trash still aren’t clean is the real problem, not the mess. It goes back on the list top to bottom, Free Evening and games stay locked until it’s redone and a parent physically re-checks it, and it gets logged as a strike.'},
- bedroom:{name:'Bedroom Deep Clean',minutes:25,steps:['Clear trash and dishes','Put away clean clothes','Dirty clothes in hamper','Make bed to standard','Dust surfaces','Organize desk and shelves','Vacuum or sweep the floor','Straighten the closet'],
-  consequence:'A room that’s "done" with trash still in it, clothes on the floor, or the closet a mess isn’t done. It gets redone completely, Free Evening stays locked until a parent re-checks it in person, and it’s logged as a strike.'},
- kitchen:{name:'Kitchen Reset',minutes:20,steps:['Clear counters','Load or wash dishes','Wipe counters and stovetop','Wipe table','Take out trash if full','Sweep floor','Put away anything left out'],
-  consequence:'Counters wiped around dishes instead of under them, or the stovetop skipped, means the kitchen isn’t actually reset. It gets redone, Free Evening stays locked until it’s re-checked, and it’s logged as a strike.'},
- laundry:{name:'Laundry',minutes:20,steps:['Gather dirty clothes from the hamper','Sort by color','Start a load','Move the finished load to the dryer','Fold clean laundry','Put clothes away'],
-  consequence:'Clothes still dirty, a load left unfinished, or clean clothes dumped instead of put away means this isn’t finished. It gets redone, Free Evening stays locked until a parent re-checks it, and it’s logged as a strike.'},
- dishes:{name:'Dishes',minutes:15,steps:['Scrape and rinse plates','Load dishwasher or wash by hand','Wipe counters','Wipe table','Put away clean dishes from the last load'],
-  consequence:'Dishes left in the sink, food still on a plate, or a wiped-around mess on the counter means it’s not done. It gets redone, Free Evening stays locked until it’s re-checked, and it’s logged as a strike.'},
- sweeping:{name:'Sweep Or Mop',minutes:15,steps:['Clear the floor of items','Sweep from the far corner to the doorway','Empty the dustpan','Mop if needed','Return tools'],
-  consequence:'Corners skipped, a full dustpan left sitting out, or the floor still dirty means it’s not done. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
- vacuuming:{name:'Vacuum',minutes:15,steps:['Clear the floor of items','Vacuum the full room including edges','Empty the canister if full','Return the vacuum'],
-  consequence:'Edges and corners skipped or a full canister not emptied means it’s not actually done. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
- organization:{name:'Organization Project',minutes:45,steps:['Pick the area','Remove everything','Sort into keep, donate, and trash','Wipe down the empty space','Put keep items back neatly','Take donate and trash items out'],
-  consequence:'A half-sorted pile shoved back in isn’t an organized space. It gets redone properly, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
- trash:{name:'Trash',minutes:10,steps:['Collect trash from every room','Replace bags','Take bins to the curb or dumpster','Wipe down bin if needed'],
-  consequence:'Bags not replaced or bins left overflowing means it’s not done. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
- yard:{name:'Yard Work',minutes:25,steps:['Pick up any trash or debris','Mow or trim as assigned','Sweep walkways','Put tools away'],
-  consequence:'Debris left behind or walkways skipped means it’s not finished. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
- helpSterling:{name:'Help With Sterling',minutes:20,steps:['Check what Sterling needs help with','Stay patient and encouraging','Help complete the activity or task','Clean up together when done'],
-  consequence:'Walking away before Sterling’s actually helped, or doing it with a bad attitude, doesn’t count as help. It gets redone the right way, Free Evening stays locked until a parent confirms it, and it’s logged as a strike.'},
- helpDevyn:{name:'Help Miss Devyn',minutes:20,steps:['Ask what she needs help with','Complete the task carefully','Check back when finished'],
-  consequence:'Rushing through it or leaving before she’s actually taken care of doesn’t count. It gets redone, Free Evening stays locked until confirmed, and it’s logged as a strike.'},
- familyProject:{name:'Family Project',minutes:35,steps:['Confirm the assigned project with a parent','Gather the needed materials','Work carefully and completely','Clean up when finished'],
-  consequence:'Walking away with the project half-finished or not actually following what was assigned means it’s not done. It gets redone, Free Evening stays locked until a parent checks it, and it’s logged as a strike.'},
- vehicle:{name:'Vehicle Cleanup',minutes:25,steps:['Remove trash and personal items','Vacuum seats and floor','Wipe down interior surfaces','Wipe down exterior windows'],
-  consequence:'Trash left under a seat or windows skipped means it’s not clean. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'}
+ bathroom:{name:'Clean Bathroom',minutes:40,steps:['Remove unnecessary items','Start at the ceiling — clear cobwebs','Clean mirror','Clean counter','Clean sink','Clean toilet exterior','Clean toilet interior','Scrub bathtub','Clean baseboards','Sweep from the farthest corner toward the doorway','Mop','Return supplies'],
+  consequence:'Saying it’s done when the toilet, mirror, counter, or trash still aren’t clean is the real problem, not the mess. It goes back on the list top to bottom, Screen Time stays locked until it’s redone and a parent physically re-checks it, and it gets logged as a strike.',
+  escalatedNote:'Clean every bathroom in the house — not just yours — following every step above in each one.'},
+ bedroom:{name:'Bedroom Deep Clean',minutes:35,steps:['Clear trash and dishes','Put away clean clothes','Dirty clothes in hamper','Make bed to standard','Dust surfaces','Organize desk and shelves','Vacuum or sweep the floor','Straighten the closet'],
+  consequence:'A room that’s "done" with trash still in it, clothes on the floor, or the closet a mess isn’t done. It gets redone completely, Screen Time stays locked until a parent re-checks it in person, and it’s logged as a strike.',
+  escalatedNote:'Deep clean your room AND fully reorganize the closet — not just tidy it.'},
+ kitchen:{name:'Kitchen Reset',minutes:30,steps:['Clear counters','Load or wash dishes','Wipe counters and stovetop','Wipe table','Take out trash if full','Sweep floor','Put away anything left out'],
+  consequence:'Counters wiped around dishes instead of under them, or the stovetop skipped, means the kitchen isn’t actually reset. It gets redone, Screen Time stays locked until it’s re-checked, and it’s logged as a strike.',
+  escalatedNote:'Deep clean the entire kitchen top to bottom: stove, oven, fridge, microwave, counters — then sweep and mop the floor.'},
+ laundry:{name:'Laundry',minutes:30,steps:['Gather dirty clothes from the hamper','Sort by color','Start a load','Move the finished load to the dryer','Fold clean laundry','Put clothes away'],
+  consequence:'Clothes still dirty, a load left unfinished, or clean clothes dumped instead of put away means this isn’t finished. It gets redone, Screen Time stays locked until a parent re-checks it, and it’s logged as a strike.',
+  escalatedNote:'Do all the laundry in the house today, not just your own.'},
+ dishes:{name:'Dishes',minutes:25,steps:['Scrape and rinse plates','Load dishwasher or wash by hand','Wipe counters','Wipe table','Put away clean dishes from the last load'],
+  consequence:'Dishes left in the sink, food still on a plate, or a wiped-around mess on the counter means it’s not done. It gets redone, Screen Time stays locked until it’s re-checked, and it’s logged as a strike.',
+  escalatedNote:'Deep clean the entire kitchen top to bottom: stove, oven, fridge, microwave, counters — then sweep and mop the floor.'},
+ sweeping:{name:'Sweep Or Mop',minutes:20,steps:['Clear the floor of items','Sweep from the far corner to the doorway','Empty the dustpan','Mop if needed','Return tools'],
+  consequence:'Corners skipped, a full dustpan left sitting out, or the floor still dirty means it’s not done. It gets redone, Screen Time stays locked until re-checked, and it’s logged as a strike.',
+  escalatedNote:'Sweep and mop every floor in the house today, not just one room.'},
+ vacuuming:{name:'Vacuum',minutes:20,steps:['Clear the floor of items','Vacuum the full room including edges','Empty the canister if full','Return the vacuum'],
+  consequence:'Edges and corners skipped or a full canister not emptied means it’s not actually done. It gets redone, Screen Time stays locked until re-checked, and it’s logged as a strike.',
+  escalatedNote:'Vacuum every carpeted room in the house today, not just one.'},
+ organization:{name:'Organization Project',minutes:55,steps:['Pick the area','Remove everything','Sort into keep, donate, and trash','Wipe down the empty space','Put keep items back neatly','Take donate and trash items out'],
+  consequence:'A half-sorted pile shoved back in isn’t an organized space. It gets redone properly, Screen Time stays locked until re-checked, and it’s logged as a strike.',
+  escalatedNote:'Organize two areas today instead of one.'},
+ trash:{name:'Trash',minutes:15,steps:['Collect trash from every room','Replace bags','Take bins to the curb or dumpster','Wipe down bin if needed'],
+  consequence:'Bags not replaced or bins left overflowing means it’s not done. It gets redone, Screen Time stays locked until re-checked, and it’s logged as a strike.',
+  escalatedNote:'Collect and replace trash in every room, then wipe down every bin — not just the ones that looked full.'},
+ yard:{name:'Yard Work',minutes:35,steps:['Pick up any trash or debris','Mow or trim as assigned','Sweep walkways','Put tools away'],
+  consequence:'Debris left behind or walkways skipped means it’s not finished. It gets redone, Screen Time stays locked until re-checked, and it’s logged as a strike.',
+  escalatedNote:'Do the entire yard today, not just the assigned section.'},
+ helpSterling:{name:'Help With Sterling',minutes:25,steps:['Check what Sterling needs help with','Stay patient and encouraging','Help complete the activity or task','Clean up together when done'],
+  consequence:'Walking away before Sterling’s actually helped, or doing it with a bad attitude, doesn’t count as help. It gets redone the right way, Screen Time stays locked until a parent confirms it, and it’s logged as a strike.',
+  escalatedNote:'Help Sterling with an additional task today, not just the one assigned.'},
+ helpDevyn:{name:'Help Miss Devyn',minutes:25,steps:['Ask what she needs help with','Complete the task carefully','Check back when finished'],
+  consequence:'Rushing through it or leaving before she’s actually taken care of doesn’t count. It gets redone, Screen Time stays locked until confirmed, and it’s logged as a strike.',
+  escalatedNote:'Help Miss Devyn with an additional task today, not just the one assigned.'},
+ familyProject:{name:'Family Project',minutes:45,steps:['Confirm the assigned project with a parent','Gather the needed materials','Work carefully and completely','Clean up when finished'],
+  consequence:'Walking away with the project half-finished or not actually following what was assigned means it’s not done. It gets redone, Screen Time stays locked until a parent checks it, and it’s logged as a strike.',
+  escalatedNote:'Finish the project completely AND fully clean the work area — tools put away, surfaces wiped, nothing left out.'},
+ vehicle:{name:'Vehicle Cleanup',minutes:30,steps:['Remove trash and personal items','Vacuum seats and floor','Wipe down interior surfaces','Wipe down exterior windows'],
+  consequence:'Trash left under a seat or windows skipped means it’s not clean. It gets redone, Screen Time stays locked until re-checked, and it’s logged as a strike.',
+  escalatedNote:'Clean every vehicle today, not just one.'}
 };
-function responsibilityMinutes(){ const tpl=RESPONSIBILITY_TEMPLATES[assignedResponsibilityTemplateId()]; return (tpl && tpl.minutes) || 30; }
-const DEFAULT_CONSEQUENCE='If this is marked done but it wasn’t actually finished or done correctly when checked in person, it reopens, Free Evening stays locked until it’s redone and re-approved by a parent, and it’s logged as a strike.';
-const WASH_DISHES_CONSEQUENCE='Saying the kitchen’s clean when a plate, cup, or pan is still dirty, food’s still out, or the counter/stove wasn’t wiped means it isn’t done. It reopens, Free Evening and games stay locked until the kitchen is actually clean and a parent re-checks it, and it’s logged as a strike.';
+// If today's assigned chore was rejected, it comes back bigger — same task,
+// full house scope — instead of a generic "try again." Escalated duration
+// is the normal estimate scaled up, since the bigger version genuinely
+// takes longer.
+function responsibilityMinutes(){
+ const tpl=RESPONSIBILITY_TEMPLATES[assignedResponsibilityTemplateId()];
+ const base=(tpl && tpl.minutes)||30;
+ const e=peekScheduleEntry('responsibility');
+ return e.escalated ? Math.round(base*1.8) : base;
+}
+const DEFAULT_CONSEQUENCE='If this is marked done but it wasn’t actually finished or done correctly when checked in person, it reopens, Screen Time stays locked until it’s redone and re-approved by a parent, and it’s logged as a strike.';
+const WASH_DISHES_CONSEQUENCE='Saying the kitchen’s clean when a plate, cup, or pan is still dirty, food’s still out, or the counter/stove wasn’t wiped means it isn’t done. It reopens as a full kitchen deep clean, Screen Time stays locked until it’s actually clean and a parent re-checks it, and it’s logged as a strike.';
+const WASH_DISHES_ESCALATION='Deep clean the entire kitchen top to bottom — stove, oven, fridge, microwave, counters — then sweep and mop the floor. Leave it spotless, not just the dishes.';
 const ACADEMIC_REPERCUSSIONS={
- fastMath:'Rushing through facts to get done, guessing instead of actually knowing them, or writing down a percentage that isn’t real means this isn’t finished. It reopens tonight before Free Evening, gets redone honestly, and it’s logged as a strike. Automaticity only counts if it’s real.',
- math:'Skipping steps, guessing, or writing an Ending % that doesn’t match what was actually understood isn’t finishing math — it’s pretending to. It reopens before Free Evening, gets redone the right way, and it’s logged as a strike.',
- science:'Rushing through the lesson without being able to answer what, how, and why — or reporting a percentage that isn’t real — isn’t done. It reopens before Free Evening, gets redone, and it’s logged as a strike.',
- reading:'Skipping the comprehension questions, or answering them without actually doing the reading, doesn’t count. It reopens before Free Evening, gets redone properly, and it’s logged as a strike.',
- language:'Rushing grammar and vocabulary work without actually learning it, or reporting a score that isn’t real, isn’t done. It reopens before Free Evening, gets redone, and it’s logged as a strike.',
- history:'Skimming the material without being able to explain what happened and why it matters today isn’t done. It reopens before Free Evening, gets redone, and it’s logged as a strike.',
- writing:'Turning in a few rushed sentences, or claiming a percentage on work that wasn’t actually thought through, isn’t finished — especially the weekly essay, which is about how he thinks, not just filling space. It reopens before Free Evening, gets redone for real, and it’s logged as a strike.'
+ fastMath:'Rushing through facts to get done, guessing instead of actually knowing them, or writing down a percentage that isn’t real means this isn’t finished. It reopens tonight before Screen Time, gets redone honestly, and it’s logged as a strike. Automaticity only counts if it’s real.',
+ math:'Skipping steps, guessing, or writing an Ending % that doesn’t match what was actually understood isn’t finishing math — it’s pretending to. It reopens before Screen Time, gets redone the right way, and it’s logged as a strike.',
+ science:'Rushing through the lesson without being able to answer what, how, and why — or reporting a percentage that isn’t real — isn’t done. It reopens before Screen Time, gets redone, and it’s logged as a strike.',
+ reading:'Skipping the comprehension questions, or answering them without actually doing the reading, doesn’t count. It reopens before Screen Time, gets redone properly, and it’s logged as a strike.',
+ language:'Rushing grammar and vocabulary work without actually learning it, or reporting a score that isn’t real, isn’t done. It reopens before Screen Time, gets redone, and it’s logged as a strike.',
+ history:'Skimming the material without being able to explain what happened and why it matters today isn’t done. It reopens before Screen Time, gets redone, and it’s logged as a strike.',
+ writing:'Turning in a few rushed sentences, or claiming a percentage on work that wasn’t actually thought through, isn’t finished — especially the weekly essay, which is about how he thinks, not just filling space. It reopens before Screen Time, gets redone for real, and it’s logged as a strike.'
 };
+// The escalation for a rejected academic block: redo it right, then extra
+// work on top — never physical activity, and never busywork unrelated to
+// the subject.
+const ACADEMIC_ESCALATION={
+ fastMath:'Redo the full set correctly, then complete a second full set before it counts.',
+ math:'Redo the work correctly, then complete 10 extra practice problems on the same skill before it counts.',
+ science:'Redo the lesson, then write a full paragraph (not a sentence) explaining what, how, and why for two of the concepts.',
+ reading:'Redo the reading and comprehension questions, then read a second full passage and answer the same question set for it.',
+ language:'Redo the work, then complete an additional full practice set on the same skill.',
+ history:'Redo the lesson, then write a full paragraph on why it still matters today, not just what happened.',
+ writing:'Redo the piece for real, then write an additional full paragraph reflecting on why the first attempt wasn’t actually finished.'
+};
+
+// SECOND REPS FOR WEAK SUBJECTS — every core subject gets one solid block a
+// day at first. But if a subject's 7-day rolling average (the same Ending %
+// scores already logged after every academic block) drops below the
+// threshold below, that subject automatically gets a SECOND, shorter block
+// later the same day instead of just leaving it at one rushed pass. It is
+// real added reps on the same subject, not a generic worksheet — same
+// instructions style, same score field, same repercussion/escalation rules
+// as the morning block, because it shares the same `sub` key. The moment
+// that subject's average climbs back above the threshold, the second block
+// stops appearing on its own — no manual toggle needed, it just tracks the
+// actual scores as they're logged. Writing is intentionally left out of the
+// repeat rotation — the weekly essay/writing-development block is already a
+// deeper, longer piece of work, not a quick-drill subject suited to a same-
+// day second rep.
+const WEAK_SUBJECT_THRESHOLD=80;
+const REPEATABLE_SUBJECTS=['fastMath','math','science','reading','language','history'];
+const PM_REPEAT_MINUTES={fastMath:10,math:20,science:15,reading:15,language:15,history:15};
+const PM_REPEAT_LABEL={fastMath:'Fast Math',math:'Mathematics',science:'Science',reading:'Reading',language:'Language',history:'History And Social Studies'};
+function subjectNeedsRepeat(sub){
+ const found=weeklyAcademicAverages().find(a=>a.sub===sub);
+ // No real scores logged for it yet this week — give it the benefit of the
+ // doubt instead of doubling it up on guesswork.
+ if(!found) return false;
+ return found.avg<WEAK_SUBJECT_THRESHOLD;
+}
+// Builds the extra same-day blocks for whichever subjects are currently
+// running below the threshold. `academyLabel` matches how that day type
+// already names its other subject blocks (Texas Sports Academy branding on
+// trainer/home-development days, plain names on a normal home day) so the
+// repeat block reads consistently with the rest of that day's schedule.
+function weakSubjectRepeatTasks(startClock,academyLabel){
+ const out=[];
+ REPEATABLE_SUBJECTS.forEach(sub=>{
+  if(!subjectNeedsRepeat(sub)) return;
+  const found=weeklyAcademicAverages().find(a=>a.sub===sub);
+  const baseLabel=PM_REPEAT_LABEL[sub];
+  const name=(academyLabel?tsa(baseLabel):baseLabel)+' — Second Rep Today';
+  out.push(task(sub+'PM',name,'Academic',startClock,PM_REPEAT_MINUTES[sub],{priority:2,completionType:'academic',sub,instructions:[
+   '7-day average is '+found.avg+'% — under the '+WEAK_SUBJECT_THRESHOLD+'% mark, so this subject gets a second rep today instead of stopping at one pass.',
+   'Go back over anything missed from the morning block, work it again, and check for real understanding — not just getting to the end of it.',
+   'Once the 7-day average for this subject climbs back above '+WEAK_SUBJECT_THRESHOLD+'%, this second block stops showing up on its own and the day goes back to one block for it.'
+  ]}));
+ });
+ return out;
+}
 
 const ACCOUNTABILITY_BY_DAY={1:'Decision Making',2:'Honesty',3:'Leadership',4:'Game Reflection',5:'Weekly Self Evaluation',6:'Life Skills',0:'Goals'};
 const ACCOUNTABILITY_PROMPTS={
@@ -2343,8 +2433,18 @@ function task(id,name,category,start,duration,opts={}){
 function tsa(name){ return name+' — Texas Sports Academy'; }
 // A quick, dedicated dishes task dropped right after every meal so the
 // kitchen never piles up — separate from the meal task's own instructions.
+// If this exact meal's dishes were rejected last time, it comes back as a
+// full kitchen deep clean instead of the normal quick wash — same escalation
+// pattern as the Responsibility Block.
 function washDishesTask(id,start){
- return task(id,'Wash Dishes','Responsibility',start,10,{priority:2,instructions:['Wash your plate, cup, bowl, and any pots or pans used','Wipe down the counter and stove if used','Leave the kitchen clean for the next meal']});
+ const e=peekScheduleEntry(id);
+ if(e.escalated){
+  return task(id,'Wash Dishes','Responsibility',start,45,{priority:2,instructions:[
+   'Deep clean the entire kitchen top to bottom — stove, oven, fridge, microwave, counters',
+   'Sweep the kitchen floor','Mop the kitchen floor','Leave it spotless, not just the dishes'
+  ]});
+ }
+ return task(id,'Wash Dishes','Responsibility',start,20,{priority:2,instructions:['Wash your plate, cup, bowl, and any pots or pans used','Wipe down the counter and stove if used','Leave the kitchen clean for the next meal']});
 }
 // The Monday Writing block becomes a full weekly essay instead of the
 // regular writing-phase work — themed around responsibility, respect,
@@ -2397,10 +2497,12 @@ function normalHomeDayTasks(dow){
   washDishesTask('washDishesDinner','18:55'),
   task('correction','Academic Correction','Correction','19:05',40,{priority:1,completionType:'correction'}),
   task('accountability','Accountability And Life Skills','Accountability','19:45',15,{completionType:'accountability'}),
+  ...weakSubjectRepeatTasks('20:00',false),
   task('indepReading','Independent Reading','Academic','20:10',20,{priority:3,completionType:'timer',instructions:['Book only — no screens.']}),
   task('tomorrowPrep','Tomorrow Preparation','Hygiene','20:30',15,{instructions:TOMORROW_PREP_CHECKLIST}),
   task('nightRoutine','Night Routine','Hygiene','20:45',15,{instructions:NIGHT_CHECKLIST}),
-  task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Lights out. Protected — this does not move.']})
+  task('screenTime','Screen Time (TV Only)','Recovery','21:00',30,{priority:2,instructions:['Earned Screen Time — TV only, nothing else.','Every chore and academic block approved clean today (no correction needed) adds minutes to today’s balance.','This is a privilege, not a right — it locks automatically if anything from today is still waiting on a correction.']}),
+  task('bedtime','Lights Out','Sleep','21:30',0,{priority:1,fixed:true,instructions:['Lights out. Protected — this does not move.']})
  ];
 }
 
@@ -2439,8 +2541,9 @@ function trainerDayTasks(){
   task('dinner','Dinner','Meal','17:50',40,{instructions:['Family dinner']}),
   washDishesTask('washDishesDinner','18:30'),
   task('accountability','Accountability And Life Skills','Accountability','18:40',15,{completionType:'accountability'}),
+  ...weakSubjectRepeatTasks('18:55',true),
   task('indepReading','Independent Reading','Academic','18:55',30,{priority:3,completionType:'timer',instructions:['Book only.']}),
-  task('overflow','Free Family, Recovery, Or Overflow','Recovery','19:25',45,{priority:3,instructions:['This period can absorb reasonable delays from earlier in the day.']}),
+  task('screenTime','Screen Time (TV Only)','Recovery','19:25',45,{priority:2,instructions:['Earned Screen Time — TV only, nothing else.','Every chore and academic block approved clean today (no correction needed) adds minutes to today’s balance.','Also where the day’s normal slippage gets absorbed if something earlier ran long — it is a privilege, not a right, and it locks automatically if anything from today is still waiting on a correction.']}),
   task('tomorrowPrep','Tomorrow Preparation And Room Reset','Hygiene','20:10',30,{instructions:TOMORROW_PREP_CHECKLIST}),
   task('nightRoutine','Night Routine','Hygiene','20:40',20,{instructions:NIGHT_CHECKLIST}),
   task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Protected — this does not move.']})
@@ -2477,7 +2580,8 @@ function gameDayTasks(){
   task('gamePrep','Game Preparation','Training','15:00',prepMin,{priority:1,instructions:['Equipment check: helmet, guardian cap if required, shoulder pads, game pants, jersey, cleats, socks, mouthpiece, gloves, water, braces or supports, any team-required gear.','Bathroom','Change into uniform','Hydrate']}),
   task('leaveGame','Leave For The Game','Travel',leaveClock,gi.driveMinutes+gi.trafficBuffer,{priority:1,fixed:true,instructions:['Target team arrival: '+clock12(teamArriveClock)+'.','No unnecessary conditioning or heavy cleaning today.']}),
   task('kickoff','Game','Training',gi.kickoff,150,{priority:1,fixed:true,instructions:['Kickoff.','Leave everything on the field.']}),
-  task('afterGame','After The Game','Recovery',minToHHMM(kickoffMin+150),60,{priority:1,instructions:['Food','Hydration','Shower','Equipment reset','Sleep — no unfinished schoolwork forced tonight.']})
+  task('afterGame','After The Game','Recovery',minToHHMM(kickoffMin+150),60,{priority:1,instructions:['Food','Hydration','Shower','Equipment reset','Sleep — no unfinished schoolwork forced tonight.']}),
+  task('screenTime','Screen Time (TV Only)','Recovery',minToHHMM(kickoffMin+210),20,{priority:2,instructions:['Earned Screen Time — TV only, nothing else. Kept short tonight since it’s already late after the game.','Still earned the same way — chores and academic blocks approved clean today added to it.','It is a privilege, not a right — it locks automatically if anything from today is still waiting on a correction.']})
  ];
 }
 
@@ -2506,10 +2610,11 @@ function homeDevelopmentDayTasks(){
   washDishesTask('washDishesDinner','18:10'),
   task('correction','Academic Correction','Correction','18:20',40,{priority:1,completionType:'correction'}),
   task('accountability','Accountability And Life Skills','Accountability','19:00',15,{completionType:'accountability'}),
+  ...weakSubjectRepeatTasks('19:10',true),
   task('indepReading','Independent Reading','Academic','19:10',30,{priority:3,completionType:'timer',instructions:['Book only.']}),
   task('tomorrowPrep','Tomorrow Preparation','Hygiene','19:40',20,{instructions:TOMORROW_PREP_CHECKLIST}),
   task('nightRoutine','Night Routine','Hygiene','20:00',20,{instructions:NIGHT_CHECKLIST}),
-  task('freeEvening','Free Evening','Recovery','20:20',40,{priority:3,instructions:['Family time, quiet wind-down — no excessive physical activity used as punishment.']}),
+  task('screenTime','Screen Time (TV Only)','Recovery','20:20',40,{priority:2,instructions:['Earned Screen Time — TV only, nothing else, quiet wind-down before bed — no excessive physical activity used as punishment.','Every chore and academic block approved clean today (no correction needed) adds minutes to today’s balance.','This is a privilege, not a right — it locks automatically if anything from today is still waiting on a correction.']}),
   task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Protected — this does not move.']})
  ];
 }
@@ -2531,6 +2636,7 @@ function saturdayTasks(){
   task('afternoon','Football, Volunteering, Or Family Time','Training','13:30',180,{priority:3,instructions:['Football development, volunteering, youth group, family activities, recovery, household projects, or other approved activities.','No recreational electronics during the reset period.']}),
   task('dinner','Dinner','Meal','18:00',40,{instructions:['Family dinner']}),
   washDishesTask('washDishesDinner','18:40'),
+  task('screenTime','Screen Time (TV Only)','Recovery','19:00',60,{priority:2,instructions:['Earned Screen Time — TV only, nothing else.','Every chore and academic block approved clean this week (no correction needed) adds minutes to today’s balance.','This is a privilege, not a right — it locks automatically if anything is still waiting on a correction.']}),
   task('nightRoutine','Night Routine','Hygiene','20:40',20,{instructions:NIGHT_CHECKLIST}),
   task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Protected — this does not move.']})
  ];
@@ -2549,6 +2655,7 @@ function sundayTasks(){
   task('weeklyPlanning','Weekly Planning','Accountability','18:00',30,{priority:1,completionType:'weeklyplan'}),
   task('dinner','Dinner','Meal','18:30',40,{instructions:['Family dinner']}),
   washDishesTask('washDishesDinner','19:10'),
+  task('screenTime','Screen Time (TV Only)','Recovery','19:30',40,{priority:2,instructions:['Earned Screen Time — TV only, nothing else.','Every chore and academic block approved clean this week (no correction needed) adds minutes to today’s balance.','This is a privilege, not a right — it locks automatically if anything is still waiting on a correction.']}),
   task('nightRoutine','Night Routine','Hygiene','20:40',20,{instructions:NIGHT_CHECKLIST}),
   task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Protected — this does not move.']})
  ];
@@ -2579,6 +2686,20 @@ function scheduleEntry(taskId,d=new Date()){
  if(!state.scheduleLogs[key]) state.scheduleLogs[key]={};
  if(!state.scheduleLogs[key][taskId]) state.scheduleLogs[key][taskId]={status:'notStarted'};
  return state.scheduleLogs[key][taskId];
+}
+// A read-only version of scheduleEntry — used anywhere a task's saved state
+// just needs to be CHECKED (e.g. "was this escalated?") rather than acted
+// on. scheduleEntry() itself always writes a fresh {status:'notStarted'}
+// entry into state.scheduleLogs as a side effect of reading it, which is
+// exactly right when a parent is actually completing/approving/rejecting a
+// task, but is the wrong tool for a plain lookup during schedule building —
+// those run on every render, for every task in the day (including ones
+// nothing has touched yet), and would otherwise silently repopulate a day's
+// log with empty entries right after Parent Logs deletes it. This never
+// touches state.
+function peekScheduleEntry(taskId,d=new Date()){
+ const key=localDateKey(d);
+ return (state.scheduleLogs[key] && state.scheduleLogs[key][taskId]) || {status:'notStarted'};
 }
 
 // Fixed anchors (wake, trainer session, kickoff, bedtime, etc.) split the day
@@ -2748,7 +2869,7 @@ function quickComplete(taskId){
  save(); render();
 }
 function skipScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='skipped'; save(); render(); }
-function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; e.approved=false; e.awaitingReview=false; e.correctionNeeded=null; save(); render(); }
+function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; e.approved=false; e.awaitingReview=false; e.correctionNeeded=null; e.escalated=false; save(); render(); }
 
 function saveAcademicScore(taskId,sub){
  const input=document.getElementById('academicScoreInput_'+taskId);
@@ -2840,7 +2961,8 @@ function responsibilityHTML(t){
  const e=scheduleEntry(taskId);
  const checklistState=e.checklist||{};
  const stepsHtml=tpl.steps.map((s,i)=>`<div class="checkItem"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${checklistState[i]?'checked':''} onchange="toggleResponsibilityStep('${taskId}',${i},this.checked)"> <span>${s}</span></label></div>`).join('');
- return `<div class="inner"><h3>${tpl.name}</h3><p class="small">Tap each step as it gets finished, then submit for a parent check.</p>${stepsHtml}</div>
+ const escalatedBanner=e.escalated?`<div class="coachBubble" style="margin-top:8px;border-color:var(--orange)"><strong>🔺 Escalated</strong><p class="small">${tpl.escalatedNote||'Last time this wasn’t done right, so this time it’s the bigger version.'}</p></div>`:'';
+ return `<div class="inner"><h3>${tpl.name}</h3><p class="small">Tap each step as it gets finished, then submit for a parent check.</p>${escalatedBanner}${stepsHtml}</div>
  ${approvalCompletionControlsHTML(t)}`;
 }
 
@@ -2881,26 +3003,41 @@ function saveAccountabilityResponse(taskId){
    REAL REPERCUSSIONS — chores + academic blocks require an actual
    parent check before they count as done, instead of Jr's own say-so.
    Submit For Inspection -> a parent physically checks it -> Approve or
-   Needs Correction. A rejection reopens the task, locks Free Evening /
-   Family Time (the discretionary/screen-time blocks) until it's redone
-   AND re-approved, and logs a strike with what was wrong and why —
-   a real paper trail instead of just "go do it again."
+   Needs Correction. A rejection brings the SAME task back bigger (his
+   bathroom -> every bathroom; his dishes -> the whole kitchen; an academic
+   block -> redo it plus extra work) instead of a generic "try again," locks
+   today's Screen Time until it's redone AND re-approved, and logs a strike
+   with what was wrong and why — a real paper trail instead of nothing.
+   Approving a task cleanly (no correction needed) banks minutes into that
+   day's Screen Time balance — everything he gets to watch is earned, not
+   automatic.
    ========================================================= */
-// Free Evening (Home Development day), Family Time (Sunday), and the
-// trainer-day Overflow block are the discretionary/screen-time slots that
-// actually exist in the schedule today — these lock shut whenever a chore
-// or academic block is rejected, until it's redone and re-approved.
-// Normal weekdays currently go straight from Night Routine to Lights Out
-// with no discretionary block of their own to lock.
-const PRIVILEGE_TASK_IDS=['freeEvening','familyTime','overflow'];
+// Screen Time (TV only) is now one consistent daily block across every
+// day type — the single thing that locks shut whenever a chore or academic
+// block is rejected, until it's redone AND re-approved.
+const PRIVILEGE_TASK_IDS=['screenTime'];
+// How many minutes get banked into today's Screen Time balance when a task
+// is approved clean (no correction needed) — bigger jobs earn more.
+function screenTimeValueForTask(def){
+ if(!def) return 5;
+ if(def.completionType==='responsibility') return 15;
+ if(def.completionType==='academic') return 10;
+ if(def.id && def.id.indexOf('washDishes')===0) return 5;
+ return 5;
+}
 function repercussionTextForTask(t){
  if(!t) return null;
  if(t.completionType==='responsibility'){
   const tpl=RESPONSIBILITY_TEMPLATES[assignedResponsibilityTemplateId()];
-  return (tpl && tpl.consequence) || DEFAULT_CONSEQUENCE;
+  if(!tpl) return DEFAULT_CONSEQUENCE;
+  return tpl.consequence+(tpl.escalatedNote?' Specifically: '+tpl.escalatedNote:'');
  }
- if(t.completionType==='academic') return ACADEMIC_REPERCUSSIONS[t.sub]||DEFAULT_CONSEQUENCE;
- if(t.id && t.id.indexOf('washDishes')===0) return WASH_DISHES_CONSEQUENCE;
+ if(t.completionType==='academic'){
+  const base=ACADEMIC_REPERCUSSIONS[t.sub]||DEFAULT_CONSEQUENCE;
+  const esc=ACADEMIC_ESCALATION[t.sub];
+  return base+(esc?' Specifically: '+esc:'');
+ }
+ if(t.id && t.id.indexOf('washDishes')===0) return WASH_DISHES_CONSEQUENCE+' Specifically: '+WASH_DISHES_ESCALATION;
  return null;
 }
 function submitForApproval(taskId){
@@ -2914,10 +3051,19 @@ function submitForApproval(taskId){
  save(); render();
 }
 function approveTask(taskId){
+ const def=findTaskDef(taskId);
  const e=scheduleEntry(taskId);
  e.awaitingReview=false;
  e.approved=true;
  e.correctionNeeded=null;
+ e.escalated=false;
+ // Screen Time is earned once per task, the first time it's approved clean
+ // — reopening and re-approving the same day doesn't stack extra minutes.
+ if(!e.screenTimeAwarded){
+  const key=localDateKey();
+  state.screenTimeBank[key]=(state.screenTimeBank[key]||0)+screenTimeValueForTask(def);
+  e.screenTimeAwarded=true;
+ }
  save(); render();
 }
 function rejectTask(taskId){
@@ -2930,6 +3076,11 @@ function rejectTask(taskId){
  e.correctionNeeded=note||'Marked done, but it was not actually finished or correct when checked in person.';
  e.status='notStarted';
  delete e.actualFinish;
+ // Same task, bigger scope — not a generic "try again." Cleared again once
+ // it's actually approved.
+ if(def && (def.completionType==='responsibility' || (def.id && def.id.indexOf('washDishes')===0) || def.completionType==='academic')){
+  e.escalated=true;
+ }
  if(def && def.completionType==='responsibility') e.checklist={};
  state.strikeLog.unshift({
   date:localDateKey(), taskId, taskName:def?def.name:taskId,
@@ -2963,11 +3114,23 @@ function approvalCompletionControlsHTML(t){
  const e=t.entry;
  if(e.awaitingReview) return inspectionPanelHTML(t);
  if(e.approved && !e.correctionNeeded){
-  return `<div class="coachBubble" style="margin-top:8px"><strong>Approved ✅</strong></div>
+  return `<div class="coachBubble" style="margin-top:8px"><strong>Approved ✅ — +${screenTimeValueForTask(t)} min Screen Time earned</strong></div>
   <button class="orange full" style="margin-top:6px" onclick="reopenScheduleTask('${t.id}')">Reopen</button>`;
  }
- const correctionBanner=e.correctionNeeded?`<div class="coachBubble" style="margin-top:8px;border-color:var(--orange)"><strong>Correction Needed</strong><p class="small">${e.correctionNeeded}</p><p class="tiny">Free Evening stays locked until this is redone and re-checked by a parent.</p></div>`:'';
+ const correctionBanner=e.correctionNeeded?`<div class="coachBubble" style="margin-top:8px;border-color:var(--orange)"><strong>Correction Needed</strong><p class="small">${e.correctionNeeded}</p><p class="tiny">Screen Time stays locked until this is redone and re-checked by a parent.</p></div>`:'';
  return correctionBanner+`<button class="green full" style="margin-top:8px" onclick="submitForApproval('${t.id}')">Submit For Inspection</button>`;
+}
+// Screen Time (TV only) — nothing to "complete" here, it's a running
+// balance shown for the day. Every chore/academic block approved clean
+// bumps it up; a rejection elsewhere locks the whole card (handled by the
+// PRIVILEGE_TASK_IDS check at the top of taskDetailHTML) until fixed.
+function screenTimeCardHTML(){
+ const earned=state.screenTimeBank[localDateKey()]||0;
+ return `<div class="inner"><h3>📺 Screen Time (TV Only)</h3>
+ <p class="small">Screen time means TV — nothing else. It's earned, not automatic: every chore and academic block done right (approved, no correction needed) adds minutes to today's balance. Nothing done, nothing earned.</p>
+ <div class="coachBubble" style="margin-top:8px;text-align:center"><h2 style="margin:0">${earned} minute${earned===1?'':'s'} earned today</h2></div>
+ <p class="tiny" style="margin-top:8px">Wash Dishes = +5 each • Responsibility Block = +15 • each academic block = +10.</p>
+ </div>`;
 }
 
 /* =========================================================
@@ -3073,10 +3236,12 @@ const ACADEMIC_SUBJECT_LABELS={fastMath:'Fast Math',math:'Math',writing:'Writing
 function academicTaskHTML(t){
  const e=t.entry;
  const prof=state.academic[t.sub]||{};
+ const escalatedBanner=e.escalated?`<div class="coachBubble" style="margin-top:8px;border-color:var(--orange)"><strong>🔺 Escalated</strong><p class="small">${ACADEMIC_ESCALATION[t.sub]||'Last time this wasn’t done right, so it comes with extra work on top this time.'}</p></div>`:'';
  return `<div class="inner"><h3>${t.name}</h3>
  <p class="small">Location: <b>Texas Sports Academy</b> — this block happens there, not a generic worksheet at home.</p>
  <p class="small">Current level: <b>${prof.current||'not set'}</b> (baseline ${prof.baseline||'not set'})</p>
  ${(t.instructions||[]).map(i=>`<p class="small">• ${i}</p>`).join('')}
+ ${escalatedBanner}
  </div>
  <div class="inner"><div class="label">Starting Grade Level Today</div>
  <p class="tiny" style="margin:2px 0 6px">Enter what grade level of material he's starting at today — this keeps the ladder accurate as he moves up or needs to back up.</p>
@@ -3139,6 +3304,7 @@ function taskDetailHTML(t){
   const open=openCorrectionTasks();
   return `<div class="coachBubble" style="border-color:var(--orange)"><h3 style="margin-top:0">🔒 Locked</h3><p class="small">This stays locked until every task below is redone and re-approved by a parent:</p>${open.map(o=>`<p class="small">• <b>${o.name}</b> — ${o.note}</p>`).join('')}</div>`;
  }
+ if(t.id==='screenTime') return screenTimeCardHTML()+genericCompletionControlsHTML(t);
  const flipText=repercussionTextForTask(t);
  const flipped=!!flipText && todayFlippedIds.has(t.id);
  const flipBtn=flipText?`<button class="feedCardFlipBtn" onclick="toggleTodayFlip('${t.id}')">${flipped?'↩️ Flip Back To The Task':'⚠️ Flip: What Happens If This Is Done Wrong'}</button>`:'';
@@ -3178,9 +3344,9 @@ const TASK_ICONS={
  leaveHome:'🚗',trainer:'🏋️',trainPrep:'🥪',travelHome:'🚗',
  leaveGame:'🚗',kickoff:'🏈',gamePrep:'🏈',pregameFood:'🍽️',
  quietRecovery:'🧘',afterGame:'🎉',academicBlock:'📘',deepClean:'🧽',
- familyChurch:'👪',familyTime:'👪',freeEvening:'🎮',afternoon:'🏈',
+ familyChurch:'👪',screenTime:'📺',afternoon:'🏈',
  hygieneBreakfast:'🚿',hygieneRoom:'🧹',langHist:'🗣️',lifeSkills:'🛠️',
- lunchRecover:'🥪',overflow:'🕐',rest:'😴',secondWeakest:'🎯',
+ lunchRecover:'🥪',rest:'😴',secondWeakest:'🎯',
  travel:'🚗',weakest:'🎯',weeklyPlanning:'📝',
  washDishesBreakfast:'🧽',washDishesLunch:'🧽',washDishesDinner:'🧽'
 };
