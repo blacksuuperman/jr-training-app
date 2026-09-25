@@ -197,12 +197,21 @@ body.timerFlash{animation:flashPulse .7s ease}
 .launcherBtn{width:100%;min-height:84px;border-radius:24px;background:#0b0b10;border:1px solid #33343f;color:#fff;font-weight:900;font-size:18px;display:flex;align-items:center;gap:14px;padding:0 22px;cursor:pointer}
 .launcherBtn .launcherIcon{font-size:30px}
 .launcherBtn:active{background:var(--accent);color:var(--buttonText);border-color:transparent}
+.quoteGateWrap{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;text-align:center;touch-action:pan-y}
+.quoteMark{font-size:64px;line-height:1;color:var(--accent);font-weight:900;margin-bottom:-14px}
+.quoteText{color:#fff;font-size:22px;font-weight:800;line-height:1.4;margin:0}
+.quoteAuthor{color:var(--muted);font-size:14px;font-weight:700;margin-top:14px}
+.taskAlertOverlay{position:fixed;inset:0;background:rgba(4,4,8,.94);z-index:960;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px calc(24px + env(safe-area-inset-bottom));text-align:center}
+.taskAlertIcon{font-size:56px;width:100px;height:100px;border-radius:50%;background:color-mix(in srgb,var(--accent) 22%,transparent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.taskAlertLabel{color:var(--accent);font-weight:900;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+.taskAlertName{color:#fff;font-size:24px;font-weight:900;margin:8px 0 4px}
 </style>
 </head>
 <body>
 <div class="gateScreen hidden" id="gateScreen">
   <div class="gateInner" id="gateInner"></div>
 </div>
+<div id="taskAlertRoot"></div>
 <div class="app">
   <div class="musicDock musicDockMini">
     <div class="musicTop">
@@ -277,7 +286,7 @@ const DAYS_TOTAL=30;
 // (full onboarding + launcher) instead of carrying over test data from the
 // last round. Once this is the final version, stop bumping it (or set
 // FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v6-live-swipe-feed';
+const BUILD_VERSION='v7-independent-portions';
 const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
@@ -341,6 +350,55 @@ const tiles=[
  ['dadtalk','🎮','Check-In','Every 5 days — adjusts your next block']
 ];
 
+// Positive, motivating, word-of-affirmation quotes shown every time the app
+// opens — weighted toward voices and messages meant for Black and African
+// American readers, alongside general motivational voices. Data only, never
+// attributed as anything other than a quote from that person.
+const AFFIRMATION_QUOTES=[
+ {text:"Excellence is the best deterrent to racism or sexism. So be excellent.",author:'Oprah Winfrey'},
+ {text:"I know where I'm going and I know the truth, and I don't have to be what you want me to be.",author:'Muhammad Ali'},
+ {text:"Champions aren't made in the gyms. Champions are made from something they have deep inside them — a desire, a dream, a vision.",author:'Muhammad Ali'},
+ {text:"If you don't believe in yourself, no one else will.",author:'Kobe Bryant'},
+ {text:"Everything negative — pressure, challenges — is all an opportunity for me to rise.",author:'Kobe Bryant'},
+ {text:"We may encounter many defeats but we must not be defeated.",author:'Maya Angelou'},
+ {text:"You may not control all the events that happen to you, but you can decide not to be reduced by them.",author:'Maya Angelou'},
+ {text:"Darkness cannot drive out darkness; only light can do that. Hate cannot drive out hate; only love can do that.",author:'Dr. Martin Luther King Jr.'},
+ {text:"The ultimate measure of a man is not where he stands in moments of comfort, but where he stands at times of challenge.",author:'Dr. Martin Luther King Jr.'},
+ {text:"If you can't fly then run, if you can't run then walk, if you can't walk then crawl, but whatever you do you have to keep moving forward.",author:'Dr. Martin Luther King Jr.'},
+ {text:"Not everything that is faced can be changed, but nothing can be changed until it is faced.",author:'James Baldwin'},
+ {text:"I am not what happened to me. I am what I choose to become.",author:'Carl Jung, often quoted in resilience teaching'},
+ {text:"Education is the passport to the future, for tomorrow belongs to those who prepare for it today.",author:'Malcolm X'},
+ {text:"You have to work twice as hard and be twice as good — so build twice the discipline, twice the wisdom, and let your work speak first.",author:'Jr Level 13'},
+ {text:"Discipline is choosing between what you want now and what you want most.",author:'Abraham Lincoln, often cited in athlete development'},
+ {text:"I've failed over and over and over again in my life, and that's why I succeed.",author:'Michael Jordan'},
+ {text:"Do not let what you cannot do interfere with what you can do.",author:'John Wooden'},
+ {text:"The soul that is within me no man can degrade.",author:'Frederick Douglass'},
+ {text:"Once you learn to read, you will be forever free.",author:'Frederick Douglass'},
+ {text:"Respect starts with how you carry yourself when nobody's watching.",author:'Jr Level 13'}
+];
+function pickDailyQuote(){ return AFFIRMATION_QUOTES[Math.floor(Math.random()*AFFIRMATION_QUOTES.length)]; }
+// Rotating weekly character-development essay prompts for the Monday
+// Writing block — thinking outside the box, responsibility, respect, and
+// wisdom, with real attention to what it means to grow up as a young Black
+// man who has to work twice as hard.
+const CHARACTER_ESSAY_PROMPTS=[
+ "Write about a time you had to work twice as hard for something. What did that teach you about discipline?",
+ "What does it mean to carry yourself with respect, even when no one is watching?",
+ "Write about a Black leader, athlete, or family member you admire. What wisdom from their life can you apply to yours?",
+ "What does responsibility look like for a young Black man today — at home, at school, and in the community?",
+ "Describe a moment you saw something differently after thinking outside the box. How did that change your next move?",
+ "What does it mean to represent your family and community well, wherever you go?",
+ "Write about a mistake you made and what it taught you about growth, humility, and doing better.",
+ "What is one piece of wisdom you want to carry with you for the rest of your life, and why?",
+ "What does it mean to be excellent on purpose, even when it would be easier to just get by?",
+ "Write about a time you had to lead — even quietly — and what that taught you about being trusted."
+];
+function weeklyEssayPrompt(){
+ const d=new Date(), start=new Date(d.getFullYear(),0,1);
+ const week=Math.floor((d-start)/(7*24*60*60*1000));
+ return CHARACTER_ESSAY_PROMPTS[((week%CHARACTER_ESSAY_PROMPTS.length)+CHARACTER_ESSAY_PROMPTS.length)%CHARACTER_ESSAY_PROMPTS.length];
+}
+
 const levelData={
  foundation:{name:'5 Star Recruit',mult:1,sets:0,extra:'Elite recruit-level work. Clean mechanics, serious work, safer volume.'},
  varsity:{name:'D-1',mult:1.25,sets:1,extra:'D-1 caliber volume. More volume, more intensity, more complete work.'},
@@ -365,7 +423,16 @@ function defaultState(){
   trainerInfo:{start:'11:30',durationMin:90,driveMinutes:35},
   academic:defaultAcademicProfile(),
   responsibilityAssignment:{},accountabilityLog:{},
-  trainingGateDate:'',nutritionGateDate:'',nutritionGoal:''
+  trainingGateDate:'',nutritionGateDate:'',nutritionGoal:'',
+  // Speed & Agility, Workout, and Football Touches each earn their OWN next
+  // day independently now (see portionAdvanceHTML/advancePortion below) —
+  // missing the gym for a week no longer holds back Speed & Agility or
+  // Football Touches from progressing.
+  portionDay:{morning:1,strength:1,touches:1},
+  // What gear is actually available today. Defaults to "have it" — tap to
+  // mark something missing in the Training entry gate and footwork drills
+  // swap to a no-equipment version automatically.
+  equipmentOwned:{ladder:true,cones:true}
  };
 }
 function migrateOld(){
@@ -417,6 +484,13 @@ state.gameInfo = state.gameInfo || {opponent:'',kickoff:'17:30',location:'',team
 state.trainerInfo = state.trainerInfo || {start:'11:30',durationMin:90,driveMinutes:35};
 state.academic = state.academic || defaultAcademicProfile();
 Object.keys(defaultAcademicProfile()).forEach(k=>{ if(!state.academic[k]) state.academic[k]=defaultAcademicProfile()[k]; });
+state.portionDay = state.portionDay || {morning:state.day,strength:state.day,touches:state.day};
+if(!state.portionDay.morning) state.portionDay.morning=state.day;
+if(!state.portionDay.strength) state.portionDay.strength=state.day;
+if(!state.portionDay.touches) state.portionDay.touches=state.day;
+state.equipmentOwned = state.equipmentOwned || {};
+if(state.equipmentOwned.ladder===undefined) state.equipmentOwned.ladder=true;
+if(state.equipmentOwned.cones===undefined) state.equipmentOwned.cones=true;
 state.responsibilityAssignment = state.responsibilityAssignment || {};
 state.accountabilityLog = state.accountabilityLog || {};
 state.posMode = state.posMode==='custom' ? 'custom' : 'hybrid';
@@ -440,6 +514,16 @@ function save(){localStorage.setItem(STORE,JSON.stringify(state));}
 function clamp(n,min,max){return Math.max(min,Math.min(max,Number(n)||min));}
 function currentKey(){return 'day'+state.day;}
 function logFor(day=state.day){const k='day'+day; if(!state.logs[k])state.logs[k]={}; return state.logs[k];}
+// Speed & Agility ('morning'), Workout ('strength'), and Football Touches
+// ('touch'/'touches') each log against THEIR OWN portionDay now instead of
+// the shared state.day, so one falling behind (no gym this week) never
+// clobbers or gets clobbered by the others. Nutrition, water, and body
+// weight logs are unaffected — those still use plain logFor()/state.day.
+function portionDayFor(type){
+ const key=(type==='touch'||type==='touches')?'touches':type;
+ return (state.portionDay && state.portionDay[key]) || state.day;
+}
+function portionLogFor(type){ return logFor(portionDayFor(type)); }
 function prevLog(){return state.logs['day'+(state.day-1)]||{}}
 function todayAdapt(){
  for(let d=state.day; d>=1; d--){
@@ -509,8 +593,14 @@ function dayTheme(d){
   'Mobility, Elastic Reset, Prep'
  ][day-1];
 }
+// Speed & Agility, Workout, and Football Touches each track their own
+// "which of the 30 program days am I on" counter now (state.portionDay),
+// so a plan-generating function sets this right before it needs weekly
+// scaling — see morningPlan/strengthPlan/touchPlan below.
+let planDayOverride=null;
 function weekBonus(){
- return [0,1,1,2,0][phaseIndexForDay(state.day)];
+ const d=planDayOverride!=null?planDayOverride:state.day;
+ return [0,1,1,2,0][phaseIndexForDay(d)];
 }
 function adjusted(n,kind='reps'){
  const level=levelData[state.level]||levelData.varsity;
@@ -568,7 +658,8 @@ function levelNotice(){
  return name+' is the collegiate challenge with the most volume, longest intent, and the highest standard. No lazy reps.';
 }
 function morningPlan(){
- const d=state.day, day=((d-1)%7)+1, mode=state.mode;
+ const d=state.portionDay.morning; planDayOverride=d;
+ const day=((d-1)%7)+1, mode=state.mode;
  const prog=['mechanics','power','game speed','peak','polish'][phaseIndexForDay(d)];
  const warm=[
    ex('warm'+day,'Elite Dynamic Warm Up',1,'8 minutes','none','A skips, high knees, ankle pops, hamstring sweeps, hip openers, leg swings, and two smooth build ups. Start like a track athlete.','warm'),
@@ -617,11 +708,43 @@ function morningPlan(){
   7:[ex('outD7Mobility','Extended Mobility Flow',1,'10 minutes','none','Mobility and recovery day.','warm'),ex('outD7Pogo','Easy Pogo Rhythm',3,'15 seconds','40 sec','Elastic reset.','pogo'),ex('outD7Skip','A Skip Rhythm',3,'20 yards','45 sec','Smooth mechanics.','youthSpeed'),ex('outD7Shuffle','Easy Shuffle Movement',3,'10 seconds','35 sec','Clean movement only.','shuffleSprint'),ex('outD7Prep','Three Smooth Build Ups',3,'30 yards','60 sec','Prime for the next week.','sprintFloat'),ex('outD7Deadbug','Dead Bug Breathing',3,'8 each side','30 sec','Control and recovery.','deadbug')]
  };
  const list=(plans[mode]||plans.outdoor)[day];
- return warm.concat(list);
+ return warm.concat(list).concat(footworkBlock());
+}
+// Dedicated footwork/lateral-quickness/quick-feet block, added to every
+// Speed & Agility session on top of the day's regular plan above — this is
+// the ladder/cones work specifically, tailored harder for Running Back
+// footwork (press-and-cut vision) when that's the athlete's offensive
+// position. Each drill checks equipmentOwned first and swaps to a real
+// no-equipment substitute automatically if that gear got tapped off in the
+// Training entry gate — same drill goal, no missing-equipment excuse.
+function equipmentAvailable(key){ return !(state.equipmentOwned && state.equipmentOwned[key]===false); }
+function footworkBlock(){
+ const rb=state.offPos==='RB';
+ const list=[];
+ if(equipmentAvailable('ladder')){
+  list.push(ex('footLadder1','Ladder — In-In-Out-Out',3,'2 trips down','40 sec','Quick feet, eyes up, stay on the balls of your feet — the bread-and-butter ladder pattern for foot speed.','pogo'));
+  list.push(ex('footLadder2','Ladder — Icky Shuffle',3,'2 trips down','40 sec','Lateral quickness through the ladder, hips stay square, hands active.','icky'));
+ } else {
+  list.push(ex('footLadderAlt1','Quick Feet In Place (No Ladder)',3,'20 seconds','35 sec','No ladder today — mark a line with chalk, tape, or a stick and do the same fast, light, choppy steps over it.','pogo'));
+  list.push(ex('footLadderAlt2','Line Shuffle (No Ladder)',3,'20 seconds','35 sec','Same lateral quickness pattern using one line on the ground instead of ladder rungs.','icky'));
+ }
+ if(equipmentAvailable('cones')){
+  list.push(ex('footCone1','5-10-5 Pro Agility Shuffle',4,'1 shuttle','60 sec','Cone to cone, low hips, hard plant, explosive redirect — the classic change-of-direction test.','shuttle'));
+  list.push(ex('footCone2','Cone W-Drill Cuts',3,'1 pattern','55 sec','Sharp cuts around each cone, stay low, quick feet in and out of every cut.','lDrill'));
+ } else {
+  list.push(ex('footConeAlt1','5-10-5 Shuffle (No Cones)',4,'1 shuttle','60 sec','No cones today — use a backpack, shoe, or any small marker on the ground. Same low, hard-plant redirect pattern.','shuttle'));
+  list.push(ex('footConeAlt2','Marker W-Cuts (No Cones)',3,'1 pattern','55 sec','Same sharp cutting pattern using shoes, rocks, or any small markers instead of cones.','lDrill'));
+ }
+ if(rb){
+  list.push(ex('footRbVision','RB Cut-And-Go With Vision',3,'4 reps','50 sec','Plant, cut, find the hole, burst — the exact footwork a running back uses to press a gap and get skinny through it before exploding vertical.','tenYard'));
+  list.push(ex('footRbLateral','RB Lateral Shuffle To Burst',3,'4 reps','50 sec','Shuffle laterally to set up a cutback, then explode forward — mirrors reading a blocker and cutting off it.','shuffleSprint'));
+ }
+ return list;
 }
 
 function strengthPlan(){
- const d=state.day, day=((d-1)%7)+1, mode=state.mode;
+ const d=state.portionDay.strength; planDayOverride=d;
+ const day=((d-1)%7)+1, mode=state.mode;
  const plans={
   home:{
    1:[ex('homeS1Broad','Broad Jump To Stick',3,'3 jumps','90 sec','Acceleration power at home. Explode and stick.','broad','done'),ex('homeS1Split','Split Squat Power Drive',3,'6 each leg','80 sec','Single leg force for first step.','split','reps'),ex('homeS1Push','Explosive Push Up',3,'6 to 8 reps','70 sec','Push fast and clean.','floorPress','reps'),ex('homeS1Rdl','Single Leg RDL',3,'6 each leg','75 sec','Posterior chain for speed.','singleRdl','weight'),ex('homeS1Carry','Backpack Or Farmer Carry',3,'25 yards','65 sec','Grip and trunk armor.','farmer','weight'),ex('homeS1Plank','Hard Style Plank',3,'30 to 40 sec','45 sec','Brace like contact is coming.','plank','seconds')],
@@ -675,7 +798,8 @@ function strengthPlan(){
 }
 
 function touchPlan(){
- const d=state.day, cycle=(d-1)%7;
+ const d=state.portionDay.touches; planDayOverride=d;
+ const cycle=(d-1)%7;
  const base=[
   touch('handFight','Hand Fighting Drill',adjusted(40),'Solo hands like DE, TE, WR release work. Fast strikes, reset, stay violent but clean.','handFight'),
   touch('oneHandTwoHands','One Hand Two Hands Catch Series',adjusted(35),'Catch one hand, catch two hands, switch sides, eyes through the catch.','oneHandTwoHands'),
@@ -1014,8 +1138,8 @@ function supplementDoses(age){
 
 // SOLO / PARTNER — asked once per module per day. Stored on that day's log
 // since it's a session-shape choice, not a global setting.
-function soloPartnerFor(type){ return logFor()['sp_'+type] || ''; }
-function setSoloPartner(type,choice){ logFor()['sp_'+type]=choice; save(); render(); }
+function soloPartnerFor(type){ return portionLogFor(type)['sp_'+type] || ''; }
+function setSoloPartner(type,choice){ portionLogFor(type)['sp_'+type]=choice; save(); render(); }
 function morningPlanForSession(){
  const list=morningPlan();
  if(soloPartnerFor('morning')==='partner'){
@@ -1047,7 +1171,7 @@ function touchPlanForSession(){
  return list;
 }
 function reqWorkoutComplete(type){
- const l=logFor();
+ const l=portionLogFor(type);
  if(!soloPartnerFor(type)) return false;
  if(type==='morning')return !!l.morningComplete;
  const plan=strengthPlanForSession();
@@ -1064,7 +1188,7 @@ function reqWorkoutComplete(type){
 }
 
 function reqTouchesComplete(){
- const l=logFor();
+ const l=portionLogFor('touches');
  if(!soloPartnerFor('touches')) return false;
  return touchPlanForSession().every(t=>String(l['touch_'+t.id]||'').trim()!=='');
 }
@@ -1113,7 +1237,7 @@ function canComplete(){
 
 let navStack=['home'];
 function showScreen(id){
- if(id==='home' && trainingGateNeeded()){ openTrainingGate(false); return; }
+ if((id==='home'||id==='morning'||id==='strength'||id==='touches') && trainingGateNeeded()){ trainingGatePendingScreen=id; openTrainingGate(false); return; }
  if(id==='nutrition' && nutritionGateNeeded()){ openNutritionGate(false); return; }
  if(id!==state.screen) navStack.push(state.screen);
  state.screen=id; save(); render();
@@ -1131,6 +1255,12 @@ function goBack(){
    ========================================================= */
 let appEntered=false;
 let onboardStack=[];
+let trainingGatePendingScreen=null;
+// Shown once per real app open (fresh page load), before the launcher —
+// a positive/motivating/affirmation quote, with an emphasis on voices and
+// words meant for Black and African American readers. Swipe or tap
+// Continue to move on to whatever screen you actually wanted.
+let quoteShown=false;
 function showGate(){
  document.getElementById('gateScreen').classList.remove('hidden');
  const app=document.querySelector('.app'); if(app)app.classList.add('hidden');
@@ -1143,8 +1273,10 @@ function hideGate(){
 }
 function boot(){
  if(!state.onboarded){ showGate(); renderOnboarding(); return; }
+ if(!quoteShown){ quoteShown=true; showGate(); renderQuoteGate(); return; }
  if(!appEntered){ showGate(); renderLauncher(); return; }
  hideGate(); render();
+ ensureGlobalTaskAlarmTimer();
 }
 function onboardGoto(step){
  onboardStack.push(state.onboardStep||0);
@@ -1231,6 +1363,28 @@ function onboardFinish(){
  save();
  boot();
 }
+let currentQuote=null;
+let quoteTouchStartX=null;
+function renderQuoteGate(){
+ currentQuote = currentQuote || pickDailyQuote();
+ const el=document.getElementById('gateInner');
+ if(!el) return;
+ el.innerHTML=`<div class="quoteGateWrap" id="quoteGateWrap" ontouchstart="quoteTouchStart(event)" ontouchend="quoteTouchEnd(event)">
+  <div class="quoteMark">"</div>
+  <p class="quoteText">${currentQuote.text}</p>
+  <p class="quoteAuthor">— ${currentQuote.author}</p>
+  <p class="tiny" style="margin-top:26px;opacity:.6">Swipe to continue →</p>
+  <button class="gateBtn" style="margin-top:16px" onclick="dismissQuoteGate()">Continue</button>
+ </div>`;
+}
+function quoteTouchStart(e){ quoteTouchStartX=e.touches[0].clientX; }
+function quoteTouchEnd(e){
+ if(quoteTouchStartX==null) return;
+ const dx=e.changedTouches[0].clientX-quoteTouchStartX;
+ quoteTouchStartX=null;
+ if(Math.abs(dx)>50) dismissQuoteGate();
+}
+function dismissQuoteGate(){ currentQuote=null; boot(); }
 function renderLauncher(){
  const el=document.getElementById('gateInner');
  if(!el)return;
@@ -1270,9 +1424,10 @@ function nutritionGateNeeded(){ return state.nutritionGateDate!==localDateKey();
 
 let trainingGateStep=0;
 let trainingGateDraft=null;
+const EQUIPMENT_ITEMS=[['ladder','🪜 Agility Ladder'],['cones','🔶 Cones']];
 function openTrainingGate(force){
- if(!force && !trainingGateNeeded()){ state.screen='home'; save(); hideGate(); render(); return; }
- trainingGateDraft={mode:state.mode,level:state.level,weight:state.profileWeight||''};
+ if(!force && !trainingGateNeeded()){ state.screen=trainingGatePendingScreen||'home'; trainingGatePendingScreen=null; save(); hideGate(); render(); return; }
+ trainingGateDraft={mode:state.mode,level:state.level,weight:state.profileWeight||'',equipment:Object.assign({ladder:true,cones:true},state.equipmentOwned||{})};
  trainingGateStep=0;
  showGate();
  renderTrainingGate();
@@ -1284,8 +1439,8 @@ function renderTrainingGate(){
 function trainingGateStepHTML(){
  const modes=[['outdoor','🏟️ Outdoor Field'],['home','🏠 Home Indoor'],['facility','🏢 Indoor Facility'],['gym','🏋️ Gym']];
  if(trainingGateStep===0){
-  return `<div class="gateDots">${[0,1,2].map(i=>`<span class="gateDot ${i===0?'on':''}"></span>`).join('')}</div>
-  <div class="gateStep">Step 1 of 3</div>
+  return `<div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===0?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 1 of 4</div>
   <h1 class="gateTitle">Where are you training today?</h1>
   <p class="gateSub">This changes the equipment and drills for every session today.</p>
   <div class="gateGrid">${modes.map(([code,label])=>`<div class="gateOption ${trainingGateDraft.mode===code?'active':''}" onclick="trainingGatePick('mode','${code}')">${label}</div>`).join('')}</div>`;
@@ -1293,15 +1448,24 @@ function trainingGateStepHTML(){
  if(trainingGateStep===1){
   const levels=[['foundation','5 Star Recruit'],['varsity','D-1'],['savage','NFL Ready']];
   return `<button class="gateBack" onclick="trainingGateBack()">← Back</button>
-  <div class="gateDots">${[0,1,2].map(i=>`<span class="gateDot ${i===1?'on':''}"></span>`).join('')}</div>
-  <div class="gateStep">Step 2 of 3</div>
+  <div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===1?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 2 of 4</div>
   <h1 class="gateTitle">What level today?</h1>
   <p class="gateSub">${levelData[trainingGateDraft.level].extra}</p>
   <div class="gateGrid">${levels.map(([code,label])=>`<div class="gateOption ${trainingGateDraft.level===code?'active':''}" onclick="trainingGatePick('level','${code}')">${label}</div>`).join('')}</div>`;
  }
+ if(trainingGateStep===2){
+  return `<button class="gateBack" onclick="trainingGateBack()">← Back</button>
+  <div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===2?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 3 of 4</div>
+  <h1 class="gateTitle">Got your equipment today?</h1>
+  <p class="gateSub">Tap anything you don't have handy today — the footwork drills swap to a no-equipment version automatically. Leave it green if you've got it.</p>
+  <div class="gateGrid">${EQUIPMENT_ITEMS.map(([code,label])=>`<div class="gateOption ${trainingGateDraft.equipment[code]?'active':''}" onclick="trainingGateToggleEquip('${code}')" style="flex-direction:column;gap:4px">${label}<small>${trainingGateDraft.equipment[code]?'Have it':'Tap if missing'}</small></div>`).join('')}</div>
+  <button class="gateBtn" onclick="trainingGateStep=3;renderTrainingGate();">Continue</button>`;
+ }
  return `<button class="gateBack" onclick="trainingGateBack()">← Back</button>
-  <div class="gateDots">${[0,1,2].map(i=>`<span class="gateDot ${i===2?'on':''}"></span>`).join('')}</div>
-  <div class="gateStep">Step 3 of 3</div>
+  <div class="gateDots">${[0,1,2,3].map(i=>`<span class="gateDot ${i===3?'on':''}"></span>`).join('')}</div>
+  <div class="gateStep">Step 4 of 4</div>
   <h1 class="gateTitle">Body weight today?</h1>
   <p class="gateSub">Feeds sets, nutrition, and supplement dosing for today's sessions.</p>
   <input id="trainingGateWeight" class="gateInput" type="number" inputmode="numeric" min="60" max="350" placeholder="Weight (lbs)" value="${trainingGateDraft.weight}" />
@@ -1310,6 +1474,10 @@ function trainingGateStepHTML(){
 function trainingGatePick(field,val){
  trainingGateDraft[field]=val;
  trainingGateStep++;
+ renderTrainingGate();
+}
+function trainingGateToggleEquip(code){
+ trainingGateDraft.equipment[code]=!trainingGateDraft.equipment[code];
  renderTrainingGate();
 }
 function trainingGateBack(){
@@ -1322,8 +1490,10 @@ function trainingGateFinish(){
  state.mode=trainingGateDraft.mode;
  state.level=trainingGateDraft.level;
  state.profileWeight=String(w);
+ state.equipmentOwned=Object.assign({},trainingGateDraft.equipment);
  state.trainingGateDate=localDateKey();
- state.screen='home';
+ state.screen=trainingGatePendingScreen||'home';
+ trainingGatePendingScreen=null;
  save();
  hideGate();
  render();
@@ -1447,7 +1617,7 @@ function renderTiles(){
 }
 
 function setLogHTML(e,type){
- const l=logFor(), sets=adjustedSets(e.sets), body=athleteWeight();
+ const l=portionLogFor(type), sets=adjustedSets(e.sets), body=athleteWeight();
  if(type==='morning'){
    return `<div class="inner"><div class="small">No logging needed during speed work. Rest, breathe, and attack the next rep. Tap Save Morning Work when the session is finished.</div></div>`;
  }
@@ -1480,7 +1650,7 @@ function renderExercise(e,i,type){
  </div>`
 }
 function renderTouch(t,i){
- const l=logFor(); const key='touch_'+t.id;
+ const l=portionLogFor('touches'); const key='touch_'+t.id;
  return `<div class="exercise">
   <div class="num">${i+1}</div>
   <div>
@@ -1493,27 +1663,34 @@ function renderTouch(t,i){
   </div>
  </div>`;
 }
-function stageInput(el){logFor()[el.dataset.log]=el.value; save(); updateCompleteButton();}
+function stageInput(el){
+ const key=el.dataset.log;
+ const l = key.indexOf('strength_')===0 ? portionLogFor('strength')
+         : key.indexOf('touch_')===0 ? portionLogFor('touches')
+         : logFor();
+ l[key]=el.value; save(); updateCompleteButton();
+}
 // Gives honest, specific feedback instead of a blanket "saved" message —
 // the old version always said "saved" even when some exercises/drills
 // still had no reps logged, which read as "done" when it wasn't.
 function saveSection(name){
  if(name==='Morning work'){
-  logFor().morningComplete=true;
+  const day=state.portionDay.morning;
+  portionLogFor('morning').morningComplete=true;
   save(); render();
-  alert('Speed & Agility saved and complete for Day '+state.day+'.');
+  alert('Speed & Agility saved and complete for Day '+day+'. This session moves forward on its own — tap "Start Day '+Math.min(day+1,DAYS_TOTAL)+'" below whenever you are ready, no need to wait on Workout or Touches.');
   return;
  }
  if(name==='Strength work'){
   save(); render();
-  if(reqWorkoutComplete('strength')) alert('Workout saved and complete for Day '+state.day+'.');
-  else alert('Workout saved so far — but it is not complete yet. Every exercise still needs reps logged for every set before the day can advance. Scroll back through the drills above to find what is missing.');
+  if(reqWorkoutComplete('strength')) alert('Workout saved and complete for Day '+state.portionDay.strength+'. This session moves forward on its own — tap "Start Day '+Math.min(state.portionDay.strength+1,DAYS_TOTAL)+'" below whenever you are ready.');
+  else alert('Workout saved so far — but it is not complete yet. Every exercise still needs reps logged for every set before this session can advance. Scroll back through the drills above to find what is missing.');
   return;
  }
  if(name==='Football touches'){
   save(); render();
-  if(reqTouchesComplete()) alert('Football Touches saved and complete for Day '+state.day+'.');
-  else alert('Touches saved so far — but it is not complete yet. Every drill still needs a number logged before the day can advance. Scroll back through the drills above to find what is missing.');
+  if(reqTouchesComplete()) alert('Football Touches saved and complete for Day '+state.portionDay.touches+'. This session moves forward on its own — tap "Start Day '+Math.min(state.portionDay.touches+1,DAYS_TOTAL)+'" below whenever you are ready.');
+  else alert('Touches saved so far — but it is not complete yet. Every drill still needs a number logged before this session can advance. Scroll back through the drills above to find what is missing.');
   return;
  }
  save(); alert(name+' saved for Day '+state.day); render();
@@ -1582,6 +1759,12 @@ function renderHome(){
   <div><div class="small">Today's Setup</div><b>${modeLabel()} • ${levelData[state.level].name} • ${state.profileWeight||'?'} lb</b></div>
   <button class="chip" onclick="openTrainingGate(true)">Change</button>
  </div></div>
+ <div class="inner"><div class="small">Independent Progress</div>
+  <div class="row" style="justify-content:space-between;margin-top:6px"><span class="tiny">⚡ Speed & Agility</span><b>Day ${state.portionDay.morning}</b></div>
+  <div class="row" style="justify-content:space-between;margin-top:4px"><span class="tiny">🏋️ Workout</span><b>Day ${state.portionDay.strength}</b></div>
+  <div class="row" style="justify-content:space-between;margin-top:4px"><span class="tiny">🏈 Football Touches</span><b>Day ${state.portionDay.touches}</b></div>
+  <p class="tiny" style="margin-top:6px">Each one advances the moment IT is finished — missing the gym for a while never holds back the other two.</p>
+ </div>
  <div class="coachBubble"><strong>Today's Dad Coach Note</strong><p>${a.note}</p></div>
  ${dayProgressFooterHTML()}
  <div class="inner"><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap Check-In below.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
@@ -1612,11 +1795,13 @@ function renderMorning(){
  if(!sp){ document.getElementById('screen_morning').innerHTML=soloPartnerPromptHTML('morning','Speed & Agility'); return; }
  const list=morningPlanForSession();
  if(guided.morning.idx>=list.length)guided.morning.idx=0;
- const header=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(state.day)}</div><h2>Speed, Agility & Plyos</h2><div class="small">${dayTheme(state.day)}</div></div><span class="badge goldTxt">${modeLabel()}</span></div>
+ const md=state.portionDay.morning;
+ const header=`<div class="row" style="justify-content:space-between"><div><div class="small">${phaseForDay(md)}</div><h2>Speed, Agility & Plyos</h2><div class="small">${dayTheme(md)}</div></div><span class="badge goldTxt">${modeLabel()}</span></div>
  ${soloPartnerBadgeHTML('morning')}
- <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">The coach cycle changes every day and progresses every week. ${modeNotice()} ${levelNotice()} No time, rep, or completed boxes during speed work — train straight through, rest like an athlete, then tap Save once at the end.</p></div></details>
+ ${equipmentNoteHTML()}
+ <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">The coach cycle changes every day and progresses every week. ${modeNotice()} ${levelNotice()} This session now includes a dedicated footwork, lateral quickness, and quick-feet block every day${state.offPos==='RB'?' with extra Running Back cut-and-vision work':''}. No time, rep, or completed boxes during speed work — train straight through, rest like an athlete, then tap Save once at the end.</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
- document.getElementById('screen_morning').innerHTML=header+renderGuidedCard('morning',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Morning work')">Save Morning Work</button>`+dayProgressFooterHTML();
+ document.getElementById('screen_morning').innerHTML=header+renderGuidedCard('morning',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Morning work')">Save Morning Work</button>`+(reqWorkoutComplete('morning')?portionAdvanceHTML('morning',md,'Speed, Agility & Plyos'):'')+dayProgressFooterHTML();
  flushMediaBoxes();
 }
 function renderStrength(){
@@ -1624,11 +1809,11 @@ function renderStrength(){
  if(!sp){ document.getElementById('screen_strength').innerHTML=soloPartnerPromptHTML('strength','Workout'); return; }
  const list=strengthPlanForSession();
  if(guided.strength.idx>=list.length)guided.strength.idx=0;
- const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout • ${modeLabel()}</div><h2>Explosive Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
+ const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Second workout • ${modeLabel()} • Day ${state.portionDay.strength}</div><h2>Explosive Strength and Core</h2></div><span class="badge goldTxt">${levelData[state.level].name}</span></div>
  ${soloPartnerBadgeHTML('strength')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">Changes by day and environment to build first step force, elastic power, lateral power, footwork stiffness, game strength, testing quality, and recovery. ${levelNotice()} Log reps and weight for each set — bodyweight work uses the athlete's own body weight.</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
- document.getElementById('screen_strength').innerHTML=header+renderGuidedCard('strength',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Strength work')">Save Strength Work</button>`+dayProgressFooterHTML();
+ document.getElementById('screen_strength').innerHTML=header+renderGuidedCard('strength',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Strength work')">Save Strength Work</button>`+(reqWorkoutComplete('strength')?portionAdvanceHTML('strength',state.portionDay.strength,'Workout'):'')+dayProgressFooterHTML();
  flushMediaBoxes();
 }
 function renderTouches(){
@@ -1639,11 +1824,11 @@ function renderTouches(){
  const custom=state.posMode==='custom' && (state.offPos||state.defPos);
  const badgeTxt=custom?[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' / '):'WR RB TE EDGE CB';
  const whyTxt=custom?`Tailored to ${[state.offPos,state.defPos].filter(Boolean).map(posLabel).join(' and ')}, blended with the core catching fundamentals every athlete needs.`:'Blends receiver hands, running back security, tight end high catches, cornerback ball skills, and edge-rusher hand reaction.';
- const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Football skill</div><h2>Football Touches</h2></div><span class="badge goldTxt">${badgeTxt}</span></div>
+ const header=`<div class="row" style="justify-content:space-between"><div><div class="small">Football skill • Day ${state.portionDay.touches}</div><h2>Football Touches</h2></div><span class="badge goldTxt">${badgeTxt}</span></div>
  ${soloPartnerBadgeHTML('touches')}
  <details class="clean"><summary>Why this workout</summary><div class="detailBody"><p class="small">${whyTxt}</p></div></details>
  <details class="clean"><summary>See full plan (${list.length} drills)</summary><div class="detailBody">${list.map(outlineRow).join('')}</div></details>`;
- document.getElementById('screen_touches').innerHTML=header+renderGuidedCard('touches',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Football touches')">Save Football Touches</button>`+dayProgressFooterHTML();
+ document.getElementById('screen_touches').innerHTML=header+renderGuidedCard('touches',list)+`<button class="green full" style="margin-top:10px" onclick="saveSection('Football touches')">Save Football Touches</button>`+(reqTouchesComplete()?portionAdvanceHTML('touches',state.portionDay.touches,'Football Touches'):'')+dayProgressFooterHTML();
  flushMediaBoxes();
 }
 function remainingTodayHTML(rem){
@@ -2017,7 +2202,7 @@ function renderSettings(){
  <div class="checkItem"><span>Day 6</span><span class="badge goldTxt">Test, Contrast, Recovery Power</span></div>
  <div class="checkItem"><span>Day 7</span><span class="badge goldTxt">Mobility, Elastic Reset, Prep</span></div>
  </div><p class="small">Every new week keeps this structure but progresses volume, intensity, and the coach expectation.</p></div>
- <div class="inner"><h3>Progress</h3><p class="small">Current day is Day ${state.day}. Max unlocked is Day ${state.maxUnlocked}. Finishing Speed & Agility, Workout, and Touches earns the next day. Check-In comes up every 5 completed days — currently ${checkinCompletedCount()} of ${nextCheckinTarget()}.</p>
+ <div class="inner"><h3>Progress</h3><p class="small">Speed & Agility is on Day ${state.portionDay.morning}, Workout is on Day ${state.portionDay.strength}, and Football Touches is on Day ${state.portionDay.touches} — each one advances on its own the moment IT is finished (tap "Start Day N" at the bottom of that module), so missing the gym for a while never holds back Speed & Agility or Touches. Calendar day ${state.day} of ${DAYS_TOTAL} still drives nutrition logging and Check-In, which comes up every 5 completed days — currently ${checkinCompletedCount()} of ${nextCheckinTarget()}.</p>
  <button class="orange full" onclick="skipToday()">Skip Today (injury or unavailable)</button></div>
  <details class="clean"><summary>Progress — Data Lab</summary><div class="detailBody">${dataLabHTML()}</div></details>
  <details class="clean"><summary>JR Daily Schedule (Admin)</summary><div class="detailBody">${adminScheduleHTML()}</div></details>`;
@@ -2103,6 +2288,30 @@ function resolvedDayType(d=new Date()){
 function task(id,name,category,start,duration,opts={}){
  return Object.assign({id,name,category,start,duration,priority:2,fixed:false,completionType:'checklist',instructions:[]},opts);
 }
+// Every academic subject block happens at Texas Sports Academy, not a
+// generic worksheet at home — the name says so up front, and the detail
+// view (academicTaskHTML) says it again with the starting-grade and
+// ending-percent fields.
+function tsa(name){ return name+' — Texas Sports Academy'; }
+// A quick, dedicated dishes task dropped right after every meal so the
+// kitchen never piles up — separate from the meal task's own instructions.
+function washDishesTask(id,start){
+ return task(id,'Wash Dishes','Responsibility',start,10,{priority:2,instructions:['Wash your plate, cup, bowl, and any pots or pans used','Wipe down the counter and stove if used','Leave the kitchen clean for the next meal']});
+}
+// The Monday Writing block becomes a full weekly essay instead of the
+// regular writing-phase work — themed around responsibility, respect,
+// wisdom, thinking outside the box, and what it means to work twice as
+// hard and still carry yourself well as a young Black man.
+function writingTaskDef(start,duration){
+ if(new Date().getDay()===1){
+  return task('writing',tsa('Writing — Weekly Essay'),'Academic',start,duration,{priority:1,completionType:'academic',sub:'writing',instructions:[
+   'This week\'s essay prompt: '+weeklyEssayPrompt(),
+   'Full essay — clear intro, at least 3 body paragraphs with real examples, and a strong closing.',
+   'This one is about more than grammar. Think about responsibility, respect, wisdom, thinking outside the box, and what it means to carry yourself well and work twice as hard.'
+  ]});
+ }
+ return task('writing',tsa('Writing Development'),'Academic',start,duration,{priority:1,completionType:'academic',sub:'writing',instructions:['Work the current writing phase: sentences, then paragraphs, then essays, then research and persuasive writing.','Advance based on demonstrated ability, not age.']});
+}
 
 // NOTE ON TIMES: every start time below is stored as a true 24-hour
 // "H:MM" string (so afternoon and evening tasks are >= "12:00", e.g.
@@ -2110,34 +2319,36 @@ function task(id,name,category,start,duration,opts={}){
 // arithmetic and the fixed-anchor comparisons are unambiguous. clock12()
 // converts back to a normal 12-hour AM/PM display for the UI.
 function normalHomeDayTasks(dow){
- const movement = dow===1 ? 'Easy mile or aerobic conditioning.' : 'Mobility and core work.';
  return [
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
-  task('movement','Morning Movement','Training','6:15',30,{priority:1,completionType:'timer',instructions:[movement,'This is not punishment — keep it light and controlled.']}),
-  task('showerAM','Shower And Dress','Hygiene','6:45',30,{instructions:SHOWER_CHECKLIST}),
-  task('breakfast','Breakfast','Meal','7:15',30,{instructions:BREAKFAST_CHECKLIST}),
-  task('schoolPrep','School Preparation','Hygiene','7:45',15,{instructions:SCHOOL_PREP_CHECKLIST}),
-  task('fastMath','Fast Math','Academic','8:00',25,{completionType:'academic',sub:'fastMath',instructions:['Addition, subtraction, and multiplication facts — division when ready.','This builds automaticity, not new instruction.']}),
-  task('math','Mathematics','Academic','8:25',60,{priority:1,completionType:'academic',sub:'math',instructions:['Work the current step on the skill ladder (place value through pre-algebra).','If mastery is shown, move forward. If confused, move back to find the missing foundation.','Target: 85 to 90 percent consistent accuracy before advancing.']}),
-  task('break1','Break','Recovery','9:25',10,{priority:3,instructions:['Bathroom, water, stretch, or a quick snack — no electronics.']}),
-  task('writing','Writing Development','Academic','9:35',60,{priority:1,completionType:'academic',sub:'writing',instructions:['Work the current writing phase: sentences, then paragraphs, then essays, then research and persuasive writing.','Advance based on demonstrated ability, not age.']}),
-  task('break2','Break','Recovery','10:35',10,{priority:3,instructions:['Short reset.']}),
-  task('science','Science','Academic','10:45',50,{completionType:'academic',sub:'science',instructions:['Rotate through life science, earth and space, matter, energy, forces, chemistry and physics foundations, anatomy, and the scientific method.','Every lesson should answer: What? How? Why? What evidence supports it? How does it apply to real life?']}),
-  task('lunch','Lunch','Meal','11:35',45,{instructions:['Prepare or cook','Eat','Clean up afterward']}),
-  task('reading','Advanced Reading And Comprehension','Academic','12:20',40,{completionType:'academic',sub:'reading',instructions:['Use challenging material — do not lower it because other subjects are behind.','After reading, put the material away, then answer: Main Idea, three Supporting Details, Cause and Effect, Inference, Evidence, Summary, Application.']}),
-  task('break3','Break','Recovery','13:00',10,{priority:3,instructions:['Short reset.']}),
-  task('language','Language','Academic','13:10',40,{completionType:'academic',sub:'language',instructions:['Vocabulary, grammar, editing, syntax, word choice, figurative language, argument and evidence.']}),
-  task('history','History And Social Studies','Academic','13:50',40,{completionType:'academic',sub:'history',instructions:['Rotate American history, world history, Black history, geography, government, civics, economics, and financial literacy.','Cover: What happened? Why? What happened because of it? Why does it matter today?']}),
-  task('snackPrep','Snack And Training Preparation','Training','14:30',20,{instructions:['Eat','Hydrate','Bathroom','Change','Shoes','Equipment','Offline training phone']}),
-  task('training','Athletic Development','Training','14:50',100,{priority:1,completionType:'training',instructions:['Opens the full Speed and Agility, Workout, and Football Touches training app.']}),
-  task('showerPM','Shower And Recovery','Hygiene','16:30',30,{instructions:['Shower','Stretch or foam roll','Change into comfortable clothes']}),
-  task('responsibility','Responsibility Block','Responsibility','17:00',60,{priority:1,completionType:'responsibility'}),
-  task('dinner','Dinner','Meal','18:00',45,{instructions:['Family dinner','Clean up afterward']}),
-  task('correction','Academic Correction','Correction','18:45',40,{priority:1,completionType:'correction'}),
-  task('accountability','Accountability And Life Skills','Accountability','19:25',25,{completionType:'accountability'}),
-  task('indepReading','Independent Reading','Academic','19:50',30,{priority:3,completionType:'timer',instructions:['Book only — no screens.']}),
-  task('tomorrowPrep','Tomorrow Preparation','Hygiene','20:20',20,{instructions:TOMORROW_PREP_CHECKLIST}),
-  task('nightRoutine','Night Routine','Hygiene','20:40',20,{instructions:NIGHT_CHECKLIST}),
+  task('movement','Speed, Agility & Footwork Training','Training','6:15',45,{priority:1,completionType:'training',trainingFocus:'morning',instructions:['Every weekday morning (not Saturday or Sunday) starts with Speed & Agility — footwork, lateral quickness, and quick feet, with the ladder and cones.','Opens the Speed, Agility & Plyos module.']}),
+  task('showerAM','Shower And Dress','Hygiene','7:00',30,{instructions:SHOWER_CHECKLIST}),
+  task('breakfast','Breakfast','Meal','7:30',30,{instructions:BREAKFAST_CHECKLIST}),
+  washDishesTask('washDishesBreakfast','8:00'),
+  task('schoolPrep','School Preparation','Hygiene','8:10',15,{instructions:SCHOOL_PREP_CHECKLIST}),
+  task('fastMath','Fast Math','Academic','8:25',25,{completionType:'academic',sub:'fastMath',instructions:['Addition, subtraction, and multiplication facts — division when ready.','This builds automaticity, not new instruction.']}),
+  task('math','Mathematics','Academic','8:50',60,{priority:1,completionType:'academic',sub:'math',instructions:['Work the current step on the skill ladder (place value through pre-algebra).','If mastery is shown, move forward. If confused, move back to find the missing foundation.','Target: 85 to 90 percent consistent accuracy before advancing.']}),
+  task('break1','Break','Recovery','9:50',10,{priority:3,instructions:['Bathroom, water, stretch, or a quick snack — no electronics.']}),
+  writingTaskDef('10:00',60),
+  task('break2','Break','Recovery','11:00',10,{priority:3,instructions:['Short reset.']}),
+  task('science','Science','Academic','11:10',50,{completionType:'academic',sub:'science',instructions:['Rotate through life science, earth and space, matter, energy, forces, chemistry and physics foundations, anatomy, and the scientific method.','Every lesson should answer: What? How? Why? What evidence supports it? How does it apply to real life?']}),
+  task('lunch','Lunch','Meal','12:00',45,{instructions:['Prepare or cook','Eat']}),
+  washDishesTask('washDishesLunch','12:45'),
+  task('reading','Advanced Reading And Comprehension','Academic','12:55',40,{completionType:'academic',sub:'reading',instructions:['Use challenging material — do not lower it because other subjects are behind.','After reading, put the material away, then answer: Main Idea, three Supporting Details, Cause and Effect, Inference, Evidence, Summary, Application.']}),
+  task('break3','Break','Recovery','13:35',10,{priority:3,instructions:['Short reset.']}),
+  task('language','Language','Academic','13:45',40,{completionType:'academic',sub:'language',instructions:['Vocabulary, grammar, editing, syntax, word choice, figurative language, argument and evidence.']}),
+  task('history','History And Social Studies','Academic','14:25',40,{completionType:'academic',sub:'history',instructions:['Rotate American history, world history, Black history, geography, government, civics, economics, and financial literacy.','Cover: What happened? Why? What happened because of it? Why does it matter today?']}),
+  task('snackPrep','Snack And Training Preparation','Training','15:05',20,{instructions:['Eat','Hydrate','Bathroom','Change','Shoes','Equipment','Offline training phone']}),
+  task('training','Workout & Football Touches','Training','15:25',80,{priority:1,completionType:'training',trainingFocus:'afternoon',instructions:['Speed & Agility already happened this morning — this block is Workout (strength) and Football Touches.']}),
+  task('showerPM','Shower And Recovery','Hygiene','16:45',30,{instructions:['Shower','Stretch or foam roll','Change into comfortable clothes']}),
+  task('responsibility','Responsibility Block','Responsibility','17:15',60,{priority:1,completionType:'responsibility'}),
+  task('dinner','Dinner','Meal','18:15',40,{instructions:['Family dinner']}),
+  washDishesTask('washDishesDinner','18:55'),
+  task('correction','Academic Correction','Correction','19:05',40,{priority:1,completionType:'correction'}),
+  task('accountability','Accountability And Life Skills','Accountability','19:45',25,{completionType:'accountability'}),
+  task('indepReading','Independent Reading','Academic','20:10',20,{priority:3,completionType:'timer',instructions:['Book only — no screens.']}),
+  task('tomorrowPrep','Tomorrow Preparation','Hygiene','20:30',15,{instructions:TOMORROW_PREP_CHECKLIST}),
+  task('nightRoutine','Night Routine','Hygiene','20:45',15,{instructions:NIGHT_CHECKLIST}),
   task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Lights out. Protected — this does not move.']})
  ];
 }
@@ -2157,23 +2368,26 @@ function trainerDayTasks(){
   task('movement','Mobility And Recovery','Training','6:15',20,{completionType:'timer',instructions:['Light mobility and recovery work only — save legs for the trainer.']}),
   task('showerAM','Shower And Dress','Hygiene','6:35',30,{instructions:SHOWER_CHECKLIST}),
   task('breakfast','Breakfast','Meal','7:05',30,{instructions:BREAKFAST_CHECKLIST}),
-  task('fastMath','Fast Math','Academic','7:35',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
-  task('math','Math','Academic','8:00',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
-  task('break1','Break','Recovery','9:00',10,{priority:3,instructions:['Short reset.']}),
-  task('writing','Writing','Academic','9:10',50,{priority:1,completionType:'academic',sub:'writing',instructions:['Continue the current writing phase.']}),
-  task('science','Science','Academic','10:00',25,{completionType:'academic',sub:'science',instructions:['Short science block — finishes after training if needed.']}),
-  task('trainPrep','Training Preparation And Food','Training','10:25',prepMin,{priority:1,instructions:['Pregame-style snack','Hydrate','Change into training gear','Load equipment','Bathroom']}),
+  washDishesTask('washDishesBreakfast','7:35'),
+  task('fastMath',tsa('Fast Math'),'Academic','7:45',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
+  task('math',tsa('Math'),'Academic','8:10',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
+  task('break1','Break','Recovery','9:10',10,{priority:3,instructions:['Short reset.']}),
+  writingTaskDef('9:20',50),
+  task('science',tsa('Science'),'Academic','10:10',25,{completionType:'academic',sub:'science',instructions:['Short science block — finishes after training if needed.']}),
+  task('trainPrep','Training Preparation And Food','Training','10:35',prepMin,{priority:1,instructions:['Pregame-style snack','Hydrate','Change into training gear','Load equipment','Bathroom']}),
   task('leaveHome','Leave House For Trainer','Travel',leaveClock,0,{priority:1,fixed:true,instructions:['Drive is about '+ti.driveMinutes+' minutes.','Do not be late — this does not move.']}),
   task('trainer','Trainer Session','Training',ti.start,ti.durationMin,{priority:1,fixed:true,completionType:'training',instructions:['Follow the assigned trainer session.']}),
   task('travelHome','Travel Home','Travel',endClock,ti.driveMinutes,{priority:1,fixed:true,instructions:['Ride home, hydrate, cool down.']}),
   task('lunchRecover','Lunch, Shower, And Recovery','Meal',homeArriveClock,50,{instructions:['Eat','Shower','Light recovery or stretch']}),
-  task('reading','Reading And Comprehension','Academic','14:25',40,{completionType:'academic',sub:'reading',instructions:['Challenging material, remove it, then answer the comprehension questions.']}),
-  task('langHist','Language Or History','Academic','15:05',40,{completionType:'academic',sub:'language',instructions:['Alternate Language and History emphasis based on current academic needs.']}),
-  task('break2','Break','Recovery','15:45',10,{priority:3,instructions:['Short reset.']}),
-  task('correction','Academic Correction Or Science Completion','Correction','15:55',45,{priority:1,completionType:'correction'}),
-  task('responsibility','Responsibility Block','Responsibility','16:40',60,{priority:1,completionType:'responsibility'}),
-  task('dinner','Dinner','Meal','17:40',45,{instructions:['Family dinner','Clean up afterward']}),
-  task('accountability','Accountability And Life Skills','Accountability','18:25',30,{completionType:'accountability'}),
+  washDishesTask('washDishesLunch',minToHHMM(homeArriveMin+50)),
+  task('reading',tsa('Reading And Comprehension'),'Academic','14:35',40,{completionType:'academic',sub:'reading',instructions:['Challenging material, remove it, then answer the comprehension questions.']}),
+  task('langHist',tsa('Language Or History'),'Academic','15:15',40,{completionType:'academic',sub:'language',instructions:['Alternate Language and History emphasis based on current academic needs.']}),
+  task('break2','Break','Recovery','15:55',10,{priority:3,instructions:['Short reset.']}),
+  task('correction','Academic Correction Or Science Completion','Correction','16:05',45,{priority:1,completionType:'correction'}),
+  task('responsibility','Responsibility Block','Responsibility','16:50',60,{priority:1,completionType:'responsibility'}),
+  task('dinner','Dinner','Meal','17:50',40,{instructions:['Family dinner']}),
+  washDishesTask('washDishesDinner','18:30'),
+  task('accountability','Accountability And Life Skills','Accountability','18:40',30,{completionType:'accountability'}),
   task('indepReading','Independent Reading','Academic','18:55',30,{priority:3,completionType:'timer',instructions:['Book only.']}),
   task('overflow','Free Family, Recovery, Or Overflow','Recovery','19:25',45,{priority:3,instructions:['This period can absorb reasonable delays from earlier in the day.']}),
   task('tomorrowPrep','Tomorrow Preparation And Room Reset','Hygiene','20:10',30,{instructions:TOMORROW_PREP_CHECKLIST}),
@@ -2195,16 +2409,18 @@ function gameDayTasks(){
   task('movement','Mobility Only','Training','6:15',20,{completionType:'timer',instructions:['No hard conditioning today — mobility only, protect the legs for tonight.']}),
   task('showerAM','Shower And Dress','Hygiene','6:35',30,{instructions:SHOWER_CHECKLIST}),
   task('breakfast','Breakfast','Meal','7:05',30,{instructions:BREAKFAST_CHECKLIST}),
-  task('fastMath','Fast Math','Academic','7:35',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
-  task('math','Math','Academic','8:00',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
-  task('break1','Break','Recovery','9:00',10,{priority:3,instructions:['Short reset.']}),
-  task('writing','Writing','Academic','9:10',60,{priority:1,completionType:'academic',sub:'writing',instructions:['Continue the current writing phase.']}),
-  task('break2','Break','Recovery','10:10',10,{priority:3,instructions:['Short reset.']}),
-  task('science','Science','Academic','10:20',50,{completionType:'academic',sub:'science',instructions:['Continue the current science unit.']}),
-  task('language','Language','Academic','11:10',40,{completionType:'academic',sub:'language',instructions:['Vocabulary, grammar, editing, syntax.']}),
-  task('lunch','Lunch','Meal','11:50',45,{instructions:['Eat','Clean up']}),
-  task('reading','Reading And Comprehension','Academic','12:35',40,{completionType:'academic',sub:'reading',instructions:['Challenging material with the full comprehension question set.']}),
-  task('history','History','Academic','13:15',40,{completionType:'academic',sub:'history',instructions:['Continue the current history and social studies unit.']}),
+  washDishesTask('washDishesBreakfast','7:35'),
+  task('fastMath',tsa('Fast Math'),'Academic','7:45',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
+  task('math',tsa('Math'),'Academic','8:10',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
+  task('break1','Break','Recovery','9:10',10,{priority:3,instructions:['Short reset.']}),
+  writingTaskDef('9:20',60),
+  task('break2','Break','Recovery','10:20',10,{priority:3,instructions:['Short reset.']}),
+  task('science',tsa('Science'),'Academic','10:30',50,{completionType:'academic',sub:'science',instructions:['Continue the current science unit.']}),
+  task('language',tsa('Language'),'Academic','11:20',40,{completionType:'academic',sub:'language',instructions:['Vocabulary, grammar, editing, syntax.']}),
+  task('lunch','Lunch','Meal','12:00',40,{instructions:['Eat']}),
+  washDishesTask('washDishesLunch','12:40'),
+  task('reading',tsa('Reading And Comprehension'),'Academic','12:50',40,{completionType:'academic',sub:'reading',instructions:['Challenging material with the full comprehension question set.']}),
+  task('history',tsa('History'),'Academic','13:30',40,{completionType:'academic',sub:'history',instructions:['Continue the current history and social studies unit.']}),
   task('quietRecovery','Quiet Recovery','Recovery','13:55',35,{priority:1,instructions:['Rest, hydrate, mental prep — no heavy activity.']}),
   task('pregameFood','Pregame Meal','Meal','14:30',30,{priority:1,instructions:['Eat a real pregame meal.','Hydrate.']}),
   task('gamePrep','Game Preparation','Training','15:00',prepMin,{priority:1,instructions:['Equipment check: helmet, guardian cap if required, shoulder pads, game pants, jersey, cleats, socks, mouthpiece, gloves, water, braces or supports, any team-required gear.','Bathroom','Change into uniform','Hydrate']}),
@@ -2217,25 +2433,28 @@ function gameDayTasks(){
 function homeDevelopmentDayTasks(){
  return [
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
-  task('movement','Mobility And Core','Training','6:15',30,{completionType:'timer',instructions:['Mobility and core work.']}),
-  task('showerAM','Shower And Dress','Hygiene','6:45',30,{instructions:SHOWER_CHECKLIST}),
-  task('breakfast','Breakfast','Meal','7:15',30,{instructions:BREAKFAST_CHECKLIST}),
-  task('schoolPrep','School Preparation','Hygiene','7:45',15,{instructions:SCHOOL_PREP_CHECKLIST}),
-  task('fastMath','Fast Math','Academic','8:00',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
-  task('math','Mathematics','Academic','8:25',75,{priority:1,completionType:'academic',sub:'math',instructions:['Extra time this week since the trainer is suspended — use it on the skill ladder.']}),
-  task('break1','Break','Recovery','9:40',10,{priority:3,instructions:['Short reset.']}),
-  task('writing','Writing Development','Academic','9:50',75,{priority:1,completionType:'academic',sub:'writing',instructions:['Extra time this week — continue the current writing phase.']}),
-  task('break2','Break','Recovery','11:05',10,{priority:3,instructions:['Short reset.']}),
-  task('science','Science','Academic','11:15',50,{completionType:'academic',sub:'science',instructions:['Continue the current unit.']}),
-  task('lunch','Lunch','Meal','12:05',45,{instructions:['Prepare, eat, clean up.']}),
-  task('reading','Reading And Comprehension','Academic','12:50',40,{completionType:'academic',sub:'reading',instructions:['Challenging material with the full comprehension set.']}),
-  task('language','Language','Academic','13:30',40,{completionType:'academic',sub:'language',instructions:['Continue the current focus.']}),
-  task('training','Independent Football Development','Training','14:10',100,{priority:1,completionType:'training',instructions:['No trainer this week — use the full training app for Speed and Agility, Workout, and Touches.']}),
-  task('showerPM','Shower And Recovery','Hygiene','15:50',30,{instructions:['Shower','Stretch']}),
-  task('responsibility','Responsibility Project','Responsibility','16:20',60,{priority:1,completionType:'responsibility'}),
-  task('dinner','Dinner','Meal','17:20',45,{instructions:['Family dinner, clean up.']}),
-  task('correction','Academic Correction','Correction','18:05',40,{priority:1,completionType:'correction'}),
-  task('accountability','Accountability And Life Skills','Accountability','18:45',25,{completionType:'accountability'}),
+  task('movement','Speed, Agility & Footwork Training','Training','6:15',45,{priority:1,completionType:'training',trainingFocus:'morning',instructions:['No trainer this week — Speed & Agility still happens every weekday morning. Footwork, lateral quickness, and quick feet, with the ladder and cones.']}),
+  task('showerAM','Shower And Dress','Hygiene','7:00',30,{instructions:SHOWER_CHECKLIST}),
+  task('breakfast','Breakfast','Meal','7:30',30,{instructions:BREAKFAST_CHECKLIST}),
+  washDishesTask('washDishesBreakfast','8:00'),
+  task('schoolPrep','School Preparation','Hygiene','8:10',15,{instructions:SCHOOL_PREP_CHECKLIST}),
+  task('fastMath',tsa('Fast Math'),'Academic','8:25',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
+  task('math',tsa('Mathematics'),'Academic','8:50',75,{priority:1,completionType:'academic',sub:'math',instructions:['Extra time this week since the trainer is suspended — use it on the skill ladder.']}),
+  task('break1','Break','Recovery','10:05',10,{priority:3,instructions:['Short reset.']}),
+  writingTaskDef('10:15',75),
+  task('break2','Break','Recovery','11:30',10,{priority:3,instructions:['Short reset.']}),
+  task('science',tsa('Science'),'Academic','11:40',50,{completionType:'academic',sub:'science',instructions:['Continue the current unit.']}),
+  task('lunch','Lunch','Meal','12:30',40,{instructions:['Prepare, eat.']}),
+  washDishesTask('washDishesLunch','13:10'),
+  task('reading',tsa('Reading And Comprehension'),'Academic','13:20',40,{completionType:'academic',sub:'reading',instructions:['Challenging material with the full comprehension set.']}),
+  task('language',tsa('Language'),'Academic','14:00',40,{completionType:'academic',sub:'language',instructions:['Continue the current focus.']}),
+  task('training','Workout & Football Touches','Training','14:40',80,{priority:1,completionType:'training',trainingFocus:'afternoon',instructions:['No trainer this week — Speed & Agility already happened this morning. This block is Workout (strength) and Football Touches.']}),
+  task('showerPM','Shower And Recovery','Hygiene','16:00',30,{instructions:['Shower','Stretch']}),
+  task('responsibility','Responsibility Project','Responsibility','16:30',60,{priority:1,completionType:'responsibility'}),
+  task('dinner','Dinner','Meal','17:30',40,{instructions:['Family dinner']}),
+  washDishesTask('washDishesDinner','18:10'),
+  task('correction','Academic Correction','Correction','18:20',40,{priority:1,completionType:'correction'}),
+  task('accountability','Accountability And Life Skills','Accountability','19:00',25,{completionType:'accountability'}),
   task('indepReading','Independent Reading','Academic','19:10',30,{priority:3,completionType:'timer',instructions:['Book only.']}),
   task('tomorrowPrep','Tomorrow Preparation','Hygiene','19:40',20,{instructions:TOMORROW_PREP_CHECKLIST}),
   task('nightRoutine','Night Routine','Hygiene','20:00',20,{instructions:NIGHT_CHECKLIST}),
@@ -2249,15 +2468,18 @@ function saturdayTasks(){
   task('wake','Wake Up','Hygiene','7:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   task('hygieneRoom','Hygiene And Room','Hygiene','7:15',15,{instructions:['Get ready for the day','Quick room tidy']}),
   task('breakfast','Breakfast','Meal','7:30',30,{instructions:BREAKFAST_CHECKLIST}),
-  task('deepClean','Deep Clean And Laundry','Responsibility','8:00',60,{priority:1,completionType:'responsibility'}),
-  task('weakest','Weakest Academic Subject','Academic','9:00',60,{priority:1,completionType:'correction',instructions:['Auto-targets whichever subject is weakest over the last 7 days of logs.']}),
-  task('break1','Break','Recovery','10:00',15,{priority:3,instructions:['Reset.']}),
-  task('secondWeakest','Second Weakest Academic Subject','Academic','10:15',45,{priority:1,completionType:'correction',instructions:['Auto-targets the next weakest subject.']}),
-  task('reading','Reading','Academic','11:00',45,{completionType:'academic',sub:'reading',instructions:['Keep it challenging — reading is a strength.']}),
-  task('lunch','Lunch','Meal','11:45',45,{instructions:['Prepare, eat, clean up.']}),
-  task('lifeSkills','Life Skills','LifeSkills','12:30',45,{priority:1,instructions:['Cooking, laundry, budgeting, money, home repair, organization, communication, job skills, first aid, or time management — pick one.']}),
-  task('afternoon','Football, Volunteering, Or Family Time','Training','13:15',180,{priority:3,instructions:['Football development, volunteering, youth group, family activities, recovery, household projects, or other approved activities.','No recreational electronics during the reset period.']}),
-  task('dinner','Dinner','Meal','18:00',45,{instructions:['Family dinner, clean up.']}),
+  washDishesTask('washDishesBreakfast','8:00'),
+  task('deepClean','Deep Clean And Laundry','Responsibility','8:10',60,{priority:1,completionType:'responsibility'}),
+  task('weakest',tsa('Weakest Academic Subject'),'Academic','9:10',60,{priority:1,completionType:'correction',instructions:['Auto-targets whichever subject is weakest over the last 7 days of logs.']}),
+  task('break1','Break','Recovery','10:10',15,{priority:3,instructions:['Reset.']}),
+  task('secondWeakest',tsa('Second Weakest Academic Subject'),'Academic','10:25',45,{priority:1,completionType:'correction',instructions:['Auto-targets the next weakest subject.']}),
+  task('reading',tsa('Reading'),'Academic','11:10',45,{completionType:'academic',sub:'reading',instructions:['Keep it challenging — reading is a strength.']}),
+  task('lunch','Lunch','Meal','11:55',40,{instructions:['Prepare, eat.']}),
+  washDishesTask('washDishesLunch','12:35'),
+  task('lifeSkills','Life Skills','LifeSkills','12:45',45,{priority:1,instructions:['Cooking, laundry, budgeting, money, home repair, organization, communication, job skills, first aid, or time management — pick one.']}),
+  task('afternoon','Football, Volunteering, Or Family Time','Training','13:30',180,{priority:3,instructions:['Football development, volunteering, youth group, family activities, recovery, household projects, or other approved activities.','No recreational electronics during the reset period.']}),
+  task('dinner','Dinner','Meal','18:00',40,{instructions:['Family dinner']}),
+  washDishesTask('washDishesDinner','18:40'),
   task('nightRoutine','Night Routine','Hygiene','20:40',20,{instructions:NIGHT_CHECKLIST}),
   task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Protected — this does not move.']})
  ];
@@ -2266,13 +2488,16 @@ function saturdayTasks(){
 function sundayTasks(){
  return [
   task('wake','Wake Up','Hygiene','7:30',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
-  task('hygieneBreakfast','Hygiene And Breakfast','Meal','7:45',45,{instructions:BREAKFAST_CHECKLIST}),
-  task('familyChurch','Family, Church, Or Recovery','Family','8:30',210,{instructions:['Church or youth activities, family time, and recovery.']}),
-  task('lunch','Lunch','Meal','12:00',45,{instructions:['Eat, clean up.']}),
-  task('familyTime','Family And Recovery Time','Family','12:45',255,{priority:3,instructions:['Open family and recovery time.']}),
+  task('hygieneBreakfast','Hygiene And Breakfast','Meal','7:45',40,{instructions:BREAKFAST_CHECKLIST}),
+  washDishesTask('washDishesBreakfast','8:25'),
+  task('familyChurch','Family, Church, Or Recovery','Family','8:35',205,{instructions:['Church or youth activities, family time, and recovery.']}),
+  task('lunch','Lunch','Meal','12:00',40,{instructions:['Eat']}),
+  washDishesTask('washDishesLunch','12:40'),
+  task('familyTime','Family And Recovery Time','Family','12:50',250,{priority:3,instructions:['Open family and recovery time.']}),
   task('academicBlock','One Hour Academic Block','Academic','17:00',60,{priority:1,instructions:['30 minutes reading','30 minutes review of anything weak from this week']}),
   task('weeklyPlanning','Weekly Planning','Accountability','18:00',30,{priority:1,completionType:'weeklyplan'}),
-  task('dinner','Dinner','Meal','18:30',45,{instructions:['Family dinner, clean up.']}),
+  task('dinner','Dinner','Meal','18:30',40,{instructions:['Family dinner']}),
+  washDishesTask('washDishesDinner','19:10'),
   task('nightRoutine','Night Routine','Hygiene','20:40',20,{instructions:NIGHT_CHECKLIST}),
   task('bedtime','Lights Out','Sleep','21:00',0,{priority:1,fixed:true,instructions:['Protected — this does not move.']})
  ];
@@ -2624,20 +2849,42 @@ function academicTaskHTML(t){
  const e=t.entry;
  const prof=state.academic[t.sub]||{};
  return `<div class="inner"><h3>${t.name}</h3>
+ <p class="small">Location: <b>Texas Sports Academy</b> — this block happens there, not a generic worksheet at home.</p>
  <p class="small">Current level: <b>${prof.current||'not set'}</b> (baseline ${prof.baseline||'not set'})</p>
  ${(t.instructions||[]).map(i=>`<p class="small">• ${i}</p>`).join('')}
  </div>
- <div class="inner"><div class="label">Accuracy Or Score Today (optional)</div>
+ <div class="inner"><div class="label">Starting Grade Level Today</div>
+ <p class="tiny" style="margin:2px 0 6px">Enter what grade level of material he's starting at today — this keeps the ladder accurate as he moves up or needs to back up.</p>
+ <input type="text" placeholder="e.g. Grade 5, Unit 3" id="academicStartInput_${t.id}" value="${e.startGrade!=null?e.startGrade:(prof.current||'')}">
+ <button class="gold" style="margin-top:8px" onclick="saveAcademicStart('${t.id}','${t.sub}')">Save Starting Grade</button>
+ </div>
+ <div class="inner"><div class="label">Ending % Completed Or Correct</div>
+ <p class="tiny" style="margin:2px 0 6px">Enter this at the end of the block — what percent he finished or got right.</p>
  <input type="number" min="0" max="100" placeholder="e.g. 85" id="academicScoreInput_${t.id}" value="${e.score!=null?e.score:''}">
- <button class="gold" style="margin-top:8px" onclick="saveAcademicScore('${t.id}','${t.sub}')">Save Score</button>
+ <button class="gold" style="margin-top:8px" onclick="saveAcademicScore('${t.id}','${t.sub}')">Save Ending %</button>
  </div>`;
+}
+function saveAcademicStart(taskId,sub){
+ const input=document.getElementById('academicStartInput_'+taskId);
+ const val=input?input.value.trim():'';
+ const e=scheduleEntry(taskId);
+ e.startGrade=val;
+ e.sub=sub;
+ if(val && state.academic[sub]) state.academic[sub].current=val;
+ save(); render();
 }
 function trainingTaskHTML(t){
  const req=dayRequirements();
- const rows=[req[0],req[1],req[2]].map(r=>`<div class="checkItem"><span>${r[0]}</span><span class="badge ${r[1]?'good':'warn'}">${r[1]?'Done':'Not yet'}</span></div>`).join('');
+ const focus=t.trainingFocus||'all';
+ const rows=(focus==='morning'?[req[0]]:focus==='afternoon'?[req[1],req[2]]:[req[0],req[1],req[2]])
+  .map(r=>`<div class="checkItem"><span>${r[0]}</span><span class="badge ${r[1]?'good':'warn'}">${r[1]?'Done':'Not yet'}</span></div>`).join('');
+ const target=focus==='morning'?'morning':focus==='afternoon'?'strength':'home';
+ const btnLabel=focus==='morning'?'Open Speed & Agility':focus==='afternoon'?'Open Workout & Touches':'Open Training App';
+ const equipNote=focus==='morning'?equipmentNoteHTML():'';
  return `<div class="inner"><h3>${t.name}</h3><p class="small">${(t.instructions||[]).join(' ')}</p>
+ ${equipNote}
  <div class="completionList" style="margin-top:6px">${rows}</div>
- <button class="gold full" style="margin-top:10px" onclick="showScreen('home')">Open Training App</button>
+ <button class="gold full" style="margin-top:10px" onclick="showScreen('${target}')">${btnLabel}</button>
  </div>`;
 }
 
@@ -2686,10 +2933,10 @@ function categoryIcon(cat){
 // real photos of the athlete. Falls back to the category icon for anything
 // not explicitly listed (new/custom tasks, special-day overrides, etc.).
 const TASK_ICONS={
- wake:'⏰',movement:'🤸',showerAM:'🚿',breakfast:'🥣',schoolPrep:'🎒',
+ wake:'⏰',movement:'⚡',showerAM:'🚿',breakfast:'🥣',schoolPrep:'🎒',
  fastMath:'🧮',math:'🔢',break1:'🧘',break2:'🧘',break3:'🧘',
  writing:'✍️',science:'🔬',lunch:'🥪',reading:'📖',language:'🗣️',
- history:'🏛️',snackPrep:'🍎',training:'🏈',showerPM:'🚿',
+ history:'🏛️',snackPrep:'🍎',training:'🏋️',showerPM:'🚿',
  responsibility:'🧹',dinner:'🍽️',correction:'🎯',accountability:'💬',
  indepReading:'📚',tomorrowPrep:'🎒',nightRoutine:'🪥',bedtime:'🌙',
  leaveHome:'🚗',trainer:'🏋️',trainPrep:'🥪',travelHome:'🚗',
@@ -2698,7 +2945,8 @@ const TASK_ICONS={
  familyChurch:'👪',familyTime:'👪',freeEvening:'🎮',afternoon:'🏈',
  hygieneBreakfast:'🚿',hygieneRoom:'🧹',langHist:'🗣️',lifeSkills:'🛠️',
  lunchRecover:'🥪',overflow:'🕐',rest:'😴',secondWeakest:'🎯',
- travel:'🚗',weakest:'🎯',weeklyPlanning:'📝'
+ travel:'🚗',weakest:'🎯',weeklyPlanning:'📝',
+ washDishesBreakfast:'🧽',washDishesLunch:'🧽',washDishesDinner:'🧽'
 };
 function taskHeroIcon(t){ return TASK_ICONS[t.id]||categoryIcon(t.category); }
 
@@ -2752,6 +3000,98 @@ function ensureTodayLiveTimer(){
   if(todayFollowingNow && nowId!==todayLastNowTaskId) render();
  },60000);
 }
+
+/* =========================================================
+   TASK-TRANSITION ALARM — fires an alert (best-effort sound plus an
+   always-shown popup) the moment the schedule's "now" task changes,
+   no matter which screen is open. Mobile browsers block audio
+   autoplay until the page has been tapped at least once, so the
+   sound is genuinely best-effort — the popup always shows either way
+   so a transition is never silently missed.
+   ========================================================= */
+let globalTaskAlarmTimer=null;
+let lastAlarmedTaskId=null;
+let audioUnlocked=false;
+let taskAlertTask=null;
+function unlockAudioOnce(){
+ if(audioUnlocked) return;
+ audioUnlocked=true;
+ try{
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx) return;
+  const ctx=new Ctx();
+  window._alarmCtx=ctx;
+  const buf=ctx.createBuffer(1,1,22050);
+  const src=ctx.createBufferSource(); src.buffer=buf; src.connect(ctx.destination); src.start(0);
+ }catch(e){}
+}
+document.addEventListener('click',unlockAudioOnce,{once:true});
+document.addEventListener('touchstart',unlockAudioOnce,{once:true});
+function playAlarmSound(){
+ try{
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx) return;
+  const ctx=window._alarmCtx || new Ctx();
+  window._alarmCtx=ctx;
+  if(ctx.state==='suspended') ctx.resume();
+  const now=ctx.currentTime;
+  [0,0.18,0.36].forEach((t,i)=>{
+   const o=ctx.createOscillator(), g=ctx.createGain();
+   o.type='sine'; o.frequency.value = i%2===0?880:660;
+   g.gain.setValueAtTime(0.0001, now+t);
+   g.gain.exponentialRampToValueAtTime(0.3, now+t+0.02);
+   g.gain.exponentialRampToValueAtTime(0.0001, now+t+0.16);
+   o.connect(g); g.connect(ctx.destination);
+   o.start(now+t); o.stop(now+t+0.18);
+  });
+ }catch(e){ /* best effort — mobile autoplay restrictions may block this until the app has been tapped once */ }
+}
+function ensureGlobalTaskAlarmTimer(){
+ if(globalTaskAlarmTimer) return;
+ globalTaskAlarmTimer=setInterval(()=>{
+  if(!appEntered || !state.onboarded) return;
+  const gate=document.getElementById('gateScreen');
+  if(gate && !gate.classList.contains('hidden')) return;
+  const sched=computeTodaySchedule();
+  const idx=todayDefaultIndex(sched);
+  const nowTask=sched.tasks[idx];
+  const nowId=nowTask?nowTask.id:null;
+  if(lastAlarmedTaskId===null){ lastAlarmedTaskId=nowId; return; }
+  if(nowId && nowId!==lastAlarmedTaskId){
+   lastAlarmedTaskId=nowId;
+   showTaskAlert(nowTask);
+  }
+ },60000);
+}
+function showTaskAlert(t){
+ taskAlertTask=t;
+ playAlarmSound();
+ renderTaskAlertOverlay();
+}
+function dismissTaskAlert(goTo){
+ const t=taskAlertTask;
+ taskAlertTask=null;
+ renderTaskAlertOverlay();
+ if(goTo && t){
+  const sched=computeTodaySchedule();
+  const idx=sched.tasks.findIndex(x=>x.id===t.id);
+  if(idx>=0){ state.screen='today'; todayGoTo(idx); }
+ }
+}
+function renderTaskAlertOverlay(){
+ const el=document.getElementById('taskAlertRoot');
+ if(!el) return;
+ if(!taskAlertTask){ el.innerHTML=''; return; }
+ const t=taskAlertTask;
+ el.innerHTML=`<div class="taskAlertOverlay">
+  <div class="taskAlertLabel">Time For Something New</div>
+  <div class="taskAlertIcon">${taskHeroIcon(t)}</div>
+  <div class="taskAlertName">${t.name}</div>
+  <p class="small">${clock12(minToHHMM(t.schedStart))}${t.duration?' • '+t.duration+' min':''}</p>
+  <button class="gold full" style="margin-top:16px;max-width:360px" onclick="dismissTaskAlert(true)">Take Me There</button>
+  <button class="gateSkip" onclick="dismissTaskAlert(false)">Dismiss</button>
+ </div>`;
+}
 function todayScrollTo(idx){
  const feed=document.getElementById('todayFeed');
  const card=feed && feed.querySelector(`[data-idx="${idx}"]`);
@@ -2770,6 +3110,14 @@ function ensureTodayResizeSync(){
  window.addEventListener('resize',()=>{ if(state.screen==='today') todayScrollTo(todayCardIndex); });
 }
 function onTodayFeedScroll(el){
+ // Every render() replaces #todayFeed with a brand-new element (innerHTML
+ // swap), so a scroll event that fires late (after a newer render already
+ // moved on) is tied to an ELEMENT that is no longer the current one —
+ // more tasks/content per render made this genuinely more likely to
+ // happen, and a late event was silently stomping the newer, correct
+ // index. Ignoring anything not fired on the CURRENT #todayFeed instance
+ // filters out every stale event regardless of timing.
+ if(el!==document.getElementById('todayFeed')) return;
  const cards=el.querySelectorAll('.feedCard');
  let closest=0, closestDist=Infinity;
  cards.forEach((c,i)=>{
@@ -2970,6 +3318,7 @@ function renderShell(){
  updateCompleteButton();
 }
 function render(){
+ ensureGlobalTaskAlarmTimer();
  renderShell();
  (screenRenderers[state.screen]||renderHome)();
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -3327,6 +3676,36 @@ function guidedList(type){
  return touchPlanForSession();
 }
 function resetGuidedProgress(){ guided.morning.idx=0; guided.strength.idx=0; guided.touches.idx=0; }
+// Independent per-portion advancement: Speed & Agility, Workout, and
+// Football Touches each earn their OWN next day the moment THEY are
+// finished — this is what lets Speed & Agility and Touches keep moving all
+// week even if the gym is closed and Workout stays stuck repeating the
+// same day until it is actually completed.
+function portionAdvanceHTML(type,day,label){
+ if(day>=DAYS_TOTAL){
+  return `<div class="coachBubble" style="margin-top:10px"><strong>${label} — Day ${day} Complete ✅</strong><p class="small">This is the final day of the 30-day program for this session.</p></div>`;
+ }
+ return `<div class="coachBubble" style="margin-top:10px"><strong>${label} — Day ${day} Complete ✅</strong><p class="small">This session can move on whenever you're ready — it does not wait on the other two.</p></div>
+ <button class="gold full" style="margin-top:8px" onclick="advancePortion('${type}')">Start Day ${day+1} — ${label}</button>`;
+}
+function advancePortion(type){
+ if(!state.portionDay) state.portionDay={morning:1,strength:1,touches:1};
+ if(state.portionDay[type]<DAYS_TOTAL) state.portionDay[type]++;
+ if(guided[type]) guided[type].idx=0;
+ save(); render(); window.scrollTo({top:0,behavior:'smooth'});
+}
+// What gear he's marked available today (set in the Training entry gate).
+// Shown at the top of Speed & Agility since that's where the ladder/cones
+// footwork block lives.
+function equipmentNoteHTML(){
+ const eq=state.equipmentOwned||{ladder:true,cones:true};
+ const label={ladder:'Agility Ladder',cones:'Cones'};
+ const missing=Object.keys(label).filter(k=>eq[k]===false);
+ if(!missing.length){
+  return `<p class="tiny" style="margin-top:6px">Equipment today: Agility Ladder, Cones. <a href="#" onclick="openTrainingGate(true);return false;" style="color:var(--accent)">Don't have something? Tap to change</a></p>`;
+ }
+ return `<p class="tiny" style="margin-top:6px;color:var(--orange)">No ${missing.map(k=>label[k]).join(' or ')} today — footwork drills auto-swapped to no-equipment versions. <a href="#" onclick="openTrainingGate(true);return false;" style="color:var(--accent)">Change</a></p>`;
+}
 function jumpGuided(type,i){ guided[type].idx=i; render(); }
 function guidedPrev(type){ const g=guided[type]; if(g.idx>0){ g.idx--; render(); } }
 function guidedNext(type){
