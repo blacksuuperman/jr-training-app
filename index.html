@@ -169,6 +169,15 @@ body.timerFlash{animation:flashPulse .7s ease}
 .feedCover:active{background:rgba(255,255,255,.04)}
 .feedCardIcon{font-size:52px;line-height:1;width:92px;height:92px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:50%;background:color-mix(in srgb,var(--accent) 20%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
 .attentionOverlay{position:fixed;inset:0;background:rgba(4,4,8,.94);z-index:850;display:flex;flex-direction:column;padding:20px 16px calc(20px + env(safe-area-inset-bottom));overflow-y:auto}
+/* Two-sided task cards: tap the flip button to see the real repercussion
+   for chores/academics if it's claimed done but wasn't actually right. A
+   short rotateY-in animation on the back panel is the "flip" feel — the
+   front side stays a normal accordion card, so nothing about the existing
+   scroll/reveal architecture has to change to get it. */
+.feedCardFlipBtn{display:block;width:100%;text-align:center;margin:10px 0 4px;padding:9px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:inherit;font-size:13px;cursor:pointer}
+.feedCardFlipBtn:active{background:rgba(255,255,255,.14)}
+@keyframes cardFlipIn{from{transform:rotateY(90deg);opacity:.3}to{transform:rotateY(0deg);opacity:1}}
+.feedCardBack{animation:cardFlipIn .32s ease-out;background:rgba(255,90,60,.1);border:1px solid var(--orange);border-radius:16px;padding:14px;margin-top:4px}
 
 /* ===== Onboarding + launcher gate ===== */
 .gateScreen{position:fixed;inset:0;background:#000;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 20px calc(26px + env(safe-area-inset-bottom))}
@@ -286,7 +295,7 @@ const DAYS_TOTAL=30;
 // (full onboarding + launcher) instead of carrying over test data from the
 // last round. Once this is the final version, stop bumping it (or set
 // FORCE_RESET_ON_UPDATE to false) so real progress stops getting wiped.
-const BUILD_VERSION='v7-independent-portions';
+const BUILD_VERSION='v8-flip-consequences';
 const FORCE_RESET_ON_UPDATE=true;
 const baseWeight=0;
 
@@ -432,7 +441,12 @@ function defaultState(){
   // What gear is actually available today. Defaults to "have it" — tap to
   // mark something missing in the Training entry gate and footwork drills
   // swap to a no-equipment version automatically.
-  equipmentOwned:{ladder:true,cones:true}
+  equipmentOwned:{ladder:true,cones:true},
+  // Real accountability log for chores and academic blocks that get marked
+  // done but weren't actually finished/correct when a parent checked in
+  // person. Every rejected task lands here with what was wrong and what the
+  // consequence was — a real paper trail instead of just "go do it again."
+  strikeLog:[]
  };
 }
 function migrateOld(){
@@ -493,6 +507,7 @@ if(state.equipmentOwned.ladder===undefined) state.equipmentOwned.ladder=true;
 if(state.equipmentOwned.cones===undefined) state.equipmentOwned.cones=true;
 state.responsibilityAssignment = state.responsibilityAssignment || {};
 state.accountabilityLog = state.accountabilityLog || {};
+state.strikeLog = state.strikeLog || [];
 state.posMode = state.posMode==='custom' ? 'custom' : 'hybrid';
 state.offPos = state.offPos || '';
 state.defPos = state.defPos || '';
@@ -505,6 +520,7 @@ if(state.onboarded===undefined){
  state.onboarded = !!(state.profileWeight || state.day>1 || Object.keys(state.logs||{}).length>0);
 }
 state.onboardStep = state.onboardStep || 0;
+purgeOldLogs();
 
 function modeLabel(){
  return {outdoor:'Outdoor Field',home:'Home Indoor',facility:'Indoor Facility',gym:'Gym'}[state.mode]||'Outdoor Field';
@@ -2204,6 +2220,7 @@ function renderSettings(){
  </div><p class="small">Every new week keeps this structure but progresses volume, intensity, and the coach expectation.</p></div>
  <div class="inner"><h3>Progress</h3><p class="small">Speed & Agility is on Day ${state.portionDay.morning}, Workout is on Day ${state.portionDay.strength}, and Football Touches is on Day ${state.portionDay.touches} — each one advances on its own the moment IT is finished (tap "Start Day N" at the bottom of that module), so missing the gym for a while never holds back Speed & Agility or Touches. Calendar day ${state.day} of ${DAYS_TOTAL} still drives nutrition logging and Check-In, which comes up every 5 completed days — currently ${checkinCompletedCount()} of ${nextCheckinTarget()}.</p>
  <button class="orange full" onclick="skipToday()">Skip Today (injury or unavailable)</button></div>
+ <details class="clean"><summary>Parent Logs ${parentLogsUnlocked?'🔓':'🔒'}</summary><div class="detailBody">${parentLogsHTML()}</div></details>
  <details class="clean"><summary>Progress — Data Lab</summary><div class="detailBody">${dataLabHTML()}</div></details>
  <details class="clean"><summary>JR Daily Schedule (Admin)</summary><div class="detailBody">${adminScheduleHTML()}</div></details>`;
 }
@@ -2235,20 +2252,45 @@ const NIGHT_CHECKLIST=['Brush teeth','Wash face','Bathroom','Shower if necessary
 const TOMORROW_PREP_CHECKLIST=['Clothes','Training clothes','Shoes','School supplies','Football equipment','Water bottle','Room reset'];
 
 const RESPONSIBILITY_TEMPLATES={
- bathroom:{name:'Clean Bathroom',steps:['Remove unnecessary items','Start at the ceiling — clear cobwebs','Clean mirror','Clean counter','Clean sink','Clean toilet exterior','Clean toilet interior','Scrub bathtub','Clean baseboards','Sweep from the farthest corner toward the doorway','Mop','Return supplies']},
- bedroom:{name:'Bedroom Deep Clean',steps:['Clear trash and dishes','Put away clean clothes','Dirty clothes in hamper','Make bed to standard','Dust surfaces','Organize desk and shelves','Vacuum or sweep the floor','Straighten the closet']},
- kitchen:{name:'Kitchen Reset',steps:['Clear counters','Load or wash dishes','Wipe counters and stovetop','Wipe table','Take out trash if full','Sweep floor','Put away anything left out']},
- laundry:{name:'Laundry',steps:['Gather dirty clothes from the hamper','Sort by color','Start a load','Move the finished load to the dryer','Fold clean laundry','Put clothes away']},
- dishes:{name:'Dishes',steps:['Scrape and rinse plates','Load dishwasher or wash by hand','Wipe counters','Wipe table','Put away clean dishes from the last load']},
- sweeping:{name:'Sweep Or Mop',steps:['Clear the floor of items','Sweep from the far corner to the doorway','Empty the dustpan','Mop if needed','Return tools']},
- vacuuming:{name:'Vacuum',steps:['Clear the floor of items','Vacuum the full room including edges','Empty the canister if full','Return the vacuum']},
- organization:{name:'Organization Project',steps:['Pick the area','Remove everything','Sort into keep, donate, and trash','Wipe down the empty space','Put keep items back neatly','Take donate and trash items out']},
- trash:{name:'Trash',steps:['Collect trash from every room','Replace bags','Take bins to the curb or dumpster','Wipe down bin if needed']},
- yard:{name:'Yard Work',steps:['Pick up any trash or debris','Mow or trim as assigned','Sweep walkways','Put tools away']},
- helpSterling:{name:'Help With Sterling',steps:['Check what Sterling needs help with','Stay patient and encouraging','Help complete the activity or task','Clean up together when done']},
- helpDevyn:{name:'Help Miss Devyn',steps:['Ask what she needs help with','Complete the task carefully','Check back when finished']},
- familyProject:{name:'Family Project',steps:['Confirm the assigned project with a parent','Gather the needed materials','Work carefully and completely','Clean up when finished']},
- vehicle:{name:'Vehicle Cleanup',steps:['Remove trash and personal items','Vacuum seats and floor','Wipe down interior surfaces','Wipe down exterior windows']}
+ bathroom:{name:'Clean Bathroom',steps:['Remove unnecessary items','Start at the ceiling — clear cobwebs','Clean mirror','Clean counter','Clean sink','Clean toilet exterior','Clean toilet interior','Scrub bathtub','Clean baseboards','Sweep from the farthest corner toward the doorway','Mop','Return supplies'],
+  consequence:'Saying it’s done when the toilet, mirror, counter, or trash still aren’t clean is the real problem, not the mess. It goes back on the list top to bottom, Free Evening and games stay locked until it’s redone and a parent physically re-checks it, and it gets logged as a strike.'},
+ bedroom:{name:'Bedroom Deep Clean',steps:['Clear trash and dishes','Put away clean clothes','Dirty clothes in hamper','Make bed to standard','Dust surfaces','Organize desk and shelves','Vacuum or sweep the floor','Straighten the closet'],
+  consequence:'A room that’s "done" with trash still in it, clothes on the floor, or the closet a mess isn’t done. It gets redone completely, Free Evening stays locked until a parent re-checks it in person, and it’s logged as a strike.'},
+ kitchen:{name:'Kitchen Reset',steps:['Clear counters','Load or wash dishes','Wipe counters and stovetop','Wipe table','Take out trash if full','Sweep floor','Put away anything left out'],
+  consequence:'Counters wiped around dishes instead of under them, or the stovetop skipped, means the kitchen isn’t actually reset. It gets redone, Free Evening stays locked until it’s re-checked, and it’s logged as a strike.'},
+ laundry:{name:'Laundry',steps:['Gather dirty clothes from the hamper','Sort by color','Start a load','Move the finished load to the dryer','Fold clean laundry','Put clothes away'],
+  consequence:'Clothes still dirty, a load left unfinished, or clean clothes dumped instead of put away means this isn’t finished. It gets redone, Free Evening stays locked until a parent re-checks it, and it’s logged as a strike.'},
+ dishes:{name:'Dishes',steps:['Scrape and rinse plates','Load dishwasher or wash by hand','Wipe counters','Wipe table','Put away clean dishes from the last load'],
+  consequence:'Dishes left in the sink, food still on a plate, or a wiped-around mess on the counter means it’s not done. It gets redone, Free Evening stays locked until it’s re-checked, and it’s logged as a strike.'},
+ sweeping:{name:'Sweep Or Mop',steps:['Clear the floor of items','Sweep from the far corner to the doorway','Empty the dustpan','Mop if needed','Return tools'],
+  consequence:'Corners skipped, a full dustpan left sitting out, or the floor still dirty means it’s not done. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
+ vacuuming:{name:'Vacuum',steps:['Clear the floor of items','Vacuum the full room including edges','Empty the canister if full','Return the vacuum'],
+  consequence:'Edges and corners skipped or a full canister not emptied means it’s not actually done. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
+ organization:{name:'Organization Project',steps:['Pick the area','Remove everything','Sort into keep, donate, and trash','Wipe down the empty space','Put keep items back neatly','Take donate and trash items out'],
+  consequence:'A half-sorted pile shoved back in isn’t an organized space. It gets redone properly, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
+ trash:{name:'Trash',steps:['Collect trash from every room','Replace bags','Take bins to the curb or dumpster','Wipe down bin if needed'],
+  consequence:'Bags not replaced or bins left overflowing means it’s not done. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
+ yard:{name:'Yard Work',steps:['Pick up any trash or debris','Mow or trim as assigned','Sweep walkways','Put tools away'],
+  consequence:'Debris left behind or walkways skipped means it’s not finished. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'},
+ helpSterling:{name:'Help With Sterling',steps:['Check what Sterling needs help with','Stay patient and encouraging','Help complete the activity or task','Clean up together when done'],
+  consequence:'Walking away before Sterling’s actually helped, or doing it with a bad attitude, doesn’t count as help. It gets redone the right way, Free Evening stays locked until a parent confirms it, and it’s logged as a strike.'},
+ helpDevyn:{name:'Help Miss Devyn',steps:['Ask what she needs help with','Complete the task carefully','Check back when finished'],
+  consequence:'Rushing through it or leaving before she’s actually taken care of doesn’t count. It gets redone, Free Evening stays locked until confirmed, and it’s logged as a strike.'},
+ familyProject:{name:'Family Project',steps:['Confirm the assigned project with a parent','Gather the needed materials','Work carefully and completely','Clean up when finished'],
+  consequence:'Walking away with the project half-finished or not actually following what was assigned means it’s not done. It gets redone, Free Evening stays locked until a parent checks it, and it’s logged as a strike.'},
+ vehicle:{name:'Vehicle Cleanup',steps:['Remove trash and personal items','Vacuum seats and floor','Wipe down interior surfaces','Wipe down exterior windows'],
+  consequence:'Trash left under a seat or windows skipped means it’s not clean. It gets redone, Free Evening stays locked until re-checked, and it’s logged as a strike.'}
+};
+const DEFAULT_CONSEQUENCE='If this is marked done but it wasn’t actually finished or done correctly when checked in person, it reopens, Free Evening stays locked until it’s redone and re-approved by a parent, and it’s logged as a strike.';
+const WASH_DISHES_CONSEQUENCE='Saying the kitchen’s clean when a plate, cup, or pan is still dirty, food’s still out, or the counter/stove wasn’t wiped means it isn’t done. It reopens, Free Evening and games stay locked until the kitchen is actually clean and a parent re-checks it, and it’s logged as a strike.';
+const ACADEMIC_REPERCUSSIONS={
+ fastMath:'Rushing through facts to get done, guessing instead of actually knowing them, or writing down a percentage that isn’t real means this isn’t finished. It reopens tonight before Free Evening, gets redone honestly, and it’s logged as a strike. Automaticity only counts if it’s real.',
+ math:'Skipping steps, guessing, or writing an Ending % that doesn’t match what was actually understood isn’t finishing math — it’s pretending to. It reopens before Free Evening, gets redone the right way, and it’s logged as a strike.',
+ science:'Rushing through the lesson without being able to answer what, how, and why — or reporting a percentage that isn’t real — isn’t done. It reopens before Free Evening, gets redone, and it’s logged as a strike.',
+ reading:'Skipping the comprehension questions, or answering them without actually doing the reading, doesn’t count. It reopens before Free Evening, gets redone properly, and it’s logged as a strike.',
+ language:'Rushing grammar and vocabulary work without actually learning it, or reporting a score that isn’t real, isn’t done. It reopens before Free Evening, gets redone, and it’s logged as a strike.',
+ history:'Skimming the material without being able to explain what happened and why it matters today isn’t done. It reopens before Free Evening, gets redone, and it’s logged as a strike.',
+ writing:'Turning in a few rushed sentences, or claiming a percentage on work that wasn’t actually thought through, isn’t finished — especially the weekly essay, which is about how he thinks, not just filling space. It reopens before Free Evening, gets redone for real, and it’s logged as a strike.'
 };
 
 const ACCOUNTABILITY_BY_DAY={1:'Decision Making',2:'Honesty',3:'Leadership',4:'Game Reflection',5:'Weekly Self Evaluation',6:'Life Skills',0:'Goals'};
@@ -2697,7 +2739,7 @@ function quickComplete(taskId){
  save(); render();
 }
 function skipScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='skipped'; save(); render(); }
-function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; save(); render(); }
+function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; e.approved=false; e.awaitingReview=false; e.correctionNeeded=null; save(); render(); }
 
 function saveAcademicScore(taskId,sub){
  const input=document.getElementById('academicScoreInput_'+taskId);
@@ -2782,19 +2824,15 @@ function submitResponsibilityForReview(taskId){
 }
 function approveResponsibility(taskId){ const e=scheduleEntry(taskId); e.awaitingReview=false; e.approved=true; save(); render(); }
 function correctionNeeded(taskId,items){ const e=scheduleEntry(taskId); e.awaitingReview=false; e.correctionNeeded=items; e.status='notStarted'; e.checklist={}; save(); render(); }
-function responsibilityHTML(taskId){
+function responsibilityHTML(t){
+ const taskId=t.id;
  const tid=assignedResponsibilityTemplateId();
  const tpl=RESPONSIBILITY_TEMPLATES[tid];
  const e=scheduleEntry(taskId);
  const checklistState=e.checklist||{};
  const stepsHtml=tpl.steps.map((s,i)=>`<div class="checkItem"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${checklistState[i]?'checked':''} onchange="toggleResponsibilityStep('${taskId}',${i},this.checked)"> <span>${s}</span></label></div>`).join('');
- let statusNote='';
- if(e.awaitingReview) statusNote='<div class="coachBubble" style="margin-top:8px"><strong>Awaiting Inspection</strong><p class="small">A parent needs to check this on this device before it counts as verified.</p></div>';
- if(e.approved) statusNote='<div class="coachBubble" style="margin-top:8px"><strong>Approved ✅</strong></div>';
- if(e.correctionNeeded) statusNote=`<div class="coachBubble" style="margin-top:8px"><strong>Correction Needed</strong><p class="small">${e.correctionNeeded}</p></div>`;
  return `<div class="inner"><h3>${tpl.name}</h3><p class="small">Tap each step as it gets finished, then submit for a parent check.</p>${stepsHtml}</div>
- ${statusNote}
- <button class="green full" style="margin-top:8px" onclick="submitResponsibilityForReview('${taskId}')">Submit For Inspection</button>`;
+ ${approvalCompletionControlsHTML(t)}`;
 }
 
 function accountabilityPromptForDate(d=new Date()){
@@ -2828,6 +2866,184 @@ function saveAccountabilityResponse(taskId){
  const {category}=accountabilityPromptForDate();
  state.accountabilityLog[localDateKey()]={category,response:val};
  save(); render();
+}
+
+/* =========================================================
+   REAL REPERCUSSIONS — chores + academic blocks require an actual
+   parent check before they count as done, instead of Jr's own say-so.
+   Submit For Inspection -> a parent physically checks it -> Approve or
+   Needs Correction. A rejection reopens the task, locks Free Evening /
+   Family Time (the discretionary/screen-time blocks) until it's redone
+   AND re-approved, and logs a strike with what was wrong and why —
+   a real paper trail instead of just "go do it again."
+   ========================================================= */
+// Free Evening (Home Development day), Family Time (Sunday), and the
+// trainer-day Overflow block are the discretionary/screen-time slots that
+// actually exist in the schedule today — these lock shut whenever a chore
+// or academic block is rejected, until it's redone and re-approved.
+// Normal weekdays currently go straight from Night Routine to Lights Out
+// with no discretionary block of their own to lock.
+const PRIVILEGE_TASK_IDS=['freeEvening','familyTime','overflow'];
+function repercussionTextForTask(t){
+ if(!t) return null;
+ if(t.completionType==='responsibility'){
+  const tpl=RESPONSIBILITY_TEMPLATES[assignedResponsibilityTemplateId()];
+  return (tpl && tpl.consequence) || DEFAULT_CONSEQUENCE;
+ }
+ if(t.completionType==='academic') return ACADEMIC_REPERCUSSIONS[t.sub]||DEFAULT_CONSEQUENCE;
+ if(t.id && t.id.indexOf('washDishes')===0) return WASH_DISHES_CONSEQUENCE;
+ return null;
+}
+function submitForApproval(taskId){
+ const def=findTaskDef(taskId);
+ const e=scheduleEntry(taskId);
+ e.status='completed';
+ e.actualFinish=nowMinutes();
+ if(e.actualStart==null) e.actualStart=e.actualFinish;
+ if(def && def.completionType==='academic') e.sub=def.sub;
+ e.awaitingReview=true;
+ save(); render();
+}
+function approveTask(taskId){
+ const e=scheduleEntry(taskId);
+ e.awaitingReview=false;
+ e.approved=true;
+ e.correctionNeeded=null;
+ save(); render();
+}
+function rejectTask(taskId){
+ const def=findTaskDef(taskId);
+ const noteInput=document.getElementById('rejectNote_'+taskId);
+ const note=noteInput?noteInput.value.trim():'';
+ const e=scheduleEntry(taskId);
+ e.awaitingReview=false;
+ e.approved=false;
+ e.correctionNeeded=note||'Marked done, but it was not actually finished or correct when checked in person.';
+ e.status='notStarted';
+ delete e.actualFinish;
+ if(def && def.completionType==='responsibility') e.checklist={};
+ state.strikeLog.unshift({
+  date:localDateKey(), taskId, taskName:def?def.name:taskId,
+  category:def?def.category:'', note:e.correctionNeeded,
+  consequence:repercussionTextForTask(def), at:nowMinutes()
+ });
+ if(state.strikeLog.length>200) state.strikeLog.length=200;
+ save(); render();
+}
+function hasOpenCorrections(d=new Date()){
+ const log=state.scheduleLogs[localDateKey(d)]||{};
+ return Object.values(log).some(e=>e.correctionNeeded && !e.approved);
+}
+function openCorrectionTasks(d=new Date()){
+ const log=state.scheduleLogs[localDateKey(d)]||{};
+ return Object.keys(log).filter(id=>log[id].correctionNeeded && !log[id].approved).map(id=>{
+  const def=findTaskDef(id);
+  return {id,name:def?def.name:id,note:log[id].correctionNeeded};
+ });
+}
+function inspectionPanelHTML(t){
+ return `<div class="coachBubble" style="margin-top:8px"><strong>Awaiting Inspection</strong><p class="small">Go check this in person before approving — not from memory, not because he said so.</p></div>
+ <div class="inner" style="margin-top:8px"><div class="label">Parent Check</div>
+ <textarea id="rejectNote_${t.id}" rows="2" placeholder="If something is wrong, note exactly what (e.g. toilet seat, mirror, trash). Leave blank if it's actually right."></textarea>
+ <div class="grid" style="margin-top:8px">
+ <button class="green" onclick="approveTask('${t.id}')">Approve ✅</button>
+ <button class="orange" onclick="rejectTask('${t.id}')">Needs Correction ✏️</button>
+ </div></div>`;
+}
+function approvalCompletionControlsHTML(t){
+ const e=t.entry;
+ if(e.awaitingReview) return inspectionPanelHTML(t);
+ if(e.approved && !e.correctionNeeded){
+  return `<div class="coachBubble" style="margin-top:8px"><strong>Approved ✅</strong></div>
+  <button class="orange full" style="margin-top:6px" onclick="reopenScheduleTask('${t.id}')">Reopen</button>`;
+ }
+ const correctionBanner=e.correctionNeeded?`<div class="coachBubble" style="margin-top:8px;border-color:var(--orange)"><strong>Correction Needed</strong><p class="small">${e.correctionNeeded}</p><p class="tiny">Free Evening stays locked until this is redone and re-checked by a parent.</p></div>`:'';
+ return correctionBanner+`<button class="green full" style="margin-top:8px" onclick="submitForApproval('${t.id}')">Submit For Inspection</button>`;
+}
+
+/* =========================================================
+   PARENT LOGS — everything Jr fills out and saves (academic grades and
+   scores, accountability/essay responses, and any strikes) lives here,
+   behind a shared parent code. Kept for up to 60 days, then it purges
+   itself automatically; parents can also delete any day on the spot
+   after reviewing it. This never persists "unlocked" across a reload —
+   the code has to be entered again each fresh app open.
+   ========================================================= */
+const PARENT_LOGS_CODE='lovedevonrico';
+let parentLogsUnlocked=false;
+let parentLogsCodeError=false;
+function keyToLocalDate(key){
+ const parts=String(key).split('-').map(Number);
+ return new Date(parts[0],(parts[1]||1)-1,parts[2]||1);
+}
+function purgeOldLogs(){
+ const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-60); cutoff.setHours(0,0,0,0);
+ let changed=false;
+ Object.keys(state.scheduleLogs||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.scheduleLogs[k]; changed=true; } });
+ Object.keys(state.accountabilityLog||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.accountabilityLog[k]; changed=true; } });
+ const before=(state.strikeLog||[]).length;
+ state.strikeLog=(state.strikeLog||[]).filter(s=>keyToLocalDate(s.date)>=cutoff);
+ if(state.strikeLog.length!==before) changed=true;
+ if(changed) save();
+}
+function submitParentLogsCode(){
+ const input=document.getElementById('parentLogsCodeInput');
+ const val=input?input.value.trim().toLowerCase():'';
+ if(val===PARENT_LOGS_CODE){ parentLogsUnlocked=true; parentLogsCodeError=false; }
+ else { parentLogsCodeError=true; }
+ render();
+}
+function lockParentLogs(){ parentLogsUnlocked=false; parentLogsCodeError=false; render(); }
+function deleteParentLogDay(dateKey){
+ if(!confirm('Delete everything logged for '+dateKey+'? This cannot be undone.')) return;
+ delete state.scheduleLogs[dateKey];
+ delete state.accountabilityLog[dateKey];
+ state.strikeLog=(state.strikeLog||[]).filter(s=>s.date!==dateKey);
+ save(); render();
+}
+function parentLogDayKeys(){
+ // Rendering today's schedule lazily creates an empty state.scheduleLogs[key]
+ // object as a normal side effect (computeTodaySchedule) — that shouldn't
+ // make an already-deleted or genuinely empty day reappear in the list, so
+ // only count a scheduleLogs day if it actually has something in it.
+ const keys=new Set();
+ Object.keys(state.scheduleLogs||{}).forEach(k=>{ if(Object.keys(state.scheduleLogs[k]||{}).length) keys.add(k); });
+ Object.keys(state.accountabilityLog||{}).forEach(k=>keys.add(k));
+ (state.strikeLog||[]).forEach(s=>keys.add(s.date));
+ return Array.from(keys).sort().reverse();
+}
+const ACADEMIC_LOG_LABELS={fastMath:'Fast Math',math:'Math',science:'Science',reading:'Reading',language:'Language',history:'History',writing:'Writing'};
+function parentLogDaySummaryHTML(dateKey){
+ const sched=state.scheduleLogs[dateKey]||{};
+ const rows=[];
+ Object.keys(sched).forEach(taskId=>{
+  const e=sched[taskId];
+  if(e.sub){
+   rows.push(`<div class="checkItem"><span>${ACADEMIC_LOG_LABELS[e.sub]||e.sub}</span><span class="tiny">${e.startGrade?'Start: '+e.startGrade+' — ':''}${e.score!=null?e.score+'%':'no score logged'}</span></div>`);
+  } else if(taskId==='responsibility' && e.checklist){
+   rows.push(`<div class="checkItem"><span>Responsibility Block</span><span class="tiny">${e.approved?'Approved':e.correctionNeeded?'Correction Needed':e.awaitingReview?'Awaiting Review':'—'}</span></div>`);
+  } else if(taskId.indexOf('washDishes')===0){
+   rows.push(`<div class="checkItem"><span>${taskId}</span><span class="tiny">${e.approved?'Approved':e.correctionNeeded?'Correction Needed':e.awaitingReview?'Awaiting Review':'—'}</span></div>`);
+  }
+ });
+ const acc=state.accountabilityLog[dateKey];
+ const accHtml=acc?`<div class="inner" style="margin-top:6px"><div class="label">${acc.category}</div><p class="small">${acc.response}</p></div>`:'';
+ const strikes=(state.strikeLog||[]).filter(s=>s.date===dateKey);
+ const strikeHtml=strikes.length?strikes.map(s=>`<div class="coachBubble" style="margin-top:6px;border-color:var(--orange)"><strong>Strike — ${s.taskName}</strong><p class="tiny">${s.note}</p></div>`).join(''):'';
+ return `<div class="inner" style="margin-top:10px"><div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">${dateKey}</h3><button class="chip" onclick="deleteParentLogDay('${dateKey}')">🗑 Delete</button></div>
+ ${rows.length?rows.join(''):'<p class="tiny">No academic or chore entries this day.</p>'}${accHtml}${strikeHtml}
+ </div>`;
+}
+function parentLogsHTML(){
+ if(!parentLogsUnlocked){
+  return `<p class="small">Everything Jr fills out and saves — academic starting grades and ending %, accountability/essay responses, and any strikes — kept for up to 60 days, then cleared automatically. Enter the shared code to view or delete.</p>
+  <input type="password" id="parentLogsCodeInput" placeholder="Enter code" onkeydown="if(event.key==='Enter')submitParentLogsCode()">
+  ${parentLogsCodeError?'<p class="tiny" style="color:var(--orange)">Incorrect code.</p>':''}
+  <button class="gold full" style="margin-top:8px" onclick="submitParentLogsCode()">Unlock</button>`;
+ }
+ const keys=parentLogDayKeys();
+ return `<div class="row" style="justify-content:space-between;align-items:center"><p class="small" style="margin:0">Kept for up to 60 days, then automatically cleared. Review and delete any day whenever you want.</p><button class="chip" onclick="lockParentLogs()">Lock</button></div>
+ ${keys.length?keys.map(parentLogDaySummaryHTML).join(''):'<p class="small">Nothing logged yet.</p>'}`;
 }
 
 function weeklyPlanHTML(taskId){
@@ -2910,18 +3126,29 @@ function genericCompletionControlsHTML(t){
 }
 
 function taskDetailHTML(t){
- if(t.completionType==='responsibility') return responsibilityHTML(t.id);
+ if(PRIVILEGE_TASK_IDS.includes(t.id) && hasOpenCorrections()){
+  const open=openCorrectionTasks();
+  return `<div class="coachBubble" style="border-color:var(--orange)"><h3 style="margin-top:0">🔒 Locked</h3><p class="small">This stays locked until every task below is redone and re-approved by a parent:</p>${open.map(o=>`<p class="small">• <b>${o.name}</b> — ${o.note}</p>`).join('')}</div>`;
+ }
+ const flipText=repercussionTextForTask(t);
+ const flipped=!!flipText && todayFlippedIds.has(t.id);
+ const flipBtn=flipText?`<button class="feedCardFlipBtn" onclick="toggleTodayFlip('${t.id}')">${flipped?'↩️ Flip Back To The Task':'⚠️ Flip: What Happens If This Is Done Wrong'}</button>`:'';
+ if(flipped){
+  const strikeCount=state.strikeLog.filter(s=>s.taskId===t.id).length;
+  return flipBtn+`<div class="feedCardBack"><h3 style="margin-top:0">If This Isn't Actually Done Right</h3><p class="small">${flipText}</p>${strikeCount?`<p class="tiny" style="margin-top:8px;opacity:.8">${strikeCount} strike${strikeCount>1?'s':''} logged on this task so far.</p>`:''}</div>`;
+ }
+ if(t.completionType==='responsibility') return flipBtn+responsibilityHTML(t);
  if(t.completionType==='accountability') return accountabilityHTML(t.id);
  if(t.completionType==='weeklyplan') return weeklyPlanHTML(t.id);
  if(t.completionType==='correction'){
   return correctionHTML(t.id)+(t.status==='completed'?'':`<button class="green full" style="margin-top:8px" onclick="quickComplete('${t.id}')">Mark Complete</button>`);
  }
- let body='';
- if(t.completionType==='academic') body=academicTaskHTML(t);
- else if(t.completionType==='training') body=trainingTaskHTML(t);
- else body=`<div class="inner"><h3>${t.name}</h3>${(t.instructions||[]).map(i=>`<div class="checkItem"><span>☐ ${i}</span></div>`).join('')}</div>`;
- body+=genericCompletionControlsHTML(t);
- return body;
+ if(t.completionType==='academic') return flipBtn+academicTaskHTML(t)+approvalCompletionControlsHTML(t);
+ if(t.completionType==='training') return trainingTaskHTML(t);
+ if(t.id && t.id.indexOf('washDishes')===0){
+  return flipBtn+`<div class="inner"><h3>${t.name}</h3>${(t.instructions||[]).map(i=>`<div class="checkItem"><span>☐ ${i}</span></div>`).join('')}</div>`+approvalCompletionControlsHTML(t);
+ }
+ return `<div class="inner"><h3>${t.name}</h3>${(t.instructions||[]).map(i=>`<div class="checkItem"><span>☐ ${i}</span></div>`).join('')}</div>`+genericCompletionControlsHTML(t);
 }
 
 function categoryIcon(cat){
@@ -3144,17 +3371,33 @@ function toggleTodayReveal(id){
  if(todayRevealedIds.has(id)) todayRevealedIds.delete(id); else todayRevealedIds.add(id);
  render();
 }
+// Two-sided task cards: flip to see the real repercussion for chores and
+// academic blocks (responsibility, wash dishes, academic subjects) if it's
+// claimed done but wasn't actually finished/correct. Purely a view toggle,
+// not persisted — resets on reload, which is fine since it's always one
+// tap away again.
+let todayFlippedIds=new Set();
+function toggleTodayFlip(id){
+ if(todayFlippedIds.has(id)) todayFlippedIds.delete(id); else todayFlippedIds.add(id);
+ render();
+}
+let todayPendingOpen=false;
+function toggleTodayPending(){ todayPendingOpen=!todayPendingOpen; render(); }
 
 function feedCardHTML(t,idx,total){
  const statusIcon = t.status==='completed'?'✅ Completed':t.status==='inProgress'?'● In Progress':'';
  const timeLabel = t.status==='skipped'?'Ran out of time today — skipped':clock12(minToHHMM(t.schedStart))+(t.duration?' • '+t.duration+' min':'')+(t.fixed?' • fixed':'');
  const tight = t.tightWarning?`<p class="tiny" style="color:var(--orange)">⚠ Running behind — pushed later, could not fit before ${t.tightWarning}.</p>`:'';
  const revealed=todayRevealedIds.has(t.id);
+ const locked=t.status!=='skipped' && PRIVILEGE_TASK_IDS.includes(t.id) && hasOpenCorrections();
+ const awaiting=t.entry && t.entry.awaitingReview;
  const cover=`<div class="feedCover" onclick="toggleTodayReveal('${t.id}')">
    <div class="feedCardIcon">${taskHeroIcon(t)}</div>
    <div class="tiny" style="margin-top:4px">Task ${idx+1} of ${total} • ${timeLabel}</div>
    <h2 style="margin-top:6px">${t.name}</h2>
    ${statusIcon?`<div class="badge good" style="display:inline-block;margin-top:4px">${statusIcon}</div>`:''}
+   ${locked?`<div class="badge warn" style="display:inline-block;margin-top:4px">🔒 Locked</div>`:''}
+   ${awaiting?`<div class="badge warn" style="display:inline-block;margin-top:4px">🔍 Awaiting Your Check</div>`:''}
    ${t.status!=='skipped'?`<div class="tiny" style="margin-top:10px;opacity:.75">${revealed?'▲ Tap to close':'▼ Tap to see what this involves'}</div>`:''}
   </div>`;
  let detail='';
@@ -3179,11 +3422,15 @@ function renderToday(){
  todayCardIndex=Math.max(0,Math.min(todayCardIndex,total-1));
  const dateStr=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
  const attention=todayAttentionItems(sched);
+ const pendingApproval=sched.tasks.filter(t=>t.entry && t.entry.awaitingReview);
  const doneCount=sched.tasks.filter(t=>t.status==='completed').length;
  const pct=total?Math.round(doneCount/total*100):0;
  let body=`<div class="todayTopBar">
   <div><div class="small">${dateStr}</div><b>${DAY_TYPE_LABELS[sched.dayType]||sched.dayType} • ${pct}% done</b></div>
+  <div class="row" style="gap:6px">
+  ${pendingApproval.length?`<button class="chip" style="background:var(--gold);color:#000" onclick="toggleTodayPending()">🔍 ${pendingApproval.length} Awaiting Your Check</button>`:''}
   ${attention.length?`<button class="chip" style="background:var(--orange);color:#000" onclick="toggleTodayAttention()">⚠ ${attention.length} Needs Attention</button>`:''}
+  </div>
  </div>
  <div class="feedDots">${sched.tasks.map((t,i)=>`<span class="feedDot ${i===todayCardIndex?'on':''} ${t.status==='completed'?'done':''}" onclick="todayGoTo(${i})"></span>`).join('')}</div>
  <div class="todayFeed" id="todayFeed" onscroll="onTodayFeedScroll(this)">
@@ -3194,6 +3441,13 @@ function renderToday(){
    <div class="row" style="justify-content:space-between;align-items:center"><h2>Needs Attention</h2><button class="chip" onclick="toggleTodayAttention()">Close ✕</button></div>
    <p class="small">These are important and already past their time today, but not done yet.</p>
    ${attention.length?attention.map(t=>`<div class="inner" style="margin-top:8px;cursor:pointer" onclick="todayGoTo(${sched.tasks.indexOf(t)})"><div class="row" style="justify-content:space-between"><div class="row" style="gap:8px"><span>${taskHeroIcon(t)}</span><b>${t.name}</b></div><span class="tiny">${clock12(minToHHMM(t.schedStart))}</span></div></div>`).join(''):'<div class="coachBubble"><strong>Nothing overdue 🎉</strong></div>'}
+  </div>`;
+ }
+ if(todayPendingOpen){
+  body+=`<div class="attentionOverlay">
+   <div class="row" style="justify-content:space-between;align-items:center"><h2>Awaiting Your Check</h2><button class="chip" onclick="toggleTodayPending()">Close ✕</button></div>
+   <p class="small">He's marked these done. Go check each one in person before approving.</p>
+   ${pendingApproval.length?pendingApproval.map(t=>`<div class="inner" style="margin-top:8px;cursor:pointer" onclick="todayPendingOpen=false;todayGoTo(${sched.tasks.indexOf(t)})"><div class="row" style="justify-content:space-between"><div class="row" style="gap:8px"><span>${taskHeroIcon(t)}</span><b>${t.name}</b></div></div></div>`).join(''):'<div class="coachBubble"><strong>Nothing waiting on you right now 🎉</strong></div>'}
   </div>`;
  }
  document.getElementById('screen_today').innerHTML=body;
