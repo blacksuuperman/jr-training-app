@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// Jr Level 13 Athlete Hub -- Parent Sync
+//
+// Threat model: this is a private family chore app, not a system that holds
+// money or sensitive legal data. The goal here is "a stranger who stumbles
+// onto this project can't read or write anything," not bank-grade security.
+// Every device (Jr/Dad's app, Mom's approver page) signs in anonymously on
+// first load -- that's free, instant, and needs no password -- and every
+// rule below requires that a device is at least signed in before it can
+// touch anything. The actual isolation between households comes from the
+// householdId itself being a long, random, unguessable string (a UUID)
+// that only ever travels between devices via a short-lived pairing code --
+// nobody can discover or enumerate another family's household this way.
+//
+// What this does NOT protect against: someone who already has your
+// deployed app's source (which is public -- anyone can view it) and
+// deliberately writes their own code to sign in anonymously and probe for
+// valid household IDs. That's a real but low-probability risk for a private
+// family tool; if that ever matters more, the next step up is enabling
+// Firebase App Check, which is a quick addition on top of this.
+
+function signedIn() {
+  return request.auth != null;
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Pairing codes are short-lived, single-purpose, and never list-able --
+    // a device can create one (to display on Jr/Dad's screen) or read one by
+    // its exact code (to redeem it on Mom's phone), but never browse the
+    // whole collection looking for valid codes.
+    match /pairingCodes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll(['householdId','createdAt','expiresAt'])
+        && request.resource.data.householdId is string
+        && request.resource.data.householdId.size() > 10;
+      allow update, delete, list: if false;
+    }
+
+    // A household's own data: the shared approval queue, and each paired
+    // device's push-notification token. Any signed-in device that knows the
+    // householdId (only ever learned by generating it locally or redeeming
+    // a pairing code) can read and write within it.
+    match /households/{householdId} {
+      allow read, create: if signedIn();
+      allow update, delete: if false;
+
+      match /devices/{role} {
+        allow read, write: if signedIn();
+      }
+
+      match /approvals/{approvalId} {
+        allow read, create, update: if signedIn();
+        allow delete: if false;
+      }
+    }
+  }
+}

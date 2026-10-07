@@ -89,13 +89,13 @@ input,textarea,select{background:color-mix(in srgb,var(--panel3) 86%,#000 14%);c
 .cue{color:var(--text)}
 button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .badge{background:color-mix(in srgb,var(--panel3) 88%,#000 12%);color:var(--text)}
-.bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}.bottomNav button{min-height:43px;border-radius:14px;font-size:11px;padding:6px 4px}.bottomNav .green{font-size:13px}
+.bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:80;background:rgba(7,7,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(14px);padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px}.bottomNav button{min-height:43px;border-radius:14px;font-size:10px;padding:6px 3px}.bottomNav .green{font-size:13px}
 @media(max-width:640px){
   body{padding:9px 9px 126px}h1{font-size:22px}.hero{border-radius:23px;padding:13px}.topLine{align-items:center}.status{min-width:88px;padding:8px}
   .musicDockMini .musicTop{grid-template-columns:auto 1fr auto auto}.playerWrap{grid-template-columns:110px 1fr}.ytFrame{width:110px;height:62px}.eightBall{width:min(88vw,315px)}.eightWindowContent{font-size:13px}.eightBall.advice .eightWindowContent{font-size:11px}
   .tileGrid{grid-template-columns:repeat(2,1fr);gap:8px}.tile{min-height:88px;border-radius:21px;padding:10px 6px}.tileIcon{font-size:24px}.tile b{font-size:12px}.tile small{font-size:10px}
   .grid,.grid3,.logGrid{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.statCards{grid-template-columns:1fr 1fr}.card{border-radius:22px;padding:12px}.exercise{grid-template-columns:1fr}.num{margin-bottom:-3px}
-  .bottomNav{grid-template-columns:1fr 1fr 1fr 1fr}.bottomNav button{font-size:10px;padding:5px 2px}
+  .bottomNav{grid-template-columns:1fr 1fr 1fr 1fr 1fr}.bottomNav button{font-size:9px;padding:5px 1px}
 }
 body.timerFlash{animation:flashPulse .7s ease}
 @keyframes flashPulse{0%{background-color:var(--bg)}30%{background-color:color-mix(in srgb,var(--accent) 55%,var(--bg))}100%{background-color:var(--bg)}}
@@ -214,6 +214,31 @@ body.timerFlash{animation:flashPulse .7s ease}
 .taskAlertIcon{font-size:56px;width:100px;height:100px;border-radius:50%;background:color-mix(in srgb,var(--accent) 22%,transparent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
 .taskAlertLabel{color:var(--accent);font-weight:900;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
 .taskAlertName{color:#fff;font-size:24px;font-weight:900;margin:8px 0 4px}
+
+/* Film Room — interactive field + quiz UI */
+.fieldWrap{width:100%;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#0b3d1f;margin:10px 0}
+.fieldSvg{width:100%;height:auto;display:block;aspect-ratio:1/1}
+.frHeader{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.frStatRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.frStatPill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:11px;color:var(--muted);display:flex;gap:5px;align-items:center}
+.frStatPill b{color:#fff}
+.frStageBadge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.frStageBadge.learn{background:color-mix(in srgb,var(--blue) 22%,transparent);color:var(--blue)}
+.frStageBadge.recognize{background:color-mix(in srgb,var(--purple) 22%,transparent);color:var(--purple)}
+.frStageBadge.apply{background:color-mix(in srgb,var(--orange) 22%,transparent);color:var(--orange)}
+.frStageBadge.test{background:color-mix(in srgb,var(--red) 22%,transparent);color:var(--red)}
+.frOptionBtn{width:100%;text-align:left;padding:12px 14px;border-radius:12px;margin-top:8px}
+.frOptionBtn.correct{background:var(--green)!important;color:#042b10!important}
+.frOptionBtn.wrong{background:var(--red)!important;color:#2b0505!important}
+.frFeedback{border-radius:14px;padding:12px 14px;margin-top:10px;border:1px solid var(--line)}
+.frFeedback.correct{background:color-mix(in srgb,var(--green) 16%,transparent);border-color:color-mix(in srgb,var(--green) 40%,transparent)}
+.frFeedback.wrong{background:color-mix(in srgb,var(--red) 16%,transparent);border-color:color-mix(in srgb,var(--red) 40%,transparent)}
+.frDots{display:flex;gap:4px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.frDot{width:8px;height:8px;border-radius:50%;background:#33343f}
+.frDot.done{background:var(--green)}
+.frDot.wrongDot{background:var(--red)}
+.frDot.now{background:var(--accent);transform:scale(1.3)}
+.frNote{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -268,6 +293,7 @@ body.timerFlash{animation:flashPulse .7s ease}
   <div id="screen_nutrition" class="card screen"></div>
   <div id="screen_dadtalk" class="card screen"></div>
   <div id="screen_settings" class="card screen"></div>
+  <div id="screen_filmRoom" class="card screen"></div>
 </div>
 
 <div class="timerBar hidden" id="timerBar">
@@ -282,10 +308,12 @@ body.timerFlash{animation:flashPulse .7s ease}
 <div class="bottomNav" id="bottomNav">
   <button id="navToday" onclick="showScreen('today')">📅 Today</button>
   <button id="navHome" onclick="showScreen('home')">🏈 Training</button>
+  <button id="navFilmRoom" onclick="showScreen('filmRoom')">🎥 Film Room</button>
   <button id="navSettings" onclick="showScreen('settings')">🎨 Settings</button>
   <button id="navNutrition" onclick="showScreen('nutrition')">🍽️ Nutrition</button>
 </div>
 
+<script src="football-data.js"></script>
 <script>
 const STORE='jr_level13_earned_day_v3';
 const OLD_STORES=['jr_level13_earned_day_v2','jr_level13_earned_day_v1','jr_level13_day_cycle_v1','jr_level13_simplified_v1','jr_level13_ai_v1','jr_level9_state'];
@@ -298,7 +326,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v10-screen-time-escalation-and-repeats';
+const BUILD_VERSION='v14-football-iq-film-room-phase1';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -453,7 +481,29 @@ function defaultState(){
   // Minutes of earned Screen Time (TV only) banked per day — every chore
   // or academic block approved clean (no correction needed) adds to it.
   // Keyed by date so it resets fresh each day.
-  screenTimeBank:{}
+  screenTimeBank:{},
+  // Days where Screen Time has been voided outright because of 3 strikes
+  // that same day — true/absent per date key. Once set for a day it stays
+  // set even if every one of those strikes later gets fixed and approved;
+  // it clears itself the moment the calendar date changes.
+  screenTimeVoidDays:{},
+  // Cross-device sync (Mom's approver page). householdId is a random,
+  // unguessable ID shared only via a short-lived pairing code — totally
+  // empty/unset means this device just works locally exactly like before,
+  // nothing here ever blocks the core app if Firebase isn't configured or
+  // isn't reachable. appliedApprovalIds guards against ever double-applying
+  // the same remote decision twice.
+  sync:{householdId:'',role:'primary',pairingCode:'',pairingCodeExpiresAt:0,notificationsEnabled:false,appliedApprovalIds:[]},
+  // Football IQ / Film Room (Phase 1 vertical slice — see
+  // Football_IQ_Architecture_Proposal.md). Mastery/XP data only — the
+  // actual football content (formations, fronts, lessons, scenarios)
+  // lives in football-data.js, never duplicated here.
+  footballIQ:{
+   position:'', concepts:{}, sessionHistory:[], todaySession:null,
+   streakDays:0, lastSessionDate:'', xp:0, achievements:[]
+  },
+  positionLab:{ RB:{drillProgress:{},xp:0}, EDGE:{drillProgress:{},xp:0}, LB:{drillProgress:{},xp:0} },
+  roadToVarsity:{ phase:1 }
  };
 }
 function migrateOld(){
@@ -497,7 +547,7 @@ state.skipped = state.skipped || {};
 state.checkinDraft = state.checkinDraft || {};
 state.checkinHistory = state.checkinHistory || [];
 state.lastCheckinAt = state.lastCheckinAt || 0;
-if(!['today','home','morning','strength','touches','nutrition','dadtalk','settings'].includes(state.screen)) state.screen='today';
+if(!['today','home','morning','strength','touches','nutrition','dadtalk','settings','filmRoom'].includes(state.screen)) state.screen='today';
 state.scheduleLogs = state.scheduleLogs || {};
 state.dayTypeOverrides = state.dayTypeOverrides || {};
 state.trainerSuspended = !!state.trainerSuspended;
@@ -516,6 +566,19 @@ state.responsibilityAssignment = state.responsibilityAssignment || {};
 state.accountabilityLog = state.accountabilityLog || {};
 state.strikeLog = state.strikeLog || [];
 state.screenTimeBank = state.screenTimeBank || {};
+state.screenTimeVoidDays = state.screenTimeVoidDays || {};
+state.sync = state.sync || {householdId:'',role:'primary',pairingCode:'',pairingCodeExpiresAt:0,notificationsEnabled:false,appliedApprovalIds:[]};
+state.sync.role = state.sync.role || 'primary';
+if(!Array.isArray(state.sync.appliedApprovalIds)) state.sync.appliedApprovalIds=[];
+state.footballIQ = state.footballIQ || {position:'',concepts:{},sessionHistory:[],todaySession:null,streakDays:0,lastSessionDate:'',xp:0,achievements:[]};
+state.footballIQ.concepts = state.footballIQ.concepts || {};
+state.footballIQ.sessionHistory = state.footballIQ.sessionHistory || [];
+state.footballIQ.achievements = state.footballIQ.achievements || [];
+if(state.footballIQ.xp==null) state.footballIQ.xp = 0;
+if(state.footballIQ.streakDays==null) state.footballIQ.streakDays = 0;
+state.positionLab = state.positionLab || {};
+['RB','EDGE','LB'].forEach(p=>{ state.positionLab[p] = state.positionLab[p] || {drillProgress:{},xp:0}; });
+state.roadToVarsity = state.roadToVarsity || {phase:1};
 state.posMode = state.posMode==='custom' ? 'custom' : 'hybrid';
 state.offPos = state.offPos || '';
 state.defPos = state.defPos || '';
@@ -1301,6 +1364,11 @@ function boot(){
  if(!appEntered){ showGate(); renderLauncher(); return; }
  hideGate(); render();
  ensureGlobalTaskAlarmTimer();
+ // Defensive: if the Firebase module script somehow already finished
+ // loading and signing in before this ran, start the listener right away
+ // too. The normal path is window.onJrSyncReady (see above), called by
+ // the module script itself once it's actually ready.
+ if(window.JrSync && window.JrSync._isReady) startSyncListenerOnce();
 }
 function onboardGoto(step){
  onboardStack.push(state.onboardStep||0);
@@ -1417,6 +1485,7 @@ function renderLauncher(){
   <p class="launcherSub">Where do you want to go?</p>
   <button class="launcherBtn" onclick="enterApp('today')"><span class="launcherIcon">📅</span> Today</button>
   <button class="launcherBtn" onclick="enterApp('home')"><span class="launcherIcon">🏈</span> Training</button>
+  <button class="launcherBtn" onclick="enterApp('filmRoom')"><span class="launcherIcon">🎥</span> Film Room</button>
   <button class="launcherBtn" onclick="enterApp('settings')"><span class="launcherIcon">🎨</span> Settings</button>
   <button class="launcherBtn" onclick="enterApp('nutrition')"><span class="launcherIcon">🍽️</span> Nutrition</button>
  </div>`;
@@ -2228,6 +2297,7 @@ function renderSettings(){
  </div><p class="small">Every new week keeps this structure but progresses volume, intensity, and the coach expectation.</p></div>
  <div class="inner"><h3>Progress</h3><p class="small">Speed & Agility is on Day ${state.portionDay.morning}, Workout is on Day ${state.portionDay.strength}, and Football Touches is on Day ${state.portionDay.touches} — each one advances on its own the moment IT is finished (tap "Start Day N" at the bottom of that module), so missing the gym for a while never holds back Speed & Agility or Touches. Calendar day ${state.day} of ${DAYS_TOTAL} still drives nutrition logging and Check-In, which comes up every 5 completed days — currently ${checkinCompletedCount()} of ${nextCheckinTarget()}.</p>
  <button class="orange full" onclick="skipToday()">Skip Today (injury or unavailable)</button></div>
+ <details class="clean"><summary>Sync With Mom ${syncConnected()?'🔗':''}</summary><div class="detailBody">${syncPanelHTML()}</div></details>
  <details class="clean"><summary>Parent Logs ${parentLogsUnlocked?'🔓':'🔒'}</summary><div class="detailBody">${parentLogsHTML()}</div></details>
  <details class="clean"><summary>Progress — Data Lab</summary><div class="detailBody">${dataLabHTML()}</div></details>
  <details class="clean"><summary>JR Daily Schedule (Admin)</summary><div class="detailBody">${adminScheduleHTML()}</div></details>`;
@@ -2869,7 +2939,7 @@ function quickComplete(taskId){
  save(); render();
 }
 function skipScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='skipped'; save(); render(); }
-function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; e.approved=false; e.awaitingReview=false; e.correctionNeeded=null; e.escalated=false; save(); render(); }
+function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; e.approved=false; e.awaitingReview=false; e.correctionNeeded=null; e.escalated=false; delete e.correctionSetAt; e.timeoutPenaltyApplied=false; save(); render(); }
 
 function saveAcademicScore(taskId,sub){
  const input=document.getElementById('academicScoreInput_'+taskId);
@@ -3040,6 +3110,136 @@ function repercussionTextForTask(t){
  if(t.id && t.id.indexOf('washDishes')===0) return WASH_DISHES_CONSEQUENCE+' Specifically: '+WASH_DISHES_ESCALATION;
  return null;
 }
+/* =========================================================
+   CROSS-DEVICE SYNC — Mom's approver page (v13)
+
+   Everything below is a thin, fully-optional bridge. The app works exactly
+   as it always has — all state local to this device/browser — whether or
+   not any of this is configured, whether or not Firebase is reachable,
+   and whether or not window.JrSync ever loads at all. Every call into
+   window.JrSync is wrapped so a failure here NEVER blocks a local
+   approve/reject/submit from working.
+
+   How it fits together: this device (Dad's/Jr's phone, running this same
+   index.html) is the "primary" device and stays the source of truth for
+   every rule already built — strikes, Screen Time, escalation, all of it.
+   Mom's phone runs a separate, much simpler page (approver.html) that
+   only shows the pending-approval queue and lets her tap Good/Deny.
+   Firestore is just the message bus between them:
+     - submitForApproval() here writes a "pending" doc.
+     - Mom tapping Good/Deny on approver.html updates that doc.
+     - This device is listening, sees her decision, and calls the SAME
+       local approveTask()/rejectTask() functions already used for every
+       in-person approval — so the decision goes through all the same
+       tested strike/Screen-Time logic either way.
+     - If Dad instead resolves it himself right here on this phone (the
+       code-gated Approve/Needs Correction buttons), that resolution gets
+       pushed back up to Firestore too, so Mom's queue clears and a Cloud
+       Function pings her phone that it's already handled.
+   ========================================================= */
+let syncListenerStarted=false;
+let suppressSyncResolve=false;
+function syncConfigured(){ return !!(window.JrSync && window.JrSync.configured); }
+function syncConnected(){ return syncConfigured() && !!(state.sync && state.sync.householdId); }
+function jrSyncSubmit(taskId,def,e){
+ if(!syncConnected()) return;
+ try{
+  window.JrSync.submitApproval(state.sync.householdId, state.sync.role, taskId, def?def.name:taskId, localDateKey())
+   .then(id=>{ if(id){ e.syncApprovalId=id; save(); } })
+   .catch(err=>console.error('JrSync submit failed',err));
+ }catch(err){ console.error('JrSync submit threw',err); }
+}
+function jrSyncResolve(taskId,e,status,note){
+ if(suppressSyncResolve) return;
+ if(!syncConnected() || !e || !e.syncApprovalId) return;
+ try{
+  window.JrSync.resolveApproval(state.sync.householdId, e.syncApprovalId, state.sync.role, status, note||'')
+   .catch(err=>console.error('JrSync resolve failed',err));
+ }catch(err){ console.error('JrSync resolve threw',err); }
+}
+// Called once Firestore reports a decision that came from the OTHER side
+// (Mom resolved it on approver.html, and this device didn't already handle
+// it locally). Applies her decision through the normal local functions so
+// every strike/Screen-Time rule still runs exactly the same way.
+function applyRemoteApprovalResolution(doc){
+ if(!doc || doc.status==='pending') return;
+ if(doc.resolvedBy && doc.resolvedBy===state.sync.role) return; // this device already resolved it
+ if(state.sync.appliedApprovalIds.indexOf(doc.id)!==-1) return;
+ state.sync.appliedApprovalIds.push(doc.id);
+ if(state.sync.appliedApprovalIds.length>300) state.sync.appliedApprovalIds.splice(0,state.sync.appliedApprovalIds.length-300);
+ const key=doc.date||localDateKey();
+ const log=state.scheduleLogs[key];
+ const e=log && log[doc.taskId];
+ if(!e || !e.awaitingReview){ save(); return; } // already resolved locally, or not today's live log anymore
+ suppressSyncResolve=true;
+ if(doc.status==='approved') approveTask(doc.taskId);
+ else rejectTask(doc.taskId, doc.rejectNote || 'Marked done, but Mom checked it and said it still needs work.');
+ suppressSyncResolve=false;
+ save();
+}
+function startSyncListenerOnce(){
+ if(syncListenerStarted || !syncConnected()) return;
+ syncListenerStarted=true;
+ try{ window.JrSync.listen(state.sync.householdId, applyRemoteApprovalResolution); }
+ catch(err){ console.error('JrSync listen failed',err); syncListenerStarted=false; }
+}
+// The Firebase module script below loads AFTER this classic script runs
+// (type="module" is deferred), so boot() can't just check window.JrSync at
+// the top of the page — it won't exist yet on first paint. Instead the
+// module script calls this well-known global hook itself the moment it's
+// actually signed in and ready, whether that happens right away or a
+// second later; this is what actually starts the listener on a normal
+// app reload where a household was already connected previously.
+window.onJrSyncReady = function(){ if(syncConnected()) startSyncListenerOnce(); };
+function startSyncHousehold(){
+ if(!syncConfigured()){ alert('Sync isn’t set up yet on this device — Firebase hasn’t been configured. The app still works completely fine without it.'); return; }
+ state.sync.householdId = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : ('h-'+Date.now()+'-'+Math.random().toString(36).slice(2));
+ save(); render();
+ window.JrSync.whenReady(()=>{ startSyncListenerOnce(); generateSyncPairingCode(); });
+}
+function generateSyncPairingCode(){
+ if(!syncConnected()) return;
+ window.JrSync.createPairingCode(state.sync.householdId).then(code=>{
+  if(!code) return;
+  state.sync.pairingCode=code;
+  state.sync.pairingCodeExpiresAt=Date.now()+10*60*1000;
+  save(); render();
+ }).catch(err=>{ console.error('JrSync pairing code failed',err); alert('Could not generate a pairing code right now — check the connection and try again.'); });
+}
+function disconnectSync(){
+ if(!confirm('Disconnect from Mom’s phone? You can always pair again with a new code.')) return;
+ state.sync={householdId:'',role:'primary',pairingCode:'',pairingCodeExpiresAt:0,notificationsEnabled:false,appliedApprovalIds:[]};
+ syncListenerStarted=false;
+ save(); render();
+}
+function enableSyncNotifications(){
+ if(!syncConnected()){ alert('Connect with Mom’s phone first.'); return; }
+ window.JrSync.registerPush(state.sync.householdId, state.sync.role).then(ok=>{
+  state.sync.notificationsEnabled=!!ok;
+  save(); render();
+  if(!ok) alert('Notifications weren’t enabled — this phone/browser may have blocked them, or needs to be opened from the Home Screen icon.');
+ }).catch(err=>{
+  console.error('JrSync push registration failed',err);
+  alert('Could not enable notifications: '+(err && err.message ? err.message : 'unknown error'));
+ });
+}
+function syncPanelHTML(){
+ if(!syncConfigured()){
+  return `<p class="small">Not set up yet on this device. This needs a one-time Firebase setup (see SETUP_FIREBASE.md) before Mom’s phone can get real alerts — the app works completely normally without it either way.</p>`;
+ }
+ if(!state.sync.householdId){
+  return `<p class="small">Connect this phone with Mom’s so she gets a real push alert the moment Jr submits a task, and can tap Good/Deny from her own phone.</p>
+  <button class="gold full" onclick="startSyncHousehold()">Connect With Mom’s Phone</button>`;
+ }
+ const codeLive = state.sync.pairingCode && Date.now() < state.sync.pairingCodeExpiresAt;
+ const minsLeft = codeLive ? Math.max(1,Math.ceil((state.sync.pairingCodeExpiresAt-Date.now())/60000)) : 0;
+ return `<p class="small">Connected. On Mom’s phone, open <b>approver.html</b> from this same site and enter the code below.</p>
+ ${codeLive
+   ? `<div class="inner" style="text-align:center"><div style="font-size:34px;font-weight:bold;letter-spacing:4px">${state.sync.pairingCode}</div><p class="tiny">Expires in about ${minsLeft} minute${minsLeft===1?'':'s'}.</p></div>`
+   : `<button class="gold full" onclick="generateSyncPairingCode()">Generate A Pairing Code For Mom</button>`}
+ <button class="${state.sync.notificationsEnabled?'green':'gold'} full" style="margin-top:8px" onclick="enableSyncNotifications()">${state.sync.notificationsEnabled?'✅ Notifications On For This Device':'Enable Notifications On This Device'}</button>
+ <button class="orange full" style="margin-top:8px" onclick="disconnectSync()">Disconnect</button>`;
+}
 function submitForApproval(taskId){
  const def=findTaskDef(taskId);
  const e=scheduleEntry(taskId);
@@ -3049,7 +3249,13 @@ function submitForApproval(taskId){
  if(def && def.completionType==='academic') e.sub=def.sub;
  e.awaitingReview=true;
  save(); render();
+ jrSyncSubmit(taskId,def,e);
 }
+// Screen Time is voided outright for a whole day once 3 strikes land that
+// same day — not just locked until fixed, genuinely gone, even if every
+// one of those 3 later gets corrected and approved. Checked both before
+// awarding any new minutes and before showing the balance at all.
+function isScreenTimeVoidedToday(d=new Date()){ return !!state.screenTimeVoidDays[localDateKey(d)]; }
 function approveTask(taskId){
  const def=findTaskDef(taskId);
  const e=scheduleEntry(taskId);
@@ -3058,37 +3264,95 @@ function approveTask(taskId){
  e.correctionNeeded=null;
  e.escalated=false;
  // Screen Time is earned once per task, the first time it's approved clean
- // — reopening and re-approving the same day doesn't stack extra minutes.
- if(!e.screenTimeAwarded){
+ // — reopening and re-approving the same day doesn't stack extra minutes —
+ // and never while today is already voided from 3 strikes.
+ if(!e.screenTimeAwarded && !isScreenTimeVoidedToday()){
   const key=localDateKey();
   state.screenTimeBank[key]=(state.screenTimeBank[key]||0)+screenTimeValueForTask(def);
   e.screenTimeAwarded=true;
  }
  save(); render();
+ jrSyncResolve(taskId,e,'approved','');
 }
-function rejectTask(taskId){
+function rejectTask(taskId,forcedNote){
  const def=findTaskDef(taskId);
  const noteInput=document.getElementById('rejectNote_'+taskId);
- const note=noteInput?noteInput.value.trim():'';
+ const note=(forcedNote!=null)?forcedNote:(noteInput?noteInput.value.trim():'');
  const e=scheduleEntry(taskId);
  e.awaitingReview=false;
  e.approved=false;
  e.correctionNeeded=note||'Marked done, but it was not actually finished or correct when checked in person.';
  e.status='notStarted';
  delete e.actualFinish;
+ // Real wall-clock timestamp (not minutes-of-day) so the 1-hour overdue
+ // check below works correctly even across a midnight boundary, and a
+ // fresh flag so the one-time timeout deduction never double-applies.
+ e.correctionSetAt=Date.now();
+ e.timeoutPenaltyApplied=false;
  // Same task, bigger scope — not a generic "try again." Cleared again once
  // it's actually approved.
  if(def && (def.completionType==='responsibility' || (def.id && def.id.indexOf('washDishes')===0) || def.completionType==='academic')){
   e.escalated=true;
  }
  if(def && def.completionType==='responsibility') e.checklist={};
+ const key=localDateKey();
  state.strikeLog.unshift({
-  date:localDateKey(), taskId, taskName:def?def.name:taskId,
+  date:key, taskId, taskName:def?def.name:taskId,
   category:def?def.category:'', note:e.correctionNeeded,
-  consequence:repercussionTextForTask(def), at:nowMinutes()
+  consequence:repercussionTextForTask(def), at:nowMinutes(), type:'strike'
  });
  if(state.strikeLog.length>200) state.strikeLog.length=200;
+ // 3 real strikes in one day voids that whole day's Screen Time —
+ // permanently for today, not just until it's fixed. The timeout-penalty
+ // entries below are logged the same way for visibility but deliberately
+ // don't count toward this — they're a cost for sitting unfixed, not a
+ // 4th distinct instance of doing something wrong.
+ const strikesToday=state.strikeLog.filter(s=>s.date===key && s.type!=='timeoutPenalty').length;
+ if(strikesToday>=3) state.screenTimeVoidDays[key]=true;
  save(); render();
+ jrSyncResolve(taskId,e,'rejected',e.correctionNeeded);
+}
+// Runs out of the existing 60-second global timer (see
+// ensureGlobalTaskAlarmTimer) rather than a separate interval. Any
+// correction that's been sitting open for over an hour without being
+// resubmitted-and-approved takes a one-time flat deduction off today's
+// Screen Time balance — a real cost for letting it sit, on top of the
+// balance already being locked while it's open. Only ever applies once
+// per task (guarded by e.timeoutPenaltyApplied), and never pushes the
+// bank below 0.
+const CORRECTION_TIMEOUT_MS=60*60*1000;
+const CORRECTION_TIMEOUT_PENALTY=15;
+function applyOverdueCorrectionPenalties(d=new Date()){
+ const key=localDateKey(d);
+ const log=state.scheduleLogs[key];
+ if(!log) return;
+ const now=Date.now();
+ let changed=false;
+ Object.keys(log).forEach(taskId=>{
+  const e=log[taskId];
+  if(e.correctionNeeded && !e.approved && e.correctionSetAt && !e.timeoutPenaltyApplied && (now-e.correctionSetAt)>CORRECTION_TIMEOUT_MS){
+   const def=findTaskDef(taskId);
+   state.screenTimeBank[key]=Math.max(0,(state.screenTimeBank[key]||0)-CORRECTION_TIMEOUT_PENALTY);
+   e.timeoutPenaltyApplied=true;
+   state.strikeLog.unshift({
+    date:key, taskId, taskName:def?def.name:taskId,
+    category:def?def.category:'', note:'Still not fixed an hour after being sent back.',
+    consequence:'-'+CORRECTION_TIMEOUT_PENALTY+' min taken off today’s Screen Time for sitting unfixed too long — on top of staying locked until it’s actually redone.', at:nowMinutes(), type:'timeoutPenalty'
+   });
+   changed=true;
+  }
+ });
+ if(state.strikeLog.length>200) state.strikeLog.length=200;
+ if(changed){ save(); render(); }
+}
+// Lights Out is locked until every other real task for the day is actually
+// finished (completed or genuinely skipped) — he can go check off tasks in
+// any order and doesn't need a parent's approval yet to keep moving, but he
+// can't call it a night with things still sitting undone. Screen Time is
+// excluded on purpose — it's the reward, not an obligation, so not using it
+// tonight should never be what stands between him and bed.
+function unfinishedTasksForBedtime(sched){
+ return sched.tasks.filter(o=>o.id!=='bedtime' && o.id!=='screenTime' && o.status!=='completed' && o.status!=='skipped');
 }
 function hasOpenCorrections(d=new Date()){
  const log=state.scheduleLogs[localDateKey(d)]||{};
@@ -3101,14 +3365,41 @@ function openCorrectionTasks(d=new Date()){
   return {id,name:def?def.name:id,note:log[id].correctionNeeded};
  });
 }
+// Approving or rejecting a task is a real parent action, not something JR
+// should be able to tap through himself — it's gated by its own code,
+// separate from the Parent Logs code (that one's for reading saved
+// history, this one's for actually signing off on a task). Same
+// session-only pattern as Parent Logs: entering it once unlocks approvals
+// for the rest of this session; a reload locks it again.
+const APPROVAL_CODE='0215';
+let approvalsUnlocked=false;
+let approvalsCodeError=false;
+function submitApprovalsCode(){
+ const input=document.getElementById('approvalsCodeInput');
+ const val=input?input.value.trim():'';
+ if(val===APPROVAL_CODE){ approvalsUnlocked=true; approvalsCodeError=false; }
+ else { approvalsCodeError=true; }
+ render();
+}
+function lockApprovals(){ approvalsUnlocked=false; approvalsCodeError=false; render(); }
 function inspectionPanelHTML(t){
+ if(!approvalsUnlocked){
+  return `<div class="coachBubble" style="margin-top:8px"><strong>🔒 Parent Code Required</strong><p class="small">This is marked done and waiting on a real in-person check. Approving it or sending it back needs the parent code — not something to enter yourself.</p></div>
+  <div class="inner" style="margin-top:8px">
+  <input type="password" id="approvalsCodeInput" placeholder="Enter parent code" onkeydown="if(event.key==='Enter')submitApprovalsCode()">
+  ${approvalsCodeError?'<p class="tiny" style="color:var(--orange)">Incorrect code.</p>':''}
+  <button class="gold full" style="margin-top:8px" onclick="submitApprovalsCode()">Unlock</button>
+  </div>`;
+ }
  return `<div class="coachBubble" style="margin-top:8px"><strong>Awaiting Inspection</strong><p class="small">Go check this in person before approving — not from memory, not because he said so.</p></div>
  <div class="inner" style="margin-top:8px"><div class="label">Parent Check</div>
  <textarea id="rejectNote_${t.id}" rows="2" placeholder="If something is wrong, note exactly what (e.g. toilet seat, mirror, trash). Leave blank if it's actually right."></textarea>
  <div class="grid" style="margin-top:8px">
  <button class="green" onclick="approveTask('${t.id}')">Approve ✅</button>
  <button class="orange" onclick="rejectTask('${t.id}')">Needs Correction ✏️</button>
- </div></div>`;
+ </div>
+ <button class="chip full" style="margin-top:8px" onclick="lockApprovals()">🔒 Lock Again</button>
+ </div>`;
 }
 function approvalCompletionControlsHTML(t){
  const e=t.entry;
@@ -3130,6 +3421,7 @@ function screenTimeCardHTML(){
  <p class="small">Screen time means TV — nothing else. It's earned, not automatic: every chore and academic block done right (approved, no correction needed) adds minutes to today's balance. Nothing done, nothing earned.</p>
  <div class="coachBubble" style="margin-top:8px;text-align:center"><h2 style="margin:0">${earned} minute${earned===1?'':'s'} earned today</h2></div>
  <p class="tiny" style="margin-top:8px">Wash Dishes = +5 each • Responsibility Block = +15 • each academic block = +10.</p>
+ <p class="tiny" style="margin-top:4px">3 strikes in one day voids all of today's Screen Time, even if every one gets fixed later. A correction sitting unfixed for over an hour also costs a flat ${CORRECTION_TIMEOUT_PENALTY} minutes on top of staying locked.</p>
  </div>`;
 }
 
@@ -3153,6 +3445,8 @@ function purgeOldLogs(){
  let changed=false;
  Object.keys(state.scheduleLogs||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.scheduleLogs[k]; changed=true; } });
  Object.keys(state.accountabilityLog||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.accountabilityLog[k]; changed=true; } });
+ Object.keys(state.screenTimeVoidDays||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.screenTimeVoidDays[k]; changed=true; } });
+ Object.keys(state.screenTimeBank||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.screenTimeBank[k]; changed=true; } });
  const before=(state.strikeLog||[]).length;
  state.strikeLog=(state.strikeLog||[]).filter(s=>keyToLocalDate(s.date)>=cutoff);
  if(state.strikeLog.length!==before) changed=true;
@@ -3170,6 +3464,7 @@ function deleteParentLogDay(dateKey){
  if(!confirm('Delete everything logged for '+dateKey+'? This cannot be undone.')) return;
  delete state.scheduleLogs[dateKey];
  delete state.accountabilityLog[dateKey];
+ delete state.screenTimeVoidDays[dateKey];
  state.strikeLog=(state.strikeLog||[]).filter(s=>s.date!==dateKey);
  save(); render();
 }
@@ -3201,7 +3496,7 @@ function parentLogDaySummaryHTML(dateKey){
  const acc=state.accountabilityLog[dateKey];
  const accHtml=acc?`<div class="inner" style="margin-top:6px"><div class="label">${acc.category}</div><p class="small">${acc.response}</p></div>`:'';
  const strikes=(state.strikeLog||[]).filter(s=>s.date===dateKey);
- const strikeHtml=strikes.length?strikes.map(s=>`<div class="coachBubble" style="margin-top:6px;border-color:var(--orange)"><strong>Strike — ${s.taskName}</strong><p class="tiny">${s.note}</p></div>`).join(''):'';
+ const strikeHtml=strikes.length?strikes.map(s=>`<div class="coachBubble" style="margin-top:6px;border-color:var(--orange)"><strong>${s.type==='timeoutPenalty'?'⏱ Screen Time Penalty':'Strike'} — ${s.taskName}</strong><p class="tiny">${s.note}</p></div>`).join(''):'';
  return `<div class="inner" style="margin-top:10px"><div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">${dateKey}</h3><button class="chip" onclick="deleteParentLogDay('${dateKey}')">🗑 Delete</button></div>
  ${rows.length?rows.join(''):'<p class="tiny">No academic or chore entries this day.</p>'}${accHtml}${strikeHtml}
  </div>`;
@@ -3300,11 +3595,20 @@ function genericCompletionControlsHTML(t){
 }
 
 function taskDetailHTML(t){
+ if(PRIVILEGE_TASK_IDS.includes(t.id) && isScreenTimeVoidedToday()){
+  return `<div class="coachBubble" style="border-color:var(--orange)"><h3 style="margin-top:0">🔒 Voided For Today</h3><p class="small">3 strikes today — Screen Time is gone for the rest of today, even once everything gets fixed and approved. Fresh slate tomorrow.</p></div>`;
+ }
  if(PRIVILEGE_TASK_IDS.includes(t.id) && hasOpenCorrections()){
   const open=openCorrectionTasks();
   return `<div class="coachBubble" style="border-color:var(--orange)"><h3 style="margin-top:0">🔒 Locked</h3><p class="small">This stays locked until every task below is redone and re-approved by a parent:</p>${open.map(o=>`<p class="small">• <b>${o.name}</b> — ${o.note}</p>`).join('')}</div>`;
  }
  if(t.id==='screenTime') return screenTimeCardHTML()+genericCompletionControlsHTML(t);
+ if(t.id==='bedtime'){
+  const open=unfinishedTasksForBedtime(computeTodaySchedule());
+  if(open.length){
+   return `<div class="coachBubble" style="border-color:var(--orange)"><h3 style="margin-top:0">🔒 Not Yet</h3><p class="small">Lights Out waits until everything else today is actually finished — still open:</p>${open.map(o=>`<p class="small">• ${o.name}</p>`).join('')}</div>`;
+  }
+ }
  const flipText=repercussionTextForTask(t);
  const flipped=!!flipText && todayFlippedIds.has(t.id);
  const flipBtn=flipText?`<button class="feedCardFlipBtn" onclick="toggleTodayFlip('${t.id}')">${flipped?'↩️ Flip Back To The Task':'⚠️ Flip: What Happens If This Is Done Wrong'}</button>`:'';
@@ -3449,9 +3753,11 @@ function playAlarmSound(){
  }catch(e){ /* best effort — mobile autoplay restrictions may block this until the app has been tapped once */ }
 }
 function ensureGlobalTaskAlarmTimer(){
+ applyOverdueCorrectionPenalties();
  if(globalTaskAlarmTimer) return;
  globalTaskAlarmTimer=setInterval(()=>{
   if(!appEntered || !state.onboarded) return;
+  applyOverdueCorrectionPenalties();
   const gate=document.getElementById('gateScreen');
   if(gate && !gate.classList.contains('hidden')) return;
   const sched=computeTodaySchedule();
@@ -3559,12 +3865,13 @@ function toggleTodayFlip(id){
 let todayPendingOpen=false;
 function toggleTodayPending(){ todayPendingOpen=!todayPendingOpen; render(); }
 
-function feedCardHTML(t,idx,total){
+function feedCardHTML(t,idx,total,allTasks){
  const statusIcon = t.status==='completed'?'✅ Completed':t.status==='inProgress'?'● In Progress':'';
  const timeLabel = t.status==='skipped'?'Ran out of time today — skipped':clock12(minToHHMM(t.schedStart))+(t.duration?' • '+t.duration+' min':'')+(t.fixed?' • fixed':'');
  const tight = t.tightWarning?`<p class="tiny" style="color:var(--orange)">⚠ Running behind — pushed later, could not fit before ${t.tightWarning}.</p>`:'';
  const revealed=todayRevealedIds.has(t.id);
- const locked=t.status!=='skipped' && PRIVILEGE_TASK_IDS.includes(t.id) && hasOpenCorrections();
+ const bedtimeLocked=t.id==='bedtime' && t.status!=='skipped' && allTasks && allTasks.some(o=>o.id!=='bedtime' && o.id!=='screenTime' && o.status!=='completed' && o.status!=='skipped');
+ const locked=(t.status!=='skipped' && PRIVILEGE_TASK_IDS.includes(t.id) && (hasOpenCorrections() || isScreenTimeVoidedToday())) || bedtimeLocked;
  const awaiting=t.entry && t.entry.awaitingReview;
  const cover=`<div class="feedCover" onclick="toggleTodayReveal('${t.id}')">
    <div class="feedCardIcon">${taskHeroIcon(t)}</div>
@@ -3609,7 +3916,7 @@ function renderToday(){
  </div>
  <div class="feedDots">${sched.tasks.map((t,i)=>`<span class="feedDot ${i===todayCardIndex?'on':''} ${t.status==='completed'?'done':''}" onclick="todayGoTo(${i})"></span>`).join('')}</div>
  <div class="todayFeed" id="todayFeed" onscroll="onTodayFeedScroll(this)">
-  ${sched.tasks.map((t,i)=>feedCardHTML(t,i,total)).join('')}
+  ${sched.tasks.map((t,i)=>feedCardHTML(t,i,total,sched.tasks)).join('')}
  </div>`;
  if(todayAttentionOpen){
   body+=`<div class="attentionOverlay">
@@ -3720,7 +4027,7 @@ function setJustAthlete(){
  state.posMode='hybrid'; state.offPos=''; state.defPos='';
  save(); render();
 }
-const screenRenderers={today:renderToday,home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,settings:renderSettings};
+const screenRenderers={today:renderToday,home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,settings:renderSettings,filmRoom:renderFilmRoom};
 // Perf note: only the screen the athlete is actually looking at gets rebuilt.
 // The other seven stay untouched until he navigates to them (they always
 // redraw fresh from state at that point, so nothing goes stale).
@@ -4233,7 +4540,461 @@ function renderAllTrendCharts(){
  +renderTrendChart('bestVertical','Vertical Jump','in','higher');
 }
 
+/* =========================================================
+   FOOTBALL IQ / FILM ROOM — Phase 1 vertical slice
+   =========================================================
+   Pure football content (formations, fronts, lessons, scenarios)
+   lives entirely in football-data.js, loaded before this script.
+   Everything here is UI + learning-progression logic: it reads that
+   content and reads/writes state.footballIQ, exactly the same
+   separation of concerns every other module in this app already
+   follows (e.g. RESPONSIBILITY_TEMPLATES vs. the schedule engine).
+
+   See Football_IQ_Architecture_Proposal.md for the full design —
+   this is the Phase 1 scope only: one formation (Shotgun Trips
+   Right), one front (4-2 Nickel), one run concept (Inside Zone),
+   one blitz, one protection rule, one coverage concept, for RB.
+   ========================================================= */
+// Phase 1's whole curriculum slice is intentionally tiny — 11 concepts,
+// exactly the ones named in the spec's vertical-slice prototype (section
+// 51). Capping "new concepts per day" low makes sense once the REAL
+// curriculum (hundreds of concepts, Phase 2+) exists, but artificially
+// spreading this deliberately small prototype across multiple days would
+// undercut its actual purpose: proving the whole LEARN->RECOGNIZE->APPLY
+// ->TEST pipeline works end to end in one sitting (section 52's success
+// criteria describes exactly that — one continuous session). So this cap
+// is set to cover the entire Phase 1 slice in a single first session.
+// Shrink it back down once real curriculum breadth arrives.
+const FR_NEW_CONCEPTS_PER_DAY = 11;
+const FR_RECOGNIZE_PER_DAY = 5;
+const FR_APPLY_PER_DAY = 4;
+const FR_TEST_PER_DAY = 7;
+const FR_INTERVAL_LADDER_DAYS = [1,3,7,14,30]; // spaced repetition, configurable
+const FR_XP = { learnCard:3, recognizeCorrect:5, applyCorrect:7, testCorrect:10, wrongAnswer:1 };
+const FR_SUBSCORE_GROUPS = {
+ frontRecognition:['front42Nickel','mikeId','willId','nickelId'],
+ runConcepts:['insideZone','gaps'],
+ passProtection:['rbProtectionRule','nickelBlitz'],
+ coverageRecognition:['cover2Flat'],
+ formationPersonnel:['personnel11','formationShotgun']
+};
+const FR_SUBSCORE_LABELS = {
+ frontRecognition:'Defensive Front Recognition', runConcepts:'Run Concepts',
+ passProtection:'Pass Protection', coverageRecognition:'Coverage Recognition',
+ formationPersonnel:'Formation & Personnel'
+};
+
+function frEnsureConceptRecord(conceptId){
+ const fi=state.footballIQ;
+ if(!fi.concepts[conceptId]) fi.concepts[conceptId]={attempts:0,correct:0,lastSeen:0,nextReview:0,intervalIndex:0,confidence:0};
+ return fi.concepts[conceptId];
+}
+function frIsConceptNew(conceptId){
+ const rec=state.footballIQ.concepts[conceptId];
+ return !rec || (rec.attempts===0 && !rec.lastSeen);
+}
+function frIsConceptDue(conceptId){
+ const rec=state.footballIQ.concepts[conceptId];
+ if(!rec || !rec.lastSeen) return false;
+ return Date.now() >= (rec.nextReview||0);
+}
+
+// Builds today's LEARN -> RECOGNIZE -> APPLY -> TEST session. New concepts
+// are introduced a few at a time in curriculum order (LESSON_ORDER); once a
+// concept is introduced (today or on a previous day), it becomes eligible
+// for Recognize/Apply/Test scenarios, prioritizing whatever the spaced-
+// repetition scheduler says is due for review first.
+function buildFilmRoomSession(){
+ const items=[];
+ const introduced={};
+ Object.keys(CONCEPTS).forEach(cid=>{ if(!frIsConceptNew(cid)) introduced[cid]=true; });
+
+ let newCount=0;
+ LESSON_ORDER.forEach(lessonId=>{
+  if(newCount>=FR_NEW_CONCEPTS_PER_DAY) return;
+  const lesson=LESSONS[lessonId];
+  if(!introduced[lesson.concept]){
+   items.push({stage:'learn', refId:lessonId});
+   introduced[lesson.concept]=true;
+   newCount++;
+  }
+ });
+
+ function pick(poolIds, count){
+  const eligible=poolIds.filter(id=>introduced[SCENARIOS[id].concept]);
+  const due=eligible.filter(id=>frIsConceptDue(SCENARIOS[id].concept));
+  const notDue=eligible.filter(id=>due.indexOf(id)===-1);
+  const ordered=due.concat(notDue);
+  const out=[]; const usedConcepts={};
+  ordered.forEach(id=>{ const c=SCENARIOS[id].concept; if(out.length<count && !usedConcepts[c]){ usedConcepts[c]=true; out.push(id); } });
+  ordered.forEach(id=>{ if(out.length<count && out.indexOf(id)===-1) out.push(id); });
+  return out.slice(0,count);
+ }
+
+ pick(SCENARIOS_BY_STAGE.recognize, FR_RECOGNIZE_PER_DAY).forEach(id=>items.push({stage:'recognize', refId:id}));
+ pick(SCENARIOS_BY_STAGE.apply, FR_APPLY_PER_DAY).forEach(id=>items.push({stage:'apply', refId:id}));
+ pick(SCENARIOS_BY_STAGE.test, FR_TEST_PER_DAY).forEach(id=>items.push({stage:'test', refId:id}));
+
+ return { date:localDateKey(), items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0 };
+}
+function frGetOrCreateTodaySession(){
+ const fi=state.footballIQ, today=localDateKey();
+ if(fi.todaySession && fi.todaySession.date===today) return fi.todaySession;
+ fi.todaySession=buildFilmRoomSession();
+ save();
+ return fi.todaySession;
+}
+function frCompleteLearnItem(lessonId){
+ const lesson=LESSONS[lessonId];
+ const rec=frEnsureConceptRecord(lesson.concept);
+ if(rec.attempts===0 && !rec.lastSeen){
+  rec.lastSeen=Date.now();
+  rec.nextReview=Date.now()+FR_INTERVAL_LADDER_DAYS[0]*86400000;
+  state.footballIQ.xp+=FR_XP.learnCard;
+ }
+}
+function frScoreAnswer(scenario, answerId, responseTimeMs, stage){
+ const correct = answerId===scenario.question.correctAnswerId;
+ const rec=frEnsureConceptRecord(scenario.concept);
+ rec.attempts++;
+ if(correct) rec.correct++;
+ rec.lastSeen=Date.now();
+ if(correct){
+  rec.intervalIndex=Math.min(rec.intervalIndex+1, FR_INTERVAL_LADDER_DAYS.length-1);
+  rec.confidence=Math.min(100, rec.confidence+8);
+ } else {
+  rec.intervalIndex=Math.max(rec.intervalIndex-1, 0);
+  rec.confidence=Math.max(0, rec.confidence-15);
+ }
+ rec.nextReview=Date.now()+FR_INTERVAL_LADDER_DAYS[rec.intervalIndex]*86400000;
+ const xpGain = correct ? (stage==='test'?FR_XP.testCorrect:stage==='apply'?FR_XP.applyCorrect:FR_XP.recognizeCorrect) : FR_XP.wrongAnswer;
+ state.footballIQ.xp+=xpGain;
+ state.footballIQ.sessionHistory.unshift({date:localDateKey(), stage, scenarioId:scenario.id, concept:scenario.concept, correct, responseTimeMs, at:nowMinutes()});
+ if(state.footballIQ.sessionHistory.length>500) state.footballIQ.sessionHistory.length=500;
+ return {correct, xpGain};
+}
+function frConceptScore(conceptId){
+ const rec=state.footballIQ.concepts[conceptId];
+ if(!rec || rec.attempts===0) return null;
+ return rec.confidence;
+}
+function frGroupScore(ids){
+ const scores=ids.map(frConceptScore).filter(s=>s!=null);
+ if(!scores.length) return null;
+ return Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+}
+function footballIQRating(){
+ const subscores={};
+ Object.keys(FR_SUBSCORE_GROUPS).forEach(k=>{ subscores[k]=frGroupScore(FR_SUBSCORE_GROUPS[k]); });
+ return { overall: frGroupScore(Object.keys(CONCEPTS)), subscores };
+}
+function frLevel(){ return Math.floor((state.footballIQ.xp||0)/100)+1; }
+
+function onFieldTap(id){
+ const s=state.footballIQ.todaySession;
+ if(!s) return;
+ const item=s.items[s.idx];
+ if(!item || item.answeredId || item.stage==='learn') return;
+ const scenario=SCENARIOS[item.refId];
+ if(!scenario) return;
+ if(['tapDefender','tapGap','tapLane'].indexOf(scenario.question.type)===-1) return;
+ if(!scenario.question.options.some(o=>o.id===id)) return;
+ frSubmitAnswer(id);
+}
+function frSubmitAnswer(answerId){
+ const s=state.footballIQ.todaySession;
+ if(!s) return;
+ const item=s.items[s.idx];
+ if(!item || item.answeredId || item.stage==='learn') return;
+ const scenario=SCENARIOS[item.refId];
+ const responseTimeMs=Date.now()-(s.itemStartedAt||Date.now());
+ const {correct, xpGain}=frScoreAnswer(scenario, answerId, responseTimeMs, item.stage);
+ item.answeredId=answerId; item.correct=correct; item.xpGain=xpGain;
+ s.xpEarned=(s.xpEarned||0)+xpGain;
+ save(); render();
+}
+function frAdvance(){
+ const s=state.footballIQ.todaySession;
+ if(!s) return;
+ const item=s.items[s.idx];
+ if(item && item.stage==='learn' && !item.completed){
+  frCompleteLearnItem(item.refId);
+  item.completed=true;
+  s.xpEarned=(s.xpEarned||0)+FR_XP.learnCard;
+ }
+ s.idx++;
+ s.itemStartedAt=Date.now();
+ if(s.idx>=s.items.length && !s.completedAt){
+  s.completedAt=Date.now();
+  const today=localDateKey();
+  const prevDate=state.footballIQ.lastSessionDate;
+  if(prevDate){
+   const diffDays=Math.round((new Date(today+'T00:00:00')-new Date(prevDate+'T00:00:00'))/86400000);
+   state.footballIQ.streakDays = diffDays===1 ? (state.footballIQ.streakDays||0)+1 : (diffDays===0 ? (state.footballIQ.streakDays||1) : 1);
+  } else {
+   state.footballIQ.streakDays=1;
+  }
+  state.footballIQ.lastSessionDate=today;
+ }
+ save(); render();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---- Interactive football field — one reusable component (section 6) ---- */
+function renderFootballField(fieldState, opts){
+ opts=opts||{};
+ const offense = fieldState && fieldState.offense ? FORMATIONS[fieldState.offense] : null;
+ const defense = fieldState && fieldState.defense ? DEFENSIVE_FRONTS[fieldState.defense] : null;
+ const players = [].concat(offense?offense.players:[], defense?defense.players:[]);
+ const gaps = fieldState && fieldState.showGaps ? GAPS_VS_TRIPS_RIGHT : [];
+ const tappableIds = opts.tappableIds||[];
+ const highlightId = (fieldState&&fieldState.highlight) || opts.highlightId;
+ let svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" class="fieldSvg" role="img" aria-label="Football field diagram">`;
+ svg += `<rect x="0" y="0" width="100" height="100" fill="#0b3d1f"/>`;
+ for(let i=10;i<100;i+=10) svg += `<line x1="0" y1="${i}" x2="100" y2="${i}" stroke="rgba(255,255,255,0.08)" stroke-width="0.3"/>`;
+ svg += `<line x1="0" y1="50" x2="100" y2="50" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>`;
+ gaps.forEach(g=>{
+  svg += `<rect x="${g.x-3}" y="44" width="6" height="12" fill="rgba(251,146,60,0.18)" stroke="rgba(251,146,60,0.5)" stroke-width="0.3"/>
+   <text x="${g.x}" y="41" font-size="3.4" fill="#fb923c" text-anchor="middle">${g.label}</text>`;
+ });
+ players.forEach(p=>{
+  const isTappable = tappableIds.indexOf(p.id)!==-1;
+  const isReveal = opts.revealId===p.id;
+  const isWrong = opts.wrongId===p.id;
+  const isHighlight = highlightId===p.id;
+  const fill = p.group==='OL' ? '#64748b' : p.group==='skill' ? '#3b82f6' : (p.group==='DL'||p.group==='LB') ? '#ef4444' : '#f97316';
+  let ring='';
+  if(isReveal) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#22c55e" stroke-width="0.8"/>`;
+  else if(isWrong) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#ef4444" stroke-width="0.8"/>`;
+  else if(isHighlight) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#facc15" stroke-width="0.8" stroke-dasharray="1,1"/>`;
+  svg += `<g ${isTappable?`onclick="onFieldTap('${p.id}')" style="cursor:pointer"`:''}>${ring}
+   <circle cx="${p.x}" cy="${p.y}" r="3.6" fill="${fill}" stroke="#050505" stroke-width="0.2"/>
+   <text x="${p.x}" y="${p.y+1.1}" font-size="2.6" fill="#fff" text-anchor="middle" font-weight="bold">${p.label}</text></g>`;
+ });
+ svg += `</svg>`;
+ return `<div class="fieldWrap">${svg}</div>`;
+}
+
+function frDotsHTML(s){
+ return `<div class="frDots">${s.items.map((it,i)=>{
+  let cls='frDot';
+  if(i===s.idx) cls+=' now';
+  else if(it.answeredId) cls += it.correct?' done':' wrongDot';
+  else if(it.completed) cls+=' done';
+  return `<span class="${cls}"></span>`;
+ }).join('')}</div>`;
+}
+function frSessionSummaryHTML(s, rating){
+ const total=s.items.filter(i=>i.answeredId).length;
+ const correctCount=s.items.filter(i=>i.correct).length;
+ const subscoreRows=Object.keys(rating.subscores).map(k=>`<div class="checkItem"><span>${FR_SUBSCORE_LABELS[k]||k}</span><span class="tiny">${rating.subscores[k]!=null?rating.subscores[k]:'Not enough data yet'}</span></div>`).join('');
+ return `<div class="coachBubble" style="margin-top:12px"><strong>Film Room — Done For Today ✅</strong>
+  <p class="small">${correctCount} of ${total} correct this session. +${s.xpEarned||0} XP earned.</p></div>
+  <div class="inner" style="margin-top:10px"><h3>Football IQ Breakdown</h3>${subscoreRows}
+  <p class="tiny" style="margin-top:6px">Scores are based on actual quiz performance, rolled over recent attempts — one bad session won't tank it.</p></div>
+  <p class="small" style="margin-top:10px;text-align:center">Come back tomorrow for the next session — weak concepts come back around sooner than strong ones.</p>`;
+}
+function frItemHTML(s, item){
+ if(item.stage==='learn'){
+  const lesson=LESSONS[item.refId];
+  return `<div class="frStageBadge learn">Learn</div>
+   <h3 style="margin-top:8px">${lesson.title}</h3>
+   ${renderFootballField(lesson.fieldState, {})}
+   <p class="small">${lesson.body}</p>
+   ${frDotsHTML(s)}
+   <button class="gold full" style="margin-top:10px" onclick="frAdvance()">Got It — Continue</button>`;
+ }
+ const scenario=SCENARIOS[item.refId];
+ const q=scenario.question;
+ const answered=!!item.answeredId;
+ const fieldOpts={};
+ if(['tapDefender','tapGap','tapLane'].indexOf(q.type)!==-1){
+  fieldOpts.tappableIds = answered ? [] : q.options.map(o=>o.id);
+  if(answered){ fieldOpts.revealId=q.correctAnswerId; if(item.answeredId!==q.correctAnswerId) fieldOpts.wrongId=item.answeredId; }
+ }
+ const noteHtml = scenario.fieldState.note ? `<div class="frNote">${scenario.fieldState.note}</div>` : '';
+ let optionsHtml;
+ if(q.type==='mc' || q.type==='tf'){
+  optionsHtml = q.options.map(o=>{
+   let cls='frOptionBtn';
+   if(answered){ if(o.id===q.correctAnswerId) cls+=' correct'; else if(o.id===item.answeredId) cls+=' wrong'; }
+   return `<button class="${cls}" ${answered?'disabled':''} onclick="frSubmitAnswer('${o.id}')">${o.label}</button>`;
+  }).join('');
+ } else {
+  optionsHtml = `<p class="tiny" style="margin-top:6px">Tap the correct spot directly on the field above.</p>`;
+ }
+ const feedbackHtml = answered ? `<div class="frFeedback ${item.correct?'correct':'wrong'}"><strong>${item.correct?'✅ Correct':'❌ Not quite'}</strong><p class="small" style="margin-top:4px">${q.explanation}</p></div>` : '';
+ const nextBtn = answered ? `<button class="gold full" style="margin-top:10px" onclick="frAdvance()">Next</button>` : '';
+ return `<div class="frStageBadge ${item.stage}">${item.stage}</div>
+  <h3 style="margin-top:8px">${q.prompt}</h3>
+  ${renderFootballField(scenario.fieldState, fieldOpts)}${noteHtml}
+  ${optionsHtml}
+  ${feedbackHtml}
+  ${frDotsHTML(s)}
+  ${nextBtn}`;
+}
+function renderFilmRoom(){
+ const s=frGetOrCreateTodaySession();
+ const rating=footballIQRating();
+ const level=frLevel();
+ const header=`<div class="frHeader"><div><div class="small">Film Room • ${state.offPos||'RB'} Track</div><h2 style="margin-top:2px">Football IQ</h2></div>
+  <div class="statPill"><b>${rating.overall!=null?rating.overall:'--'}</b><span>IQ</span></div></div>
+  <div class="frStatRow">
+   <div class="frStatPill">🔥 <b>${state.footballIQ.streakDays||0}</b> day streak</div>
+   <div class="frStatPill">⭐ <b>${state.footballIQ.xp||0}</b> XP</div>
+   <div class="frStatPill">🏅 <b>Level ${level}</b></div>
+  </div>`;
+ const body = s.idx>=s.items.length ? frSessionSummaryHTML(s, rating) : frItemHTML(s, s.items[s.idx]);
+ document.getElementById('screen_filmRoom').innerHTML = header + body;
+}
+
 boot();
+</script>
+
+<!-- =========================================================
+     FIREBASE CROSS-DEVICE SYNC (optional)
+
+     Fill in FIREBASE_CONFIG and FIREBASE_VAPID_KEY below after finishing
+     the one-time setup in SETUP_FIREBASE.md, then this file and
+     approver.html both work automatically — nothing else to change.
+
+     Leaving these as the REPLACE_* placeholders is completely fine: the
+     whole app above works exactly as it always has, fully local, with
+     this block simply never turning on.
+     ========================================================= -->
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey: "REPLACE_WITH_YOUR_API_KEY",
+  authDomain: "REPLACE_WITH_YOUR_PROJECT.firebaseapp.com",
+  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket: "REPLACE_WITH_YOUR_PROJECT.appspot.com",
+  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
+  appId: "REPLACE_WITH_YOUR_APP_ID"
+};
+window.FIREBASE_VAPID_KEY = "REPLACE_WITH_YOUR_VAPID_KEY";
+</script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {
+  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, onSnapshot
+} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getMessaging, getToken, isSupported } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
+
+const CONFIG = window.FIREBASE_CONFIG;
+const VAPID_KEY = window.FIREBASE_VAPID_KEY;
+
+const JrSync = {
+  configured: false,
+  _isReady: false,
+  _readyCallbacks: [],
+  whenReady(fn){ if(this._isReady) fn(); else this._readyCallbacks.push(fn); },
+  _flushReady(){ this._isReady = true; this._readyCallbacks.forEach(fn => { try{ fn(); }catch(e){ console.error(e); } }); this._readyCallbacks = []; }
+};
+window.JrSync = JrSync;
+
+function genCode(){
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I confusion
+  let out = '';
+  for(let i=0;i<6;i++) out += alphabet[Math.floor(Math.random()*alphabet.length)];
+  return out;
+}
+
+const looksConfigured = CONFIG && CONFIG.apiKey && CONFIG.apiKey.indexOf('REPLACE_') !== 0;
+
+if(!looksConfigured){
+  // Not set up yet -- the rest of the app already treats JrSync.configured
+  // as false everywhere, so nothing else needs to know why.
+  console.log('JrSync: Firebase not configured yet -- running fully local-only.');
+} else {
+  try{
+    const app = initializeApp(CONFIG);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    let messaging = null;
+
+    JrSync.configured = true;
+
+    signInAnonymously(auth).catch(err => console.error('JrSync anonymous sign-in failed', err));
+    onAuthStateChanged(auth, (user) => {
+      if(user){
+        JrSync._flushReady();
+        // Well-known hook the main app (index.html) or approver.html
+        // listens for -- see window.onJrSyncReady in each file. Fires
+        // exactly once, the moment anonymous sign-in actually resolves.
+        if(window.onJrSyncReady) window.onJrSyncReady();
+      }
+    });
+
+    JrSync.createPairingCode = async function(householdId){
+      const code = genCode();
+      const now = Date.now();
+      await setDoc(doc(db, 'pairingCodes', code), {
+        householdId, createdAt: now, expiresAt: now + 10*60*1000
+      });
+      return code;
+    };
+
+    // Used by approver.html to turn a typed code into a householdId.
+    JrSync.redeemPairingCode = async function(code){
+      const snap = await getDoc(doc(db, 'pairingCodes', String(code).toUpperCase().trim()));
+      if(!snap.exists()) return null;
+      const data = snap.data();
+      if(!data.expiresAt || Date.now() > data.expiresAt) return null;
+      return data.householdId;
+    };
+
+    JrSync.submitApproval = async function(householdId, role, taskId, taskName, dateKey){
+      const ref = await addDoc(collection(db, 'households', householdId, 'approvals'), {
+        taskId, taskName, date: dateKey, status: 'pending',
+        submittedBy: role, createdAt: Date.now()
+      });
+      return ref.id;
+    };
+
+    JrSync.resolveApproval = async function(householdId, approvalId, role, status, note){
+      await updateDoc(doc(db, 'households', householdId, 'approvals', approvalId), {
+        status, resolvedBy: role, resolvedAt: Date.now(), rejectNote: note || ''
+      });
+    };
+
+    // One listener per household, shared across every caller -- fires
+    // the callback once per approval doc change, newest activity last.
+    JrSync.listen = function(householdId, onChange){
+      return onSnapshot(collection(db, 'households', householdId, 'approvals'), (snap) => {
+        snap.docChanges().forEach((change) => {
+          if(change.type === 'removed') return;
+          const data = change.doc.data();
+          onChange({ id: change.doc.id, ...data });
+        });
+      }, (err) => console.error('JrSync listen error', err));
+    };
+
+    JrSync.registerPush = async function(householdId, role){
+      try{
+        if(!('Notification' in window)) return false;
+        const supported = await isSupported().catch(() => false);
+        if(!supported) return false;
+        const perm = await Notification.requestPermission();
+        if(perm !== 'granted') return false;
+        const reg = await navigator.serviceWorker.getRegistration();
+        if(!messaging) messaging = getMessaging(app);
+        const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+        if(!token) return false;
+        await setDoc(doc(db, 'households', householdId, 'devices', role), {
+          fcmToken: token, updatedAt: Date.now()
+        }, { merge: true });
+        return true;
+      }catch(err){
+        console.error('JrSync registerPush failed', err);
+        return false;
+      }
+    };
+  }catch(err){
+    console.error('JrSync init failed -- app continues fully local-only', err);
+    JrSync.configured = false;
+  }
+}
 </script>
 </body>
 </html>

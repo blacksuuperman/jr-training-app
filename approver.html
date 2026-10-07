@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Jr Level 13 — Approvals</title>
+<link rel="manifest" href="manifest-approver.json" />
+<meta name="theme-color" content="#050507" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Approvals" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" href="icon-192.png" />
+<style>
+:root{ --bg:#050507; --panel:#111118; --panel2:#171722; --line:#2f303b; --text:#ffffff; --muted:#b9b9c6; --accent:#3b82f6; --green:#22c55e; --red:#ef4444; --orange:#fb923c; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100%}
+body{padding:16px 16px 60px}
+.wrap{max-width:560px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+p.small{color:var(--muted);font-size:14px;line-height:1.4;margin:0 0 14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.card h3{margin:0 0 6px;font-size:16px}
+.tiny{color:var(--muted);font-size:12px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:18px;text-align:center;letter-spacing:3px;text-transform:uppercase}
+button{display:block;width:100%;padding:13px;border-radius:12px;border:none;font-weight:bold;font-size:15px;margin-top:10px;cursor:pointer}
+.gold{background:var(--accent);color:#fff}
+.green{background:var(--green);color:#042b10}
+.red{background:var(--red);color:#2b0505}
+.orange{background:var(--orange);color:#2b1400}
+.row{display:flex;gap:10px}
+.row button{margin-top:0}
+.pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--muted)}
+.hidden{display:none!important}
+textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px;font-size:14px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Jr Level 13 — Approvals</h1>
+  <p class="small" id="statusLine">Loading...</p>
+
+  <div id="pairSection" class="card hidden">
+    <h3>Enter The Code From Jr's Phone</h3>
+    <p class="tiny">Open Settings → Sync With Mom on his phone to get a fresh code. Codes last about 10 minutes.</p>
+    <input id="codeInput" maxlength="6" placeholder="------" autocomplete="off" autocapitalize="characters">
+    <button class="gold" onclick="redeem()">Connect</button>
+    <p class="tiny" id="pairError" style="color:var(--orange)"></p>
+  </div>
+
+  <div id="connectedSection" class="card hidden">
+    <h3>Connected ✅</h3>
+    <button class="gold" id="notifBtn" onclick="enableNotifications()">Enable Notifications On This Phone</button>
+    <button class="orange" onclick="disconnect()">Disconnect</button>
+  </div>
+
+  <div id="queue"></div>
+</div>
+
+<script>
+window.FIREBASE_CONFIG = {
+  apiKey: "REPLACE_WITH_YOUR_API_KEY",
+  authDomain: "REPLACE_WITH_YOUR_PROJECT.firebaseapp.com",
+  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket: "REPLACE_WITH_YOUR_PROJECT.appspot.com",
+  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
+  appId: "REPLACE_WITH_YOUR_APP_ID"
+};
+window.FIREBASE_VAPID_KEY = "REPLACE_WITH_YOUR_VAPID_KEY";
+
+const STORE_KEY = 'jrApproverHousehold_v13';
+let myState = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+myState.notificationsEnabled = !!myState.notificationsEnabled;
+
+function saveMyState(){ localStorage.setItem(STORE_KEY, JSON.stringify(myState)); }
+
+function setStatus(msg){ document.getElementById('statusLine').textContent = msg; }
+
+function renderConnectionUI(){
+  const paired = !!myState.householdId;
+  document.getElementById('pairSection').classList.toggle('hidden', paired);
+  document.getElementById('connectedSection').classList.toggle('hidden', !paired);
+  const notifBtn = document.getElementById('notifBtn');
+  if(notifBtn) notifBtn.textContent = myState.notificationsEnabled ? '✅ Notifications On' : 'Enable Notifications On This Phone';
+}
+
+function redeem(){
+  const code = document.getElementById('codeInput').value;
+  document.getElementById('pairError').textContent = '';
+  if(!window.JrSync || !window.JrSync.configured){
+    document.getElementById('pairError').textContent = 'Not connected to the sync service yet -- check your internet connection and try again in a moment.';
+    return;
+  }
+  window.JrSync.redeemPairingCode(code).then(householdId => {
+    if(!householdId){
+      document.getElementById('pairError').textContent = 'That code is wrong or has expired -- get a fresh one from Jr\'s phone.';
+      return;
+    }
+    myState.householdId = householdId;
+    saveMyState();
+    renderConnectionUI();
+    setStatus('Connected. Waiting for tasks...');
+    startListening();
+  }).catch(err => {
+    console.error(err);
+    document.getElementById('pairError').textContent = 'Something went wrong connecting -- try again.';
+  });
+}
+
+function disconnect(){
+  if(!confirm('Disconnect this phone?')) return;
+  myState = {};
+  saveMyState();
+  renderConnectionUI();
+  document.getElementById('queue').innerHTML = '';
+  setStatus('Disconnected.');
+}
+
+function enableNotifications(){
+  if(!window.JrSync || !myState.householdId) return;
+  window.JrSync.registerPush(myState.householdId, 'mom').then(ok => {
+    myState.notificationsEnabled = !!ok;
+    saveMyState();
+    renderConnectionUI();
+    if(!ok) alert('Notifications weren\'t enabled -- this phone/browser may have blocked them, or this page needs to be opened from its Home Screen icon.');
+  }).catch(err => {
+    console.error(err);
+    alert('Could not enable notifications: ' + (err && err.message ? err.message : 'unknown error'));
+  });
+}
+
+const pending = {}; // approvalId -> doc, kept in memory for the queue view
+let listening = false;
+
+function startListening(){
+  if(listening || !myState.householdId || !window.JrSync) return;
+  listening = true;
+  window.JrSync.listen(myState.householdId, (doc) => {
+    if(doc.status === 'pending'){
+      pending[doc.id] = doc;
+    } else {
+      delete pending[doc.id];
+    }
+    renderQueue();
+  });
+}
+
+function renderQueue(){
+  const ids = Object.keys(pending).sort((a,b) => (pending[a].createdAt||0) - (pending[b].createdAt||0));
+  const el = document.getElementById('queue');
+  if(!myState.householdId){ el.innerHTML = ''; return; }
+  if(ids.length === 0){
+    el.innerHTML = '<div class="card"><p class="small" style="margin:0">Nothing waiting right now.</p></div>';
+    setStatus('Connected. Waiting for tasks...');
+    return;
+  }
+  setStatus(ids.length + ' task' + (ids.length===1?'':'s') + ' waiting for you.');
+  el.innerHTML = ids.map(id => {
+    const d = pending[id];
+    const when = d.createdAt ? new Date(d.createdAt).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '';
+    return `<div class="card">
+      <h3>${escapeHtml(d.taskName || d.taskId)}</h3>
+      <p class="tiny">Submitted ${when}</p>
+      <div class="row">
+        <button class="green" onclick="resolve('${id}','approved')">✅ Good</button>
+        <button class="red" onclick="showDenyNote('${id}')">❌ Deny</button>
+      </div>
+      <textarea id="note_${id}" class="hidden" rows="2" placeholder="What needs to be fixed?"></textarea>
+      <button class="orange hidden" id="denyConfirm_${id}" onclick="resolve('${id}','rejected')">Send Back</button>
+    </div>`;
+  }).join('');
+}
+
+function showDenyNote(id){
+  document.getElementById('note_'+id).classList.remove('hidden');
+  document.getElementById('denyConfirm_'+id).classList.remove('hidden');
+}
+
+function resolve(id, status){
+  if(!window.JrSync || !myState.householdId) return;
+  const noteEl = document.getElementById('note_'+id);
+  const note = noteEl ? noteEl.value.trim() : '';
+  window.JrSync.resolveApproval(myState.householdId, id, 'mom', status, note).then(() => {
+    delete pending[id];
+    renderQueue();
+  }).catch(err => {
+    console.error(err);
+    alert('Could not send that -- check your connection and try again.');
+  });
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+window.onJrSyncReady = function(){
+  if(myState.householdId) startListening();
+};
+
+renderConnectionUI();
+setStatus(myState.householdId ? 'Connecting...' : 'Enter the code from Jr\'s phone to get started.');
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+</script>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot
+} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getMessaging, getToken, isSupported } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
+
+// This mirrors the window.JrSync implementation in index.html exactly --
+// kept as its own small copy here (rather than shared) so this page has
+// zero dependency on the much bigger app file and can be opened on its
+// own on Mom's phone.
+const CONFIG = window.FIREBASE_CONFIG;
+const VAPID_KEY = window.FIREBASE_VAPID_KEY;
+
+const JrSync = { configured: false, _isReady: false, _readyCallbacks: [],
+  whenReady(fn){ if(this._isReady) fn(); else this._readyCallbacks.push(fn); },
+  _flushReady(){ this._isReady = true; this._readyCallbacks.forEach(fn=>{ try{fn();}catch(e){console.error(e);} }); this._readyCallbacks=[]; }
+};
+window.JrSync = JrSync;
+
+const looksConfigured = CONFIG && CONFIG.apiKey && CONFIG.apiKey.indexOf('REPLACE_') !== 0;
+
+if(!looksConfigured){
+  console.log('JrSync: Firebase not configured yet on this page.');
+} else {
+  try{
+    const app = initializeApp(CONFIG);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    let messaging = null;
+    JrSync.configured = true;
+
+    signInAnonymously(auth).catch(err => console.error('anon sign-in failed', err));
+    onAuthStateChanged(auth, (user) => {
+      if(user){ JrSync._flushReady(); if(window.onJrSyncReady) window.onJrSyncReady(); }
+    });
+
+    JrSync.redeemPairingCode = async function(code){
+      const snap = await getDoc(doc(db, 'pairingCodes', String(code).toUpperCase().trim()));
+      if(!snap.exists()) return null;
+      const data = snap.data();
+      if(!data.expiresAt || Date.now() > data.expiresAt) return null;
+      return data.householdId;
+    };
+
+    JrSync.listen = function(householdId, onChange){
+      return onSnapshot(collection(db, 'households', householdId, 'approvals'), (snap) => {
+        snap.docChanges().forEach((change) => {
+          if(change.type === 'removed') return;
+          onChange({ id: change.doc.id, ...change.doc.data() });
+        });
+      }, (err) => console.error('listen error', err));
+    };
+
+    JrSync.resolveApproval = async function(householdId, approvalId, role, status, note){
+      await updateDoc(doc(db, 'households', householdId, 'approvals', approvalId), {
+        status, resolvedBy: role, resolvedAt: Date.now(), rejectNote: note || ''
+      });
+    };
+
+    JrSync.registerPush = async function(householdId, role){
+      try{
+        if(!('Notification' in window)) return false;
+        const supported = await isSupported().catch(() => false);
+        if(!supported) return false;
+        const perm = await Notification.requestPermission();
+        if(perm !== 'granted') return false;
+        const reg = await navigator.serviceWorker.getRegistration();
+        if(!messaging) messaging = getMessaging(app);
+        const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+        if(!token) return false;
+        await setDoc(doc(db, 'households', householdId, 'devices', role), { fcmToken: token, updatedAt: Date.now() }, { merge: true });
+        return true;
+      }catch(err){ console.error('registerPush failed', err); return false; }
+    };
+  }catch(err){
+    console.error('JrSync init failed on approver page', err);
+    JrSync.configured = false;
+  }
+}
+</script>
+</body>
+</html>

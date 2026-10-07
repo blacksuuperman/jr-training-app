@@ -1,0 +1,11 @@
+{
+  "name": "jr-level13-functions",
+  "description": "Cloud Functions for Jr Level 13 Athlete Hub -- sends a push alert to Mom's device when Jr submits a task for approval.",
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^5.0.0"
+  },
+  "private": true
+}
