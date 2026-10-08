@@ -256,6 +256,10 @@ a.frLink{text-decoration:none;color:#fff;display:inline-flex;align-items:center;
 .frReview{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px}
 .frPlay{margin-top:10px}
 .frLibRow{padding:12px 4px}
+.frPosCard{border:1px solid var(--line);background:var(--panel2);border-radius:16px;padding:12px 14px;margin-top:10px;cursor:pointer}
+.frPosCard.active{border-color:var(--green);background:color-mix(in srgb,var(--green) 12%,var(--panel2))}
+.frPosTop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.frSoon{display:inline-block;border:1px dashed var(--line);border-radius:999px;padding:3px 9px;margin:2px 3px 0 0;font-size:11px;color:var(--muted)}
 /* Photo proof on submissions */
 .photoRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .photoThumb{position:relative;width:84px;height:84px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
@@ -353,7 +357,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v16-film-room-formations-edge-lb-film';
+const BUILD_VERSION='v17-fresh-start-film-study-redesign';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -554,7 +558,77 @@ function migrateOld(){
  }
  return s;
 }
+/* ---------------------------------------------------------------
+   ONE-TIME FRESH START (v17) — requested by the family.
+   Keeps ONLY the school / education data that was entered (the academic
+   level for each subject and the logged academic scores that drive the
+   weak-subject average). Everything else — age, height, weight, positions,
+   training progress, strikes, screen time, accountability answers and ALL
+   Film Room progress — starts over so the athlete re-enters his profile and
+   begins film study from the beginning.
+   It runs exactly once per device (marked inside the saved state), and a
+   full copy of the old data is kept in a backup slot that Settings can
+   restore. FORCE_RESET_ON_UPDATE stays false: this is a single, deliberate
+   migration, not a reset-on-every-update.
+   --------------------------------------------------------------- */
+const FRESH_START_ID='v17-fresh-start-keep-school';
+const FRESH_START_BACKUP_KEY='jr_level13_backup_before_fresh_start';
+const ACADEMIC_TASK_RE=/^(fastMath|math|writing|science|reading|language|history)(PM)?$/;
+function keepSchoolOnlyState(old){
+ const fresh=defaultState();
+ const oa=old&&old.academic;
+ if(oa && typeof oa==='object'){
+  Object.keys(fresh.academic).forEach(k=>{
+   const o=oa[k];
+   if(o && typeof o==='object') fresh.academic[k]={baseline:o.baseline||fresh.academic[k].baseline, current:o.current||fresh.academic[k].current};
+  });
+ }
+ const logs={};
+ Object.keys((old&&old.scheduleLogs)||{}).forEach(dk=>{
+  const day=old.scheduleLogs[dk];
+  if(!day || typeof day!=='object') return;
+  Object.keys(day).forEach(tid=>{
+   const e=day[tid];
+   if(!e || typeof e!=='object') return;
+   if(!(e.sub || ACADEMIC_TASK_RE.test(tid))) return;
+   if(e.score==null && e.startGrade==null && e.status!=='completed') return;
+   // Only the academic facts survive — no approval/strike/correction flags,
+   // so nothing from the old (reset) accountability record can come back.
+   const k={status:e.status==='completed'?'completed':'notStarted', sub:e.sub||tid.replace(/PM$/,'')};
+   ['score','startGrade','difficulty','actualStart','actualFinish'].forEach(f=>{ if(e[f]!=null) k[f]=e[f]; });
+   (logs[dk]=logs[dk]||{})[tid]=k;
+  });
+ });
+ fresh.scheduleLogs=logs;
+ // Device pairing with Mom's page is setup, not athlete data — keep it so a
+ // working sync link doesn't silently disappear.
+ if(old && old.sync && typeof old.sync==='object') fresh.sync=Object.assign(fresh.sync, old.sync);
+ fresh.freshStartId=FRESH_START_ID;
+ fresh.buildVersion=BUILD_VERSION;
+ return fresh;
+}
+function hasBackupBeforeFreshStart(){ try{ return !!localStorage.getItem(FRESH_START_BACKUP_KEY); }catch(e){ return false; } }
+function restoreBackupBeforeFreshStart(){
+ let raw=null;
+ try{ raw=localStorage.getItem(FRESH_START_BACKUP_KEY); }catch(e){}
+ if(!raw){ alert('No backup was found on this device.'); return; }
+ if(!confirm('Bring back ALL of the old data from before the fresh start? Anything entered since then will be replaced.')) return;
+ try{
+  const old=JSON.parse(raw);
+  old.freshStartId=FRESH_START_ID; // so it does not wipe itself again
+  localStorage.setItem(STORE, JSON.stringify(old));
+  location.reload();
+ }catch(e){ alert('Could not restore the backup.'); }
+}
 let state=migrateOld();
+if(state.freshStartId!==FRESH_START_ID){
+ const hadData=!!(state.onboarded || state.age || (state.scheduleLogs && Object.keys(state.scheduleLogs).length) || (state.day && state.day>1));
+ if(hadData){
+  try{ localStorage.setItem(FRESH_START_BACKUP_KEY, JSON.stringify(state,(k,v)=>k==='photos'?undefined:v)); }catch(e){}
+ }
+ state=keepSchoolOnlyState(state);
+ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){}
+}
 if(FORCE_RESET_ON_UPDATE && state.buildVersion!==BUILD_VERSION){
  state=defaultState();
 }
@@ -602,9 +676,11 @@ state.footballIQ.concepts = state.footballIQ.concepts || {};
 state.footballIQ.sessionHistory = state.footballIQ.sessionHistory || [];
 state.footballIQ.achievements = state.footballIQ.achievements || [];
 if(state.footballIQ.xp==null) state.footballIQ.xp = 0;
-// v16: study tracks (RB / EDGE / LB / ALL), a saved session per track, and
-// clip links the athlete or a parent pastes in for any concept.
-if(!['RB','EDGE','LB','ALL'].includes(state.footballIQ.track)) state.footballIQ.track = (state.defPos==='EDGE' && !state.offPos) ? 'EDGE' : (state.defPos==='LB' && !state.offPos) ? 'LB' : 'RB';
+// v16/v17: the athlete picks up to three film-study positions (RB / EDGE /
+// LB) — empty until he chooses. Each combination keeps its own daily session,
+// and clip links pasted in for any concept are stored per concept.
+if(!Array.isArray(state.footballIQ.positions)) state.footballIQ.positions = [];
+state.footballIQ.positions = state.footballIQ.positions.filter(p=>['RB','EDGE','LB'].includes(p)).slice(0,3);
 if(!state.footballIQ.sessions || typeof state.footballIQ.sessions!=='object') state.footballIQ.sessions = {};
 if(!state.footballIQ.clips || typeof state.footballIQ.clips!=='object') state.footballIQ.clips = {};
 if(state.footballIQ.streakDays==null) state.footballIQ.streakDays = 0;
@@ -2350,6 +2426,7 @@ function renderSettings(){
  <div class="inner"><h3>Progress</h3><p class="small">Speed & Agility is on Day ${state.portionDay.morning}, Workout is on Day ${state.portionDay.strength}, and Football Touches is on Day ${state.portionDay.touches} — each one advances on its own the moment IT is finished (tap "Start Day N" at the bottom of that module), so missing the gym for a while never holds back Speed & Agility or Touches. Calendar day ${state.day} of ${DAYS_TOTAL} still drives nutrition logging and Check-In, which comes up every 5 completed days — currently ${checkinCompletedCount()} of ${nextCheckinTarget()}.</p>
  <button class="orange full" onclick="skipToday()">Skip Today (injury or unavailable)</button></div>
  <details class="clean"><summary>Sync With Mom ${syncConnected()?'🔗':''}</summary><div class="detailBody">${syncPanelHTML()}</div></details>
+ ${hasBackupBeforeFreshStart()?`<details class="clean"><summary>Fresh Start Backup</summary><div class="detailBody"><p class="small">When this version was installed, everything except school work was cleared. A copy of the old data is still stored on this device.</p><button class="red full" onclick="restoreBackupBeforeFreshStart()">Restore My Old Data</button></div></details>`:''}
  <details class="clean"><summary>Parent Logs ${parentLogsUnlocked?'🔓':'🔒'}</summary><div class="detailBody">${parentLogsHTML()}</div></details>
  <details class="clean"><summary>Progress — Data Lab</summary><div class="detailBody">${dataLabHTML()}</div></details>
  <details class="clean"><summary>JR Daily Schedule (Admin)</summary><div class="detailBody">${adminScheduleHTML()}</div></details>`;
@@ -4698,13 +4775,13 @@ function renderAllTrendCharts(){
 // criteria describes exactly that — one continuous session). So this cap
 // is set to cover the entire Phase 1 slice in a single first session.
 // Shrink it back down once real curriculum breadth arrives.
-// v16: the curriculum is now ~50 concepts per the full roadmap, so new
-// lessons are paced (5 a day). The Study Library lets him read any lesson
-// early, and "Another Round" gives unlimited extra questions.
-const FR_NEW_CONCEPTS_PER_DAY = 5;
-const FR_RECOGNIZE_PER_DAY = 5;
-const FR_APPLY_PER_DAY = 5;
-const FR_TEST_PER_DAY = 6;
+// v17 session sizing. A session is a TEACHING part (5-10 lesson cards, taught
+// before any question) and a QUESTION part (15-25 questions). Both grow with
+// the number of positions chosen, and the offense / defense split of the
+// questions follows how he is actually doing on each side.
+const FR_LEARN_BY_POSITIONS = [5,7,9];
+const FR_QUESTIONS_BY_POSITIONS = [15,20,25];
+const FR_LEARN_MIN=5, FR_LEARN_MAX=10, FR_Q_MIN=15, FR_Q_MAX=25;
 const FR_INTERVAL_LADDER_DAYS = [1,3,7,14,30]; // spaced repetition, configurable
 const FR_XP = { learnCard:3, recognizeCorrect:5, applyCorrect:7, testCorrect:10, wrongAnswer:1 };
 const FR_SUBSCORE_GROUPS = {
@@ -4728,6 +4805,26 @@ const FR_SUBSCORE_TRACKS = {
  LB:['formationPersonnel','frontRecognition','lbSkills','runConcepts','coverageRecognition'],
  ALL:['formationPersonnel','frontRecognition','runConcepts','passProtection','coverageRecognition','edgeSkills','lbSkills']
 };
+const FR_POSITION_ORDER=['RB','EDGE','LB'];
+const FR_POSITION_INFO={
+ RB:{label:'Running Back', side:'Offense', blurb:'Read the front and the Mike, run Inside Zone / Power / Iso / Outside Zone, pick up blitzes, know your protection.'},
+ EDGE:{label:'Defensive End / Edge', side:'Defense', blurb:'Alignment 5-7-9, key the offensive tackle, hold the edge, contain, rush with a plan, spot draws and screens.'},
+ LB:{label:'Linebacker (Mike / Will / Sam)', side:'Defense', blurb:'Read the guards, run the four flow reads, fit your gap, play-action discipline, zone drops, blitz gaps.'}
+};
+// Positions that exist in the onboarding list but have no football content
+// yet. They are shown as "coming soon" — nothing is invented for them.
+const FR_COMING_SOON=[['QB','Quarterback'],['WR','Wide Receiver'],['TE','Tight End'],['OL','Offensive Line'],['DL','Interior D-Line'],['CB','Cornerback'],['S','Safety']];
+function frDefaultPositionsFromProfile(){
+ const out=[];
+ [state.offPos,state.defPos].forEach(p=>{ if(FR_POSITION_INFO[p] && out.indexOf(p)===-1) out.push(p); });
+ return out;
+}
+// 'offense' | 'defense' | 'both' — which side of the ball a concept belongs to.
+function frConceptSide(cid){
+ if(cid==='gaps' || cid==='strengthCall') return 'both';
+ if(/^(front|techniques|mikeId|willId|samId|nickelId|safetyShell|edge|lb|primerEDGE|primerLB)/.test(cid)) return 'defense';
+ return 'offense';
+}
 
 function frEnsureConceptRecord(conceptId){
  const fi=state.footballIQ;
@@ -4750,6 +4847,10 @@ function frIsConceptDue(conceptId){
 // mastered still show up (so nothing is forgotten) but less often, and when
 // they do the harder variants are favored. Questions just answered
 // correctly are less likely to repeat back-to-back; ones just missed return.
+function frDaysSince(dateKey){
+ const t=new Date(localDateKey()+'T00:00:00'), d=new Date((dateKey||localDateKey())+'T00:00:00');
+ return Math.max(0,Math.round((t-d)/86400000));
+}
 function frScenarioWeight(sc){
  const rec=state.footballIQ.concepts[sc.concept];
  let w=1;
@@ -4760,11 +4861,19 @@ function frScenarioWeight(sc){
   if(frIsConceptDue(sc.concept)) w+=2;
   if(conf>=85 && acc>=0.9) w=w*0.35*(1+((sc.difficulty||1)-1)*0.25);
  }
- const recent=state.footballIQ.sessionHistory.slice(0,80).filter(h=>h.scenarioId===sc.id);
- const missed=recent.filter(h=>!h.correct).length;
- w+=missed*1.5;
- w=w/(1+0.35*Math.max(0,recent.length-missed));
- return Math.max(0.05,w);
+ // Variety: a question he has never seen is strongly favored; one he just
+ // answered correctly is almost never repeated for a while; one he MISSED
+ // comes back — but not in the same sitting. (sessionHistory is newest-first.)
+ const hist=state.footballIQ.sessionHistory.filter(h=>h.scenarioId===sc.id);
+ let m;
+ if(!hist.length) m=2.5;
+ else {
+  const last=hist[0], days=frDaysSince(last.date);
+  if(last.correct) m = days===0?0.04 : days<=2?0.12 : days<=6?0.3 : days<=14?0.6 : 0.9;
+  else m = days===0?0.5 : 1.8;
+  m = m/(1+0.15*hist.filter(h=>h.correct).length);
+ }
+ return Math.max(0.01,w*m);
 }
 // Weighted random sample without replacement, gently spreading across
 // concepts (a concept already picked has its other questions down-weighted).
@@ -4797,75 +4906,156 @@ function frShuffle(arr){
  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
  return a;
 }
-function frTrack(){ return state.footballIQ.track||'RB'; }
+function frPositionsKey(list){ return FR_POSITION_ORDER.filter(p=>list.indexOf(p)!==-1).join('+'); }
+function frPositions(){ return FR_POSITION_ORDER.filter(p=>(state.footballIQ.positions||[]).indexOf(p)!==-1); }
+function frTrack(){ return frPositionsKey(frPositions()) || 'RB'; }
+function frTrackPositions(track){ return track==='ALL' ? FR_POSITION_ORDER.slice() : String(track).split('+').filter(p=>FR_POSITION_INFO[p]); }
+function frTrackLabel(track){ return frTrackPositions(track).map(p=>FR_POSITION_INFO[p].label).join(' + '); }
 function frConceptInTrack(cid, track){
  const c=CONCEPTS[cid];
- return !!c && (track==='ALL' || (c.tracks||['RB']).indexOf(track)!==-1);
+ if(!c) return false;
+ if(track==='ALL') return true;
+ const want=frTrackPositions(track);
+ return (c.tracks||['RB']).some(t=>want.indexOf(t)!==-1);
 }
-function frLessonOrder(track){ return LESSON_ORDER_BY_TRACK[track] || LESSON_ORDER_BY_TRACK.RB; }
+// Lessons for the chosen positions, interleaved so each position's primer
+// comes first and no single position's curriculum buries the others.
+function frLessonOrder(track){
+ const lists=frTrackPositions(track).map(p=>LESSON_ORDER_BY_TRACK[p]||[]);
+ const out=[], seen={};
+ const max=lists.reduce((m,l)=>Math.max(m,l.length),0);
+ for(let i=0;i<max;i++) lists.forEach(l=>{ const id=l[i]; if(id && !seen[id] && LESSONS[id]){ seen[id]=true; out.push(id); } });
+ return out;
+}
+function frSubscoreKeys(track){
+ const keys=[];
+ frTrackPositions(track).forEach(p=>(FR_SUBSCORE_TRACKS[p]||[]).forEach(k=>{ if(keys.indexOf(k)===-1) keys.push(k); }));
+ return keys;
+}
+function frSideAccuracy(side){
+ let att=0, cor=0;
+ Object.keys(state.footballIQ.concepts).forEach(cid=>{
+  if(!CONCEPTS[cid] || frConceptSide(cid)!==side) return;
+  const r=state.footballIQ.concepts[cid];
+  att+=r.attempts||0; cor+=r.correct||0;
+ });
+ return att>=6 ? cor/att : null;
+}
+function frOverallAccuracy(){
+ let att=0, cor=0;
+ Object.keys(state.footballIQ.concepts).forEach(cid=>{ const r=state.footballIQ.concepts[cid]; att+=r.attempts||0; cor+=r.correct||0; });
+ return att>=8 ? cor/att : null;
+}
+// How big today's session is: 5-10 teaching cards and 15-25 questions,
+// scaled by how many positions he chose and how he is doing — and the
+// offense/defense split of the questions follows whichever side is weaker.
+function frPlanSession(positions){
+ const n=Math.max(1,Math.min(3,positions.length));
+ let learn=FR_LEARN_BY_POSITIONS[n-1], q=FR_QUESTIONS_BY_POSITIONS[n-1];
+ const acc=frOverallAccuracy();
+ if(acc!=null){
+  if(acc<0.55) learn+=1; else if(acc>0.85) learn-=1;
+  if(acc<0.5) q-=2; else if(acc>0.85) q+=2;
+ }
+ learn=Math.max(FR_LEARN_MIN,Math.min(FR_LEARN_MAX,learn));
+ q=Math.max(FR_Q_MIN,Math.min(FR_Q_MAX,q));
+ const nOff=positions.filter(p=>FR_POSITION_INFO[p].side==='Offense').length;
+ const nDef=positions.length-nOff;
+ const aOff=frSideAccuracy('offense'), aDef=frSideAccuracy('defense');
+ // A side he did not choose still gets a little (formations and fronts are
+ // shared knowledge), but the sides he chose and the side he is weaker on get more.
+ const wOff=(nOff>0?nOff:0.4)*(1+(1-(aOff==null?0.5:aOff)));
+ const wDef=(nDef>0?nDef:0.4)*(1+(1-(aDef==null?0.5:aDef)));
+ let qOff=Math.round(q*wOff/(wOff+wDef));
+ if(nOff>0) qOff=Math.max(4,qOff);
+ if(nDef>0) qOff=Math.min(q-4,qOff);
+ return { learn:learn, questions:q, offense:qOff, defense:q-qOff, positions:positions.slice() };
+}
+function frScenarioItem(id, stage){
+ const sc=SCENARIOS[id];
+ const item={stage:stage, refId:id};
+ if(sc.question.type==='mc' || sc.question.type==='tf') item.optionOrder=frShuffle(sc.question.options.map(o=>o.id));
+ return item;
+}
 
 function buildFilmRoomSession(opts){
  opts=opts||{};
  const track=opts.track||frTrack();
- const items=[];
+ const positions=frTrackPositions(track);
  const introduced={};
  Object.keys(CONCEPTS).forEach(cid=>{ if(!frIsConceptNew(cid)) introduced[cid]=true; });
 
- // Focused quiz on a single concept ("Quiz me on this" from the library or
- // the Review panel): its lesson first if he has never seen it, then every
- // question we have on it, shuffled.
+ // Focused quiz on a single concept ("Quiz me on this"): its lesson first if
+ // he has never seen it, then every question we have on it, shuffled.
  if(opts.focus && CONCEPTS[opts.focus]){
   const cid=opts.focus;
+  const items=[];
   if(!introduced[cid]){
    const les=Object.keys(LESSONS).find(id=>LESSONS[id].concept===cid);
    if(les) items.push({stage:'learn', refId:les});
-   introduced[cid]=true;
   }
-  const ids=frShuffle(Object.keys(SCENARIOS).filter(id=>SCENARIOS[id].concept===cid)).slice(0,10);
-  ids.forEach(id=>{
-   const sc=SCENARIOS[id];
-   const item={stage:sc.stage, refId:id};
-   if(sc.question.type==='mc' || sc.question.type==='tf') item.optionOrder=frShuffle(sc.question.options.map(o=>o.id));
-   items.push(item);
-  });
-  return { date:localDateKey(), track:track, focus:cid, items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1 };
+  frShuffle(Object.keys(SCENARIOS).filter(id=>SCENARIOS[id].concept===cid)).slice(0,10).forEach(id=>items.push(frScenarioItem(id, SCENARIOS[id].stage)));
+  return { date:localDateKey(), track:track, focus:cid, started:true, items:items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1 };
  }
 
- let newCount=0;
- frLessonOrder(track).forEach(lessonId=>{
-  if(newCount>=FR_NEW_CONCEPTS_PER_DAY) return;
-  const lesson=LESSONS[lessonId];
-  if(!lesson || !frConceptInTrack(lesson.concept, track)) return;
-  if(!introduced[lesson.concept]){
-   items.push({stage:'learn', refId:lessonId});
-   introduced[lesson.concept]=true;
-   newCount++;
-  }
+ const plan=frPlanSession(positions);
+ const inTrack=Object.keys(SCENARIOS).filter(id=>frConceptInTrack(SCENARIOS[id].concept, track));
+ const order=frLessonOrder(track).filter(id=>frConceptInTrack(LESSONS[id].concept, track));
+ const availableQ=()=>inTrack.filter(id=>introduced[SCENARIOS[id].concept]).length;
+ const wantLearn=opts.extraRound ? 3 : plan.learn;
+
+ // ---- 1) TEACHING cards: new lessons in curriculum order. If the unlocked
+ // lessons do not yet cover enough questions, unlock a few more (never past 10).
+ const learnItems=[], taught={};
+ order.forEach(lid=>{
+  const cid=LESSONS[lid].concept;
+  if(introduced[cid] || learnItems.length>=FR_LEARN_MAX) return;
+  if(learnItems.length>=wantLearn && availableQ()>=plan.questions) return;
+  learnItems.push({stage:'learn', refId:lid});
+  taught[cid]=true; introduced[cid]=true;
  });
-
- const used={};
- function pick(stage, poolIds, count){
-  const eligible=poolIds.filter(id=>introduced[SCENARIOS[id].concept] && frConceptInTrack(SCENARIOS[id].concept, track));
-  const chosen=frWeightedSample(eligible, count, used);
-  chosen.forEach(id=>{
-   used[id]=true;
-   const sc=SCENARIOS[id];
-   const item={stage, refId:id};
-   if(sc.question.type==='mc' || sc.question.type==='tf') item.optionOrder=frShuffle(sc.question.options.map(o=>o.id));
-   items.push(item);
-  });
- }
- pick('recognize', SCENARIOS_BY_STAGE.recognize, FR_RECOGNIZE_PER_DAY);
- pick('apply', SCENARIOS_BY_STAGE.apply, FR_APPLY_PER_DAY);
- pick('test', SCENARIOS_BY_STAGE.test, FR_TEST_PER_DAY);
- // A brand-new athlete may have only a few concepts unlocked. Never ask the
- // same question twice in a session unless there are barely any to ask.
- if(items.filter(i=>i.stage!=='learn').length<4){
-  const more=frWeightedSample(SCENARIOS_BY_STAGE.test.filter(id=>introduced[SCENARIOS[id].concept] && frConceptInTrack(SCENARIOS[id].concept, track)), 4, {});
-  more.forEach(id=>{ const sc=SCENARIOS[id]; const item={stage:'test', refId:id}; if(sc.question.type==='mc'||sc.question.type==='tf') item.optionOrder=frShuffle(sc.question.options.map(o=>o.id)); items.push(item); });
+ // ...then quick refreshers on his weakest / most overdue ideas, so there is
+ // ALWAYS a teaching part before the questions — even on day 30.
+ if(!opts.extraRound && learnItems.length<plan.learn){
+  order.filter(lid=>{ const cid=LESSONS[lid].concept; return introduced[cid] && !taught[cid]; })
+   .map(lid=>{
+    const cid=LESSONS[lid].concept, rec=state.footballIQ.concepts[cid]||{};
+    const conf=rec.attempts ? rec.confidence : 50;
+    return { lid:lid, score:(100-conf)+(frIsConceptDue(cid)?25:0)+Math.random()*30 };
+   })
+   .sort((a,b)=>b.score-a.score)
+   .slice(0, plan.learn-learnItems.length)
+   .forEach(o=>learnItems.push({stage:'learn', refId:o.lid, refresher:true}));
  }
 
- return { date:localDateKey(), track:track, items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1 };
+ // ---- 2) QUESTIONS: split offense / defense by the plan, weighted toward
+ // weak and rarely-seen questions, never the same question twice in a session.
+ const used={}, picked=[];
+ function pickFrom(pool, count, stage){
+  if(count<=0) return;
+  frWeightedSample(pool.filter(id=>!used[id]), count, used).forEach(id=>{ used[id]=true; picked.push({id:id, stage:stage}); });
+ }
+ ['offense','defense'].forEach(side=>{
+  const total=plan[side];
+  if(total<=0) return;
+  const pool=inTrack.filter(id=>{ const sd=frConceptSide(SCENARIOS[id].concept); return introduced[SCENARIOS[id].concept] && (sd===side || sd==='both'); });
+  const nRec=Math.round(total*0.35), nApp=Math.round(total*0.35), nTest=total-nRec-nApp;
+  pickFrom(pool.filter(id=>SCENARIOS[id].stage==='recognize'), nRec, 'recognize');
+  pickFrom(pool.filter(id=>SCENARIOS[id].stage==='apply'), nApp, 'apply');
+  pickFrom(pool, nTest, 'test');
+ });
+ // Top up from anything unlocked if one side ran short.
+ if(picked.length<plan.questions){
+  pickFrom(inTrack.filter(id=>introduced[SCENARIOS[id].concept]), plan.questions-picked.length, 'test');
+ }
+ const rank={recognize:0, apply:1, test:2};
+ const qItems=frShuffle(picked).sort((a,b)=>rank[a.stage]-rank[b.stage]).map(o=>frScenarioItem(o.id, o.stage));
+
+ return {
+  date:localDateKey(), track:track, started:!!opts.extraRound,
+  items:learnItems.concat(qItems), idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1,
+  plan:{ positions:positions, learn:learnItems.length, questions:qItems.length, offense:plan.offense, defense:plan.defense }
+ };
 }
 function frGetOrCreateTodaySession(){
  const fi=state.footballIQ, today=localDateKey(), track=frTrack();
@@ -4877,28 +5067,51 @@ function frGetOrCreateTodaySession(){
  save();
  return fi.todaySession;
 }
-// Switch study track (RB / EDGE / LB / Mix). Each track keeps its own
-// session for the day, so switching away and back loses nothing.
-function frSetTrack(t){
- const fi=state.footballIQ;
- if(!TRACKS[t] || t===fi.track) return;
- const today=localDateKey();
- const cur=fi.todaySession;
- if(cur && cur.date===today){ cur.track=cur.track||fi.track; fi.sessions[cur.track]=cur; }
- fi.track=t;
- const saved=fi.sessions[t];
- fi.todaySession=(saved && saved.date===today)?saved:null;
- delete fi.sessions[t];
- Object.keys(fi.sessions).forEach(k=>{ if(!fi.sessions[k] || fi.sessions[k].date!==today) delete fi.sessions[k]; });
- frView='session'; frLibOpen=null; frReviewOpen=false; frPlayKey=null;
- save(); render();
+
+/* ---- Choosing positions (up to three) ---- */
+let frSetupOpen=false, frPosDraft=[];
+function frOpenSetup(){
+ frPosDraft = frPositions().length ? frPositions() : frDefaultPositionsFromProfile();
+ frSetupOpen=true; frView='session'; frLibOpen=null;
+ render(); window.scrollTo({top:0});
+}
+function frTogglePosDraft(p){
+ if(!FR_POSITION_INFO[p]) return;
+ const i=frPosDraft.indexOf(p);
+ if(i!==-1) frPosDraft.splice(i,1);
+ else if(frPosDraft.length<3) frPosDraft.push(p);
+ render();
+}
+function frCancelSetup(){ frSetupOpen=false; render(); }
+function frConfirmPositions(){
+ if(!frPosDraft.length) return;
+ const fi=state.footballIQ, today=localDateKey();
+ const next=FR_POSITION_ORDER.filter(p=>frPosDraft.indexOf(p)!==-1);
+ if(next.join('+')!==frPositions().join('+')){
+  const cur=fi.todaySession;
+  // park today's session under its own key so switching back loses nothing
+  if(cur && cur.date===today) fi.sessions[cur.track||frTrack()]=cur;
+  fi.positions=next;
+  const key=frTrack(), saved=fi.sessions[key];
+  fi.todaySession=(saved && saved.date===today)?saved:null;
+  delete fi.sessions[key];
+  Object.keys(fi.sessions).forEach(k=>{ if(!fi.sessions[k] || fi.sessions[k].date!==today) delete fi.sessions[k]; });
+ }
+ frSetupOpen=false; frView='session'; frLibOpen=null; frReviewOpen=false; frPlayKey=null;
+ save(); render(); window.scrollTo({top:0});
+}
+function frStartSession(){
+ const s=state.footballIQ.todaySession;
+ if(!s) return;
+ s.started=true; s.itemStartedAt=Date.now();
+ save(); render(); window.scrollTo({top:0});
 }
 // A fresh, newly-randomized round on demand — more practice any time, built
 // with the same weighting (so weak spots come up more). Extra rounds earn XP
 // and update mastery like any other, but never inflate the daily streak.
 function frStartExtraRound(){
  const prev=state.footballIQ.todaySession;
- const next=buildFilmRoomSession({track:frTrack()});
+ const next=buildFilmRoomSession({track:frTrack(), extraRound:true});
  next.round=(prev&&prev.round?prev.round:1)+1;
  state.footballIQ.todaySession=next;
  frReviewOpen=false; frView='session'; frLibOpen=null; frPlayKey=null;
@@ -5275,7 +5488,7 @@ function frSessionSummaryHTML(s, rating){
  const total=s.items.filter(i=>i.answeredId).length;
  const correctCount=s.items.filter(i=>i.correct).length;
  const track=frTrack();
- const rows=Object.keys(rating.subscores).filter(k=>rating.subscores[k]!=null || (FR_SUBSCORE_TRACKS[track]||[]).indexOf(k)!==-1)
+ const rows=Object.keys(rating.subscores).filter(k=>rating.subscores[k]!=null || frSubscoreKeys(track).indexOf(k)!==-1)
   .map(k=>`<div class="checkItem"><span>${FR_SUBSCORE_LABELS[k]||k}</span><span class="tiny">${rating.subscores[k]!=null?rating.subscores[k]:'Not enough data yet'}</span></div>`).join('');
  const weak=frWeakConcepts(3).filter(id=>state.footballIQ.concepts[id].confidence<70);
  const weakHtml=weak.length?`<div class="inner" style="margin-top:10px"><h3>Focus Areas</h3><p class="small">These come up more often in your next sessions — tap one to drill it right now:</p>${weak.map(id=>`<div class="checkItem"><span>${CONCEPTS[id].label}</span><span class="tiny">${state.footballIQ.concepts[id].confidence} · <a href="javascript:void(0)" onclick="frQuizConcept('${id}')" style="color:var(--accent)">Quiz me</a></span></div>`).join('')}</div>`:'';
@@ -5306,7 +5519,7 @@ function frNavRowHTML(s, item, answered){
 function frItemHTML(s, item){
  if(item.stage==='learn'){
   const lesson=LESSONS[item.refId];
-  return `<div class="frStageBadge learn">Learn</div>
+  return `<div class="frStageBadge learn">Learn</div> <span class="tiny">${frProgressText(s,item)}${item.refresher?' · quick refresher':' · new'}</span>
    ${frLessonBodyHTML(lesson)}
    ${frFilmHTML(lesson.concept)}
    ${frDotsHTML(s)}
@@ -5352,7 +5565,7 @@ function frItemHTML(s, item){
   if(open) playHtml += `<button class="chip full" style="margin-top:6px" onclick="frTogglePlay()">Hide the replay</button>`;
  }
  const filmHtml = answered ? frFilmHTML(scenario.concept) : '';
- return `<div class="frStageBadge ${item.stage}">${item.stage}</div>
+ return `<div class="frStageBadge ${item.stage}">${item.stage}</div> <span class="tiny">${frProgressText(s,item)}</span>
   <h3 style="margin-top:8px">${q.prompt}</h3>
   ${renderFootballField(scenario.fieldState, fieldOpts)}${noteHtml}
   ${optionsHtml}
@@ -5396,31 +5609,85 @@ function frLibraryHTML(){
   const status = frIsConceptNew(l.concept) ? '<span class="tiny" style="color:var(--blue)">New</span>' : (rec && rec.attempts>0 ? `<span class="tiny">IQ ${rec.confidence}</span>` : '<span class="tiny" style="color:var(--green)">Seen ✓</span>');
   return `<div class="checkItem frLibRow" onclick="frOpenLesson('${id}')" style="cursor:pointer"><span>${l.title}</span>${status}</div>`;
  }).join('')).join('');
- return `<div class="coachBubble" style="margin-top:12px"><strong>📚 Study Library — ${TRACKS[track].label}</strong>
+ return `<div class="coachBubble" style="margin-top:12px"><strong>📚 Study Library — ${frTrackLabel(track)}</strong>
   <p class="small">${seen} of ${ids.length} lessons seen. Read any lesson now, watch film, then tap “Quiz me on this”.</p></div>${body}
   <button class="chip full" style="margin-top:14px" onclick="frToggleLibrary()">← Back to today’s session</button>`;
 }
 
+function frProgressText(s,item){
+ const learnN=s.items.filter(i=>i.stage==='learn').length;
+ const idx=s.items.indexOf(item);
+ if(item.stage==='learn') return 'Teaching '+(idx+1)+' of '+learnN;
+ return 'Question '+(idx-learnN+1)+' of '+(s.items.length-learnN);
+}
+const FR_POS_ICON={RB:'🏃',EDGE:'💥',LB:'🛡️'};
+function frSetupHTML(){
+ const n=frPosDraft.length;
+ const cards=FR_POSITION_ORDER.map(p=>{
+  const info=FR_POSITION_INFO[p], on=frPosDraft.indexOf(p)!==-1, full=!on && n>=3;
+  return `<div class="frPosCard ${on?'active':''}" onclick="frTogglePosDraft('${p}')" role="button" aria-pressed="${on}">
+   <div class="frPosTop"><b>${FR_POS_ICON[p]} ${info.label}</b><span class="tiny">${info.side}</span></div>
+   <p class="small" style="margin:4px 0">${info.blurb}</p>
+   <div class="tiny" style="font-weight:800;color:${on?'var(--green)':'var(--muted)'}">${on?'✓ Selected':(full?'3 already chosen':'Tap to choose')}</div></div>`;
+ }).join('');
+ const learnN=FR_LEARN_BY_POSITIONS[Math.max(1,n)-1]||5, qN=FR_QUESTIONS_BY_POSITIONS[Math.max(1,n)-1]||15;
+ const soon=FR_COMING_SOON.map(x=>`<span class="frSoon">${x[1]}</span>`).join('');
+ const hasPos=frPositions().length>0;
+ return `<div class="coachBubble" style="margin-top:12px"><strong>🎥 Film Study — pick your positions</strong>
+  <p class="small">Choose up to three. Each session starts by TEACHING you what to look for (about 5–10 short cards), then quizzes you (about 15–25 questions). Pick more positions and you get a longer, wider session; the offense/defense mix follows how you are scoring on each side.</p>
+  ${frDefaultPositionsFromProfile().length?`<p class="tiny">Pre-selected from the positions you entered in your profile.</p>`:''}</div>
+  ${cards}
+  <p class="small" style="margin-top:10px;text-align:center">${n?`${n} of 3 chosen → about <b>${learnN}</b> teaching cards + <b>${qN}</b> questions`:'Choose at least one position to begin'}</p>
+  <button class="gold full" ${n?'':'disabled'} onclick="frConfirmPositions()">${hasPos?'Save Positions':'Start Film Study'}</button>
+  ${hasPos?`<button class="chip full" style="margin-top:8px" onclick="frCancelSetup()">Cancel</button>`:''}
+  <div class="frNote" style="margin-top:12px"><b>More positions are coming:</b><div style="margin-top:6px">${soon}</div><p class="tiny" style="margin:6px 0 0">These don’t have real football lessons yet, so they’re not selectable — nothing here is made up.</p></div>`;
+}
+function frBriefingHTML(s){
+ const learnCards=s.items.filter(i=>i.stage==='learn');
+ const newCount=learnCards.filter(i=>!i.refresher).length;
+ const qItems=s.items.filter(i=>i.stage!=='learn');
+ let off=0, def=0, shared=0;
+ qItems.forEach(i=>{ const sd=frConceptSide(SCENARIOS[i.refId].concept); if(sd==='offense') off++; else if(sd==='defense') def++; else shared++; });
+ const weak=frWeakConcepts(3).filter(id=>state.footballIQ.concepts[id].confidence<70);
+ const pos=frTrackPositions(s.track||frTrack()).map(p=>`${FR_POS_ICON[p]} ${FR_POSITION_INFO[p].label}`).join(' &nbsp;•&nbsp; ');
+ const firstTime=Object.keys(state.footballIQ.concepts).length===0;
+ return `<div class="coachBubble" style="margin-top:12px"><strong>Today’s Film Study</strong><p class="small">${pos}</p></div>
+  <div class="inner" style="margin-top:10px">
+   <h3>Step 1 — Learn first 📖</h3>
+   <p class="small">${learnCards.length} short teaching cards (${newCount} new, ${learnCards.length-newCount} quick refresher${learnCards.length-newCount===1?'':'s'}). Each one shows a diagram and what to look for <b>before</b> you’re asked anything. Take your time — you can go back at any point.</p>
+   <h3 style="margin-top:12px">Step 2 — Prove it 🎯</h3>
+   <p class="small">${qItems.length} questions: ${off} offense, ${def} defense${shared?`, ${shared} shared (formations / gaps)`:''}. Fresh questions every time, in a new order, leaning toward what you’re weakest at.</p>
+   ${weak.length?`<p class="small"><b>Focus areas:</b> ${weak.map(id=>CONCEPTS[id].label).join(', ')}.</p>`:(firstTime?`<p class="small">First time through — everything starts from the beginning.</p>`:'')}
+  </div>
+  <button class="gold full" style="margin-top:12px" onclick="frStartSession()">Start Film Study →</button>
+  <button class="chip full" style="margin-top:8px" onclick="frOpenSetup()">✏️ Change my positions</button>
+  <button class="chip full" style="margin-top:8px" onclick="frToggleLibrary()">📚 Study Library (read any lesson first)</button>`;
+}
 function renderFilmRoom(){
- const track=frTrack();
- const s=frGetOrCreateTodaySession();
+ if(frPositions().length===0 && !frSetupOpen){ frSetupOpen=true; frPosDraft=frDefaultPositionsFromProfile(); }
  const rating=footballIQRating();
  const level=frLevel();
- const header=`<div class="frHeader"><div><div class="small">Film Room • ${TRACKS[track].label}${s.round>1?' • Round '+s.round:''}${s.focus?' • Focus: '+CONCEPTS[s.focus].label:''}</div><h2 style="margin-top:2px">Football IQ</h2></div>
-  <div class="statPill"><b>${rating.overall!=null?rating.overall:'--'}</b><span>IQ</span></div></div>
-  <div class="frTracks">${['RB','EDGE','LB','ALL'].map(t=>`<button class="frTrackBtn ${t===track?'active':''}" onclick="frSetTrack('${t}')">${TRACKS[t].icon} ${TRACKS[t].short}</button>`).join('')}<button class="frTrackBtn ${frView==='library'?'active':''}" onclick="frToggleLibrary()">📚 Library</button></div>
-  <div class="frStatRow">
+ const statRow=`<div class="frStatRow">
    <div class="frStatPill">🔥 <b>${state.footballIQ.streakDays||0}</b> day streak</div>
    <div class="frStatPill">⭐ <b>${state.footballIQ.xp||0}</b> XP</div>
    <div class="frStatPill">🏅 <b>Level ${level}</b></div>
   </div>`;
+ if(frSetupOpen){
+  document.getElementById('screen_filmRoom').innerHTML=`<div class="frHeader"><div><div class="small">Film Room</div><h2 style="margin-top:2px">Football IQ</h2></div><div class="statPill"><b>${rating.overall!=null?rating.overall:'--'}</b><span>IQ</span></div></div>`+statRow+frSetupHTML();
+  return;
+ }
+ const track=frTrack();
+ const s=frGetOrCreateTodaySession();
+ const header=`<div class="frHeader"><div><div class="small">Film Room • ${frTrackLabel(track)}${s.round>1?' • Round '+s.round:''}${s.focus?' • Focus: '+CONCEPTS[s.focus].label:''}</div><h2 style="margin-top:2px">Football IQ</h2></div>
+  <div class="statPill"><b>${rating.overall!=null?rating.overall:'--'}</b><span>IQ</span></div></div>
+  <div class="frTracks">${frPositions().map(p=>`<span class="frTrackBtn active">${FR_POS_ICON[p]} ${FR_POSITION_INFO[p].label.split(' ')[0]}</span>`).join('')}<button class="frTrackBtn" onclick="frOpenSetup()">✏️ Positions</button><button class="frTrackBtn ${frView==='library'?'active':''}" onclick="frToggleLibrary()">📚 Library</button></div>`+statRow;
  let body;
  if(frView==='library') body=frLibraryHTML();
+ else if(s.started===false && s.idx===0) body=frBriefingHTML(s);
  else body = s.idx>=s.items.length ? frSessionSummaryHTML(s, rating) : frItemHTML(s, s.items[s.idx]);
  document.getElementById('screen_filmRoom').innerHTML = header + body;
  if(frPlayRun){ frPlayRun=false; frRunPlayOut(); }
 }
-
 
 boot();
 </script>
