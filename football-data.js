@@ -290,6 +290,9 @@ const COVERAGES = { cover2: { id: 'cover2', name: 'Cover 2' } };
    default clip you have verified yourself. */
 const FILM_SEARCH_BASE = 'https://www.youtube.com/results?search_query=';
 function filmSearchUrl(query){ return FILM_SEARCH_BASE + encodeURIComponent(query); }
+// Same search, sorted by view count (YouTube's "sort by view count" filter), so the
+// most-watched videos on the topic come first.
+function filmMostViewedUrl(query){ return FILM_SEARCH_BASE + encodeURIComponent(query) + '&sp=CAM%253D'; }
 
 /* =========================================================
    CONCEPTS — the ids state.footballIQ.concepts tracks.

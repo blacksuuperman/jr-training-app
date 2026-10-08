@@ -254,6 +254,15 @@ body.timerFlash{animation:flashPulse .7s ease}
 .frClipFrame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 a.frLink{text-decoration:none;color:#fff;display:inline-flex;align-items:center;justify-content:center}
 .frReview{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px}
+.frDemo{margin:8px 0}
+.frDemoHead{font-weight:800;font-size:14px;margin-bottom:6px}
+.frDemoTabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.frDemoTabs .chip.active,.frDemoBtns .chip.active{background:var(--accent);color:var(--buttonText);border-color:transparent}
+.frDemoCap{background:var(--panel2);border:1px solid var(--line);border-left:4px solid #facc15;border-radius:12px;padding:10px 12px;margin-top:2px;font-size:14px;line-height:1.35;min-height:58px}
+.frDemoTake{margin-top:6px;font-weight:700;font-size:13px}
+.frDemoSlider{width:100%;margin:10px 0 4px}
+.frDemoBtns{display:flex;gap:8px}
+.frDemoBtns .chip{flex:1;text-align:center;padding:10px}
 .frPlay{margin-top:10px}
 .frLibRow{padding:12px 4px}
 .frPosCard{border:1px solid var(--line);background:var(--panel2);border-radius:16px;padding:12px 14px;margin-top:10px;cursor:pointer}
@@ -345,6 +354,7 @@ a.frLink{text-decoration:none;color:#fff;display:inline-flex;align-items:center;
 </div>
 
 <script src="football-data.js"></script>
+<script src="football-demos.js"></script>
 <script>
 const STORE='jr_level13_earned_day_v3';
 const OLD_STORES=['jr_level13_earned_day_v2','jr_level13_earned_day_v1','jr_level13_day_cycle_v1','jr_level13_simplified_v1','jr_level13_ai_v1','jr_level9_state'];
@@ -357,7 +367,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v17-fresh-start-film-study-redesign';
+const BUILD_VERSION='v18-live-demos-most-viewed-video';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -5290,7 +5300,7 @@ function renderFootballField(fieldState, opts){
  const play = opts.playOut || null;
  const genericLabel={DL:'DL',LB:'LB',DB:'DB'};
  const byId={}; players.forEach(p=>{ byId[p.id]=p; });
- let svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" class="fieldSvg" role="img" aria-label="Football field diagram">`;
+ let svg = `<svg viewBox="${opts.viewBox||'0 0 100 100'}" preserveAspectRatio="xMidYMid meet" class="fieldSvg" ${opts.viewBox?'style="aspect-ratio:100/68"':''} role="img" aria-label="Football field diagram">`;
  svg += `<defs><marker id="frArrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="3.2" markerHeight="3.2" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#fff"/></marker></defs>`;
  svg += `<rect x="0" y="0" width="100" height="100" fill="#0b3d1f"/>`;
  for(let i=10;i<100;i+=10) svg += `<line x1="0" y1="${i}" x2="100" y2="${i}" stroke="rgba(255,255,255,0.08)" stroke-width="0.3"/>`;
@@ -5306,10 +5316,12 @@ function renderFootballField(fieldState, opts){
   const isReveal = opts.revealId===p.id;
   const isWrong = opts.wrongId===p.id;
   const isHighlight = highlightId===p.id && !play;
+  const isKey = (opts.keyIds||[]).indexOf(p.id)!==-1;
   const fill = p.group==='OL' ? '#64748b' : p.group==='skill' ? '#3b82f6' : (p.group==='DL'||p.group==='LB') ? '#ef4444' : '#f97316';
   let ring='';
   if(isReveal) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#22c55e" stroke-width="0.8"/>`;
   else if(isWrong) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#ef4444" stroke-width="0.8"/>`;
+  else if(isKey) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.8" fill="none" stroke="#facc15" stroke-width="0.9" stroke-dasharray="1.2,0.9"><animate attributeName="r" values="4.6;5.8;4.6" dur="1.3s" repeatCount="indefinite"/></circle>`;
   else if(isHighlight) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#facc15" stroke-width="0.8" stroke-dasharray="1,1"/>`;
   else if(isTappable) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.4" stroke-dasharray="0.8,0.8"/>`;
   // Role names (Mike/Will/NB) are hidden on recognition questions so the
@@ -5319,7 +5331,7 @@ function renderFootballField(fieldState, opts){
   if(hideIds.indexOf(p.id)!==-1) label='?';
   const hit = isTappable ? `<circle cx="${p.x}" cy="${p.y}" r="5.8" fill="transparent"/>` : '';
   const mv = moves.find(m=>m.id===p.id);
-  const anim = mv ? ` id="frp_${p.id}" data-pts="${[[p.x,p.y]].concat(mv.to||[]).map(q=>q[0]+','+q[1]).join(';')}"` : '';
+  const anim = mv ? ` id="frp_${p.id}" data-delay="${mv.delay||0}" data-pts="${[[p.x,p.y]].concat(mv.to||[]).map(q=>q[0]+','+q[1]).join(';')}"` : '';
   const tech = '';
   svg += `<g${anim} ${isTappable?`onclick="onFieldTap('${p.id}')" style="cursor:pointer"`:''}>${ring}
    <circle cx="${p.x}" cy="${p.y}" r="3.6" fill="${fill}" stroke="#050505" stroke-width="0.2"/>
@@ -5399,6 +5411,104 @@ function frPlayBoxHTML(sc){
  </div>`;
 }
 
+/* ---- Interactive "what to key on" demos (see football-demos.js) ---- */
+let frDemoSel={}, frDemoProg={}, frDemoToken=0, frDemoPlayedKey=null, frDemoPlaying=false;
+const FR_DEMO_MS=7500;
+function frDemoCurrent(){
+ const root=document.getElementById('frDemo'); if(!root) return null;
+ const d=DEMOS[root.getAttribute('data-demo')]; if(!d) return null;
+ const sc=d.scenes.find(x=>x.id===root.getAttribute('data-scene')); if(!sc) return null;
+ return { root:root, demo:d, scene:sc, key:root.getAttribute('data-key') };
+}
+function frDemoHTML(concept){
+ const m=DEMO_FOR_CONCEPT[concept]; if(!m || !DEMOS[m.demo]) return '';
+ const d=DEMOS[m.demo];
+ let sid=frDemoSel[concept];
+ if(!sid || !d.scenes.some(x=>x.id===sid)) sid=m.scene;
+ const sc=d.scenes.find(x=>x.id===sid) || d.scenes[0];
+ const key=concept+'|'+sc.id;
+ const tabs=d.scenes.length>1 ? `<div class="frDemoTabs">${d.scenes.map(x=>`<button class="chip ${x.id===sc.id?'active':''}" onclick="frDemoPick('${concept}','${x.id}')">${x.label}</button>`).join('')}</div>` : '';
+ const po=demoPlayOut(sc);
+ const fsx=Object.assign({}, sc.field, { highlight:null, note:null, showTech:false });
+ return `<div class="frDemo" id="frDemo" data-demo="${d.id}" data-scene="${sc.id}" data-key="${key}">
+  <div class="frDemoHead">🎬 Watch it live: ${d.title}</div>
+  ${tabs}
+  ${renderFootballField(fsx,{ playOut:po, keyIds:sc.keys, viewBox:'0 7 100 68' })}
+  <div class="frDemoCap" id="frDemoCap" aria-live="polite"></div>
+  <input type="range" id="frDemoSlider" class="frDemoSlider" min="0" max="1000" value="0" aria-label="Scrub through the play" oninput="frDemoScrub(this.value)">
+  <div class="frDemoBtns"><button class="chip" onclick="frDemoRestart()">⏮ Restart</button><button class="chip active" id="frDemoPlayBtn" onclick="frDemoToggle()">▶ Play</button></div>
+  <div class="tiny" style="margin-top:6px"><span style="color:#facc15">◌</span> gold ring = the player you KEY on &nbsp; <span style="color:#94a3b8">●</span> block &nbsp; <span style="color:#f87171">●</span> rush &nbsp; <span style="color:#fb923c">●</span> drop / pursuit &nbsp; <span style="color:#60a5fa">●</span> route &nbsp; <span style="color:#facc15">●</span> ball carrier</div>
+  <div class="tiny" style="margin-top:4px">Drag the slider to freeze the play at any moment. Simplified teaching animation: teams and coaches vary on exact footwork.</div>
+ </div>`;
+}
+function frDemoPick(concept, sceneId){
+ frDemoSel[concept]=sceneId; frDemoPlayedKey=null; frDemoToken++; frDemoPlaying=false; render();
+}
+function frDemoApply(f){
+ const cur=frDemoCurrent(); if(!cur) return;
+ f=Math.max(0,Math.min(1,f));
+ frDemoProg[cur.key]=f;
+ const nodes=[].slice.call(cur.root.querySelectorAll('[data-pts]'));
+ nodes.forEach(n=>{
+  const pts=n.getAttribute('data-pts').split(';').map(t=>t.split(',').map(Number));
+  if(pts.length<2) return;
+  const delay=parseFloat(n.getAttribute('data-delay'))||0;
+  let lf=delay>=1?0:Math.max(0,Math.min(1,(f-delay)/(1-delay)));
+  if(n.id!=='frp_ball') lf=lf<.5?2*lf*lf:1-Math.pow(-2*lf+2,2)/2;
+  const len=[0]; for(let i=1;i<pts.length;i++) len[i]=len[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
+  const total=len[len.length-1]||1, dd=lf*total; let i=1;
+  while(i<len.length-1 && len[i]<dd) i++;
+  const a=pts[i-1], b=pts[i], seg=(len[i]-len[i-1])||1, k=Math.max(0,Math.min(1,(dd-len[i-1])/seg));
+  n.setAttribute('transform','translate('+(a[0]+(b[0]-a[0])*k-pts[0][0])+','+(a[1]+(b[1]-a[1])*k-pts[0][1])+')');
+ });
+ const steps=cur.scene.steps; let txt=steps[0][1];
+ steps.forEach(st=>{ if(f>=st[0]-1e-6) txt=st[1]; });
+ const cap=document.getElementById('frDemoCap');
+ if(cap){
+  const done=f>=0.999 && cur.scene.takeaway;
+  cap.innerHTML=txt+(done?`<div class="frDemoTake">✅ Remember: ${cur.scene.takeaway}</div>`:'');
+ }
+ const sl=document.getElementById('frDemoSlider'); if(sl && document.activeElement!==sl) sl.value=Math.round(f*1000);
+}
+function frDemoSetBtn(){
+ const b=document.getElementById('frDemoPlayBtn'); if(b) b.textContent = frDemoPlaying ? '⏸ Pause' : '▶ Play';
+}
+function frDemoPlay(){
+ const cur=frDemoCurrent(); if(!cur) return;
+ let f0=frDemoProg[cur.key]||0; if(f0>=0.999) f0=0;
+ const token=++frDemoToken; frDemoPlaying=true; frDemoSetBtn();
+ if(typeof requestAnimationFrame!=='function'){ frDemoApply(1); frDemoPlaying=false; frDemoSetBtn(); return; }
+ let t0=null;
+ function frame(now){
+  if(token!==frDemoToken) return;
+  if(!document.getElementById('frDemo')){ frDemoPlaying=false; return; }
+  if(t0===null) t0=now;
+  const f=Math.min(1,f0+(now-t0)/FR_DEMO_MS);
+  frDemoApply(f);
+  if(f<1) requestAnimationFrame(frame); else { frDemoPlaying=false; frDemoSetBtn(); }
+ }
+ requestAnimationFrame(frame);
+}
+function frDemoPause(){ frDemoToken++; frDemoPlaying=false; frDemoSetBtn(); }
+function frDemoToggle(){ if(frDemoPlaying) frDemoPause(); else frDemoPlay(); }
+function frDemoRestart(){
+ const cur=frDemoCurrent(); if(!cur) return;
+ frDemoToken++; frDemoProg[cur.key]=0; frDemoApply(0); frDemoPlay();
+}
+function frDemoScrub(v){ frDemoPause(); frDemoApply((parseInt(v,10)||0)/1000); }
+// Called after every Film Room render: restores the frame, and auto-plays a demo the first time it appears.
+function frDemoAfterRender(){
+ const cur=frDemoCurrent();
+ if(!cur){ frDemoPlaying=false; return; }
+ if(frDemoPlayedKey!==cur.key){
+  frDemoPlayedKey=cur.key; frDemoProg[cur.key]=0; frDemoApply(0);
+  setTimeout(()=>{ const c2=frDemoCurrent(); if(c2 && c2.key===cur.key && !frDemoPlaying) frDemoPlay(); }, 450);
+ } else {
+  frDemoApply(frDemoProg[cur.key]||0); frDemoSetBtn();
+  if(frDemoPlaying){ frDemoPlaying=false; const k=cur.key; setTimeout(()=>{ const c2=frDemoCurrent(); if(c2&&c2.key===k) frDemoPlay(); },0); }
+ }
+}
+
 /* ---- Film: real examples via search, plus clip links you paste in ---- */
 function frParseTime(t){
  if(!t) return 0;
@@ -5459,7 +5569,8 @@ function frFilmHTML(cid){
     <span class="frClipBtns">${yt?`<button class="chip" onclick="frToggleClip('${key}')">${open?'Hide':'▶ Play'}</button>`:''}<a class="chip frLink" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open ↗</a>${clip.builtin?'':`<button class="chip" aria-label="Remove clip" onclick="frRemoveClip('${cid}',${clip.idx})">✕</button>`}</span></div>
    ${player}</div>`;
  }).join('');
- const search = c.film ? `<a class="chip frLink full" style="display:block;text-align:center;margin-top:8px" href="${escapeHTML(filmSearchUrl(c.film))}" target="_blank" rel="noopener noreferrer">🔎 Find real NFL & college film on this (opens YouTube)</a>` : '';
+ const search = c.film ? `<a class="chip frLink full" style="display:block;text-align:center;margin-top:8px;font-weight:700" href="${escapeHTML(filmMostViewedUrl(c.film))}" target="_blank" rel="noopener noreferrer">▶ Watch the MOST-VIEWED videos on this (opens YouTube)</a>
+  <a class="chip frLink full" style="display:block;text-align:center;margin-top:6px" href="${escapeHTML(filmSearchUrl(c.film))}" target="_blank" rel="noopener noreferrer">🔎 Best-match NFL & college film (opens YouTube)</a>` : '';
  return `<div class="frFilm"><div class="frFilmHead">🎥 See it on film</div>${rows}${search}
   <button class="chip full" style="margin-top:8px" onclick="frAddClip('${cid}')">＋ Add a clip link</button>
   <p class="tiny" style="margin-top:6px">Game footage belongs to its owners, so it plays from YouTube rather than inside the app. Parents and coaches: paste any clip you like and it shows up here every time this topic comes up.</p></div>`;
@@ -5467,10 +5578,11 @@ function frFilmHTML(cid){
 
 /* ---- Lesson card (used by the Learn stage AND the Study Library) ---- */
 function frLessonBodyHTML(lesson){
+ const demo = frDemoHTML(lesson.concept);
  const pts=(lesson.points||[]).length ? `<div class="frLookFor">What to look for</div><ul class="frPoints">${lesson.points.map(p=>`<li>${p}</li>`).join('')}</ul>` : '';
  const note=lesson.fieldState && lesson.fieldState.note ? `<div class="frNote">${lesson.fieldState.note}</div>` : '';
  return `<h3 style="margin-top:8px">${lesson.title}</h3>
-  ${renderFootballField(lesson.fieldState, {})}${note}
+  ${demo || renderFootballField(lesson.fieldState, {})}${note}
   <p class="small">${lesson.body}</p>${pts}`;
 }
 
@@ -5687,6 +5799,7 @@ function renderFilmRoom(){
  else body = s.idx>=s.items.length ? frSessionSummaryHTML(s, rating) : frItemHTML(s, s.items[s.idx]);
  document.getElementById('screen_filmRoom').innerHTML = header + body;
  if(frPlayRun){ frPlayRun=false; frRunPlayOut(); }
+ frDemoAfterRender();
 }
 
 boot();
