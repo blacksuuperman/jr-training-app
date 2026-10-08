@@ -239,6 +239,23 @@ body.timerFlash{animation:flashPulse .7s ease}
 .frDot.wrongDot{background:var(--red)}
 .frDot.now{background:var(--accent);transform:scale(1.3)}
 .frNote{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;color:var(--muted)}
+.frTracks{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.frTrackBtn{border:1px solid var(--line);background:#0d0d12;color:#fff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;cursor:pointer;min-height:36px}
+.frTrackBtn.active{background:var(--accent);color:var(--buttonText);border-color:transparent}
+.frLookFor{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-top:10px}
+.frPoints{margin:6px 0 0 0;padding-left:18px;font-size:13px;line-height:1.45;color:var(--text,#e8e8ee)}
+.frPoints li{margin:3px 0}
+.frFilm{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:12px}
+.frFilmHead{font-size:13px;font-weight:900;margin-bottom:4px}
+.frClipRow{border-top:1px solid var(--line);padding:8px 0}
+.frClipTop{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+.frClipBtns{display:flex;gap:6px;flex-shrink:0}
+.frClipFrame{position:relative;width:100%;aspect-ratio:16/9;margin-top:8px;border-radius:12px;overflow:hidden;background:#000}
+.frClipFrame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+a.frLink{text-decoration:none;color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.frReview{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:8px}
+.frPlay{margin-top:10px}
+.frLibRow{padding:12px 4px}
 /* Photo proof on submissions */
 .photoRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .photoThumb{position:relative;width:84px;height:84px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
@@ -336,7 +353,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v15-film-room-nav-random-photos';
+const BUILD_VERSION='v16-film-room-formations-edge-lb-film';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -585,6 +602,11 @@ state.footballIQ.concepts = state.footballIQ.concepts || {};
 state.footballIQ.sessionHistory = state.footballIQ.sessionHistory || [];
 state.footballIQ.achievements = state.footballIQ.achievements || [];
 if(state.footballIQ.xp==null) state.footballIQ.xp = 0;
+// v16: study tracks (RB / EDGE / LB / ALL), a saved session per track, and
+// clip links the athlete or a parent pastes in for any concept.
+if(!['RB','EDGE','LB','ALL'].includes(state.footballIQ.track)) state.footballIQ.track = (state.defPos==='EDGE' && !state.offPos) ? 'EDGE' : (state.defPos==='LB' && !state.offPos) ? 'LB' : 'RB';
+if(!state.footballIQ.sessions || typeof state.footballIQ.sessions!=='object') state.footballIQ.sessions = {};
+if(!state.footballIQ.clips || typeof state.footballIQ.clips!=='object') state.footballIQ.clips = {};
 if(state.footballIQ.streakDays==null) state.footballIQ.streakDays = 0;
 state.positionLab = state.positionLab || {};
 ['RB','EDGE','LB'].forEach(p=>{ state.positionLab[p] = state.positionLab[p] || {drillProgress:{},xp:0}; });
@@ -4676,23 +4698,35 @@ function renderAllTrendCharts(){
 // criteria describes exactly that — one continuous session). So this cap
 // is set to cover the entire Phase 1 slice in a single first session.
 // Shrink it back down once real curriculum breadth arrives.
-const FR_NEW_CONCEPTS_PER_DAY = 11;
+// v16: the curriculum is now ~50 concepts per the full roadmap, so new
+// lessons are paced (5 a day). The Study Library lets him read any lesson
+// early, and "Another Round" gives unlimited extra questions.
+const FR_NEW_CONCEPTS_PER_DAY = 5;
 const FR_RECOGNIZE_PER_DAY = 5;
-const FR_APPLY_PER_DAY = 4;
-const FR_TEST_PER_DAY = 7;
+const FR_APPLY_PER_DAY = 5;
+const FR_TEST_PER_DAY = 6;
 const FR_INTERVAL_LADDER_DAYS = [1,3,7,14,30]; // spaced repetition, configurable
 const FR_XP = { learnCard:3, recognizeCorrect:5, applyCorrect:7, testCorrect:10, wrongAnswer:1 };
 const FR_SUBSCORE_GROUPS = {
- frontRecognition:['front42Nickel','mikeId','willId','nickelId'],
- runConcepts:['insideZone','gaps'],
- passProtection:['rbProtectionRule','nickelBlitz'],
- coverageRecognition:['cover2Flat'],
- formationPersonnel:['personnel11','formationShotgun']
+ formationPersonnel:['personnel11','personnelNumbers','formationShotgun','formationDoubles','formationPistol','formationSingleback','formationI','formationWing','formationTEHeavy','formationFullHouse','strengthCall'],
+ frontRecognition:['front42Nickel','front43Under','front43Over','front34','mikeId','willId','samId','nickelId','gaps','techniques'],
+ runConcepts:['insideZone','powerRun','isoLead','outsideZone'],
+ passProtection:['rbFindMike','rbProtectionRule','nickelBlitz','blitzShow','primerRB','rbBackfieldAlign'],
+ coverageRecognition:['cover2Flat','safetyShell','lbCoverageDrops'],
+ edgeSkills:['primerEDGE','edgeAlign','edgeKeys','edgeReach','edgeDown','edgeBoot','edgePassRush','edgeDrawScreen','edgeHeavy','edgeSituation'],
+ lbSkills:['primerLB','lbRoles','lbGuardKey','lbFlows','lbIKey','lbPlayAction','lbBlitz','lbShortYardage','lbSpread']
 };
 const FR_SUBSCORE_LABELS = {
- frontRecognition:'Defensive Front Recognition', runConcepts:'Run Concepts',
- passProtection:'Pass Protection', coverageRecognition:'Coverage Recognition',
- formationPersonnel:'Formation & Personnel'
+ formationPersonnel:'Formations & Personnel', frontRecognition:'Fronts, Gaps & Defenders',
+ runConcepts:'Run Concepts', passProtection:'RB: Protection & Blitz',
+ coverageRecognition:'Coverage & Safety Looks', edgeSkills:'Edge Rusher Skills', lbSkills:'Linebacker Skills'
+};
+// Which subscore rows matter for each study track (the rest show only once he has data).
+const FR_SUBSCORE_TRACKS = {
+ RB:['formationPersonnel','frontRecognition','runConcepts','passProtection','coverageRecognition'],
+ EDGE:['formationPersonnel','frontRecognition','edgeSkills'],
+ LB:['formationPersonnel','frontRecognition','lbSkills','runConcepts','coverageRecognition'],
+ ALL:['formationPersonnel','frontRecognition','runConcepts','passProtection','coverageRecognition','edgeSkills','lbSkills']
 };
 
 function frEnsureConceptRecord(conceptId){
@@ -4740,7 +4774,6 @@ function frWeightedSample(ids, count, avoidIds){
  // repeat if the pool has nothing else left (tiny question banks).
  let pool=ids.filter(id=>!avoid[id]);
  const out=[], conceptHits={};
- if(pool.length<count) pool=pool.concat(ids.filter(id=>avoid[id]));
  while(out.length<count && pool.length){
   const ws=pool.map(id=>{
    const sc=SCENARIOS[id];
@@ -4764,15 +4797,45 @@ function frShuffle(arr){
  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
  return a;
 }
-function buildFilmRoomSession(){
+function frTrack(){ return state.footballIQ.track||'RB'; }
+function frConceptInTrack(cid, track){
+ const c=CONCEPTS[cid];
+ return !!c && (track==='ALL' || (c.tracks||['RB']).indexOf(track)!==-1);
+}
+function frLessonOrder(track){ return LESSON_ORDER_BY_TRACK[track] || LESSON_ORDER_BY_TRACK.RB; }
+
+function buildFilmRoomSession(opts){
+ opts=opts||{};
+ const track=opts.track||frTrack();
  const items=[];
  const introduced={};
  Object.keys(CONCEPTS).forEach(cid=>{ if(!frIsConceptNew(cid)) introduced[cid]=true; });
 
+ // Focused quiz on a single concept ("Quiz me on this" from the library or
+ // the Review panel): its lesson first if he has never seen it, then every
+ // question we have on it, shuffled.
+ if(opts.focus && CONCEPTS[opts.focus]){
+  const cid=opts.focus;
+  if(!introduced[cid]){
+   const les=Object.keys(LESSONS).find(id=>LESSONS[id].concept===cid);
+   if(les) items.push({stage:'learn', refId:les});
+   introduced[cid]=true;
+  }
+  const ids=frShuffle(Object.keys(SCENARIOS).filter(id=>SCENARIOS[id].concept===cid)).slice(0,10);
+  ids.forEach(id=>{
+   const sc=SCENARIOS[id];
+   const item={stage:sc.stage, refId:id};
+   if(sc.question.type==='mc' || sc.question.type==='tf') item.optionOrder=frShuffle(sc.question.options.map(o=>o.id));
+   items.push(item);
+  });
+  return { date:localDateKey(), track:track, focus:cid, items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1 };
+ }
+
  let newCount=0;
- LESSON_ORDER.forEach(lessonId=>{
+ frLessonOrder(track).forEach(lessonId=>{
   if(newCount>=FR_NEW_CONCEPTS_PER_DAY) return;
   const lesson=LESSONS[lessonId];
+  if(!lesson || !frConceptInTrack(lesson.concept, track)) return;
   if(!introduced[lesson.concept]){
    items.push({stage:'learn', refId:lessonId});
    introduced[lesson.concept]=true;
@@ -4782,7 +4845,7 @@ function buildFilmRoomSession(){
 
  const used={};
  function pick(stage, poolIds, count){
-  const eligible=poolIds.filter(id=>introduced[SCENARIOS[id].concept]);
+  const eligible=poolIds.filter(id=>introduced[SCENARIOS[id].concept] && frConceptInTrack(SCENARIOS[id].concept, track));
   const chosen=frWeightedSample(eligible, count, used);
   chosen.forEach(id=>{
    used[id]=true;
@@ -4795,25 +4858,61 @@ function buildFilmRoomSession(){
  pick('recognize', SCENARIOS_BY_STAGE.recognize, FR_RECOGNIZE_PER_DAY);
  pick('apply', SCENARIOS_BY_STAGE.apply, FR_APPLY_PER_DAY);
  pick('test', SCENARIOS_BY_STAGE.test, FR_TEST_PER_DAY);
+ // A brand-new athlete may have only a few concepts unlocked. Never ask the
+ // same question twice in a session unless there are barely any to ask.
+ if(items.filter(i=>i.stage!=='learn').length<4){
+  const more=frWeightedSample(SCENARIOS_BY_STAGE.test.filter(id=>introduced[SCENARIOS[id].concept] && frConceptInTrack(SCENARIOS[id].concept, track)), 4, {});
+  more.forEach(id=>{ const sc=SCENARIOS[id]; const item={stage:'test', refId:id}; if(sc.question.type==='mc'||sc.question.type==='tf') item.optionOrder=frShuffle(sc.question.options.map(o=>o.id)); items.push(item); });
+ }
 
- return { date:localDateKey(), items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1 };
+ return { date:localDateKey(), track:track, items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1 };
 }
 function frGetOrCreateTodaySession(){
- const fi=state.footballIQ, today=localDateKey();
- if(fi.todaySession && fi.todaySession.date===today) return fi.todaySession;
- fi.todaySession=buildFilmRoomSession();
+ const fi=state.footballIQ, today=localDateKey(), track=frTrack();
+ const cur=fi.todaySession;
+ if(cur && cur.date===today && (cur.track||'RB')===track) return cur;
+ const saved=fi.sessions[track];
+ if(saved && saved.date===today){ fi.todaySession=saved; delete fi.sessions[track]; save(); return saved; }
+ fi.todaySession=buildFilmRoomSession({track});
  save();
  return fi.todaySession;
+}
+// Switch study track (RB / EDGE / LB / Mix). Each track keeps its own
+// session for the day, so switching away and back loses nothing.
+function frSetTrack(t){
+ const fi=state.footballIQ;
+ if(!TRACKS[t] || t===fi.track) return;
+ const today=localDateKey();
+ const cur=fi.todaySession;
+ if(cur && cur.date===today){ cur.track=cur.track||fi.track; fi.sessions[cur.track]=cur; }
+ fi.track=t;
+ const saved=fi.sessions[t];
+ fi.todaySession=(saved && saved.date===today)?saved:null;
+ delete fi.sessions[t];
+ Object.keys(fi.sessions).forEach(k=>{ if(!fi.sessions[k] || fi.sessions[k].date!==today) delete fi.sessions[k]; });
+ frView='session'; frLibOpen=null; frReviewOpen=false; frPlayKey=null;
+ save(); render();
 }
 // A fresh, newly-randomized round on demand — more practice any time, built
 // with the same weighting (so weak spots come up more). Extra rounds earn XP
 // and update mastery like any other, but never inflate the daily streak.
 function frStartExtraRound(){
  const prev=state.footballIQ.todaySession;
- const next=buildFilmRoomSession();
+ const next=buildFilmRoomSession({track:frTrack()});
  next.round=(prev&&prev.round?prev.round:1)+1;
  state.footballIQ.todaySession=next;
- frReviewOpen=false;
+ frReviewOpen=false; frView='session'; frLibOpen=null; frPlayKey=null;
+ save(); render();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+// "Quiz me on this" — a round built only from one concept.
+function frQuizConcept(cid){
+ if(!CONCEPTS[cid]) return;
+ const prev=state.footballIQ.todaySession;
+ const next=buildFilmRoomSession({track:frTrack(), focus:cid});
+ next.round=(prev&&prev.round?prev.round:1)+1;
+ state.footballIQ.todaySession=next;
+ frReviewOpen=false; frView='session'; frLibOpen=null; frPlayKey=null;
  save(); render();
  window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -4880,7 +4979,7 @@ function onFieldTap(id){
  if(!item || item.answeredId || item.stage==='learn') return;
  const scenario=SCENARIOS[item.refId];
  if(!scenario) return;
- if(['tapDefender','tapGap','tapLane'].indexOf(scenario.question.type)===-1) return;
+ if(['tapDefender','tapGap','tapLane','tapPlayer'].indexOf(scenario.question.type)===-1) return;
  if(!scenario.question.options.some(o=>o.id===id)) return;
  frSubmitAnswer(id);
 }
@@ -4893,6 +4992,7 @@ function frSubmitAnswer(answerId){
  const responseTimeMs=Date.now()-(s.itemStartedAt||Date.now());
  const {correct, xpGain}=frScoreAnswer(scenario, answerId, responseTimeMs, item.stage);
  item.answeredId=answerId; item.correct=correct; item.xpGain=xpGain; item.responseTimeMs=responseTimeMs;
+ frPlayKey = (correct && scenario.playOut) ? frItemKey(s,item) : null; frPlayRun = frPlayKey!==null; frClipOpen=null;
  s.xpEarned=(s.xpEarned||0)+xpGain;
  save(); render();
 }
@@ -4912,7 +5012,7 @@ function frFinishSessionIfDone(s){
 }
 function frAfterMove(s){
  s.itemStartedAt=Date.now();
- frReviewOpen=false;
+ frReviewOpen=false; frPlayKey=null; frClipOpen=null;
  save(); render();
  window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -4956,27 +5056,43 @@ function frSkip(){
  frAfterMove(s);
 }
 
-/* ---- Interactive football field — one reusable component (section 6) ---- */
+/* ---- Interactive football field — one reusable component (section 6) ----
+   Draws any offensive formation, any defensive front aligned against it,
+   gap zones, technique numbers, and (for the "watch it play out" replay)
+   dashed movement paths plus animatable player groups. */
+const FR_MOVE_COLORS = { run:'#facc15', block:'#94a3b8', rush:'#f87171', route:'#60a5fa', cover:'#fb923c' };
+function frTechShort(t){ return String(t||'').replace('tech',''); }
 function renderFootballField(fieldState, opts){
  opts=opts||{};
- const offense = fieldState && fieldState.offense ? FORMATIONS[fieldState.offense] : null;
- const defense = fieldState && fieldState.defense ? DEFENSIVE_FRONTS[fieldState.defense] : null;
- const overrides = (fieldState && fieldState.overrides) || {};
- const players = [].concat(offense?offense.players:[], defense?defense.players:[]).map(p=>overrides[p.id]?Object.assign({},p,overrides[p.id]):p);
- const showGaps = !!(fieldState && fieldState.showGaps) || !!opts.forceGaps;
- const gaps = showGaps ? GAPS_VS_TRIPS_RIGHT : [];
+ const fsx=fieldState||{};
+ const offense = fsx.offense ? FORMATIONS[fsx.offense] : null;
+ const defPlayers = (fsx.defense && offense) ? defenseFor(fsx.defense, fsx.offense) : [];
+ const overrides = fsx.overrides || {};
+ const players = [].concat(offense?offense.players:[], defPlayers).map(p=>overrides[p.id]?Object.assign({},p,overrides[p.id]):p);
+ const showGaps = !!fsx.showGaps || !!opts.forceGaps;
+ const gaps = (showGaps && offense) ? gapsFor(offense) : [];
  const tappableIds = opts.tappableIds||[];
- const highlightId = (fieldState&&fieldState.highlight) || opts.highlightId;
+ const hideIds = opts.hideLabelIds||[];
+ const highlightId = fsx.highlight || opts.highlightId;
+ const play = opts.playOut || null;
  const genericLabel={DL:'DL',LB:'LB',DB:'DB'};
+ const byId={}; players.forEach(p=>{ byId[p.id]=p; });
  let svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" class="fieldSvg" role="img" aria-label="Football field diagram">`;
+ svg += `<defs><marker id="frArrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="3.2" markerHeight="3.2" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#fff"/></marker></defs>`;
  svg += `<rect x="0" y="0" width="100" height="100" fill="#0b3d1f"/>`;
  for(let i=10;i<100;i+=10) svg += `<line x1="0" y1="${i}" x2="100" y2="${i}" stroke="rgba(255,255,255,0.08)" stroke-width="0.3"/>`;
  svg += `<line x1="0" y1="50" x2="100" y2="50" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>`;
+ // Movement paths (replay only) sit under the players.
+ const moves = play ? (play.moves||[]).filter(m=>byId[m.id]) : [];
+ moves.forEach(m=>{
+  const st=byId[m.id], pts=[[st.x,st.y]].concat(m.to||[]);
+  svg += `<polyline points="${pts.map(q=>q[0]+','+q[1]).join(' ')}" fill="none" stroke="${FR_MOVE_COLORS[m.style]||'#fff'}" stroke-width="0.7" stroke-dasharray="1.6,1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#frArrow)" opacity="0.85"/>`;
+ });
  players.forEach(p=>{
   const isTappable = tappableIds.indexOf(p.id)!==-1;
   const isReveal = opts.revealId===p.id;
   const isWrong = opts.wrongId===p.id;
-  const isHighlight = highlightId===p.id;
+  const isHighlight = highlightId===p.id && !play;
   const fill = p.group==='OL' ? '#64748b' : p.group==='skill' ? '#3b82f6' : (p.group==='DL'||p.group==='LB') ? '#ef4444' : '#f97316';
   let ring='';
   if(isReveal) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#22c55e" stroke-width="0.8"/>`;
@@ -4985,13 +5101,21 @@ function renderFootballField(fieldState, opts){
   else if(isTappable) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.4" stroke-dasharray="0.8,0.8"/>`;
   // Role names (Mike/Will/NB) are hidden on recognition questions so the
   // diagram doesn't hand over the answer — generic DL/LB/DB labels instead.
-  const label = opts.hideRoleLabels && genericLabel[p.group] ? genericLabel[p.group] : p.label;
-  // A bigger invisible hit circle on tappable players so a thumb can hit it.
+  let label = opts.hideRoleLabels && genericLabel[p.group] ? genericLabel[p.group] : p.label;
+  if(fsx.showTech && p.technique) label=frTechShort(p.technique);
+  if(hideIds.indexOf(p.id)!==-1) label='?';
   const hit = isTappable ? `<circle cx="${p.x}" cy="${p.y}" r="5.8" fill="transparent"/>` : '';
-  svg += `<g ${isTappable?`onclick="onFieldTap('${p.id}')" style="cursor:pointer"`:''}>${ring}
+  const mv = moves.find(m=>m.id===p.id);
+  const anim = mv ? ` id="frp_${p.id}" data-pts="${[[p.x,p.y]].concat(mv.to||[]).map(q=>q[0]+','+q[1]).join(';')}"` : '';
+  const tech = '';
+  svg += `<g${anim} ${isTappable?`onclick="onFieldTap('${p.id}')" style="cursor:pointer"`:''}>${ring}
    <circle cx="${p.x}" cy="${p.y}" r="3.6" fill="${fill}" stroke="#050505" stroke-width="0.2"/>
-   <text x="${p.x}" y="${p.y+1.1}" font-size="${label.length>3?2.1:2.6}" fill="#fff" text-anchor="middle" font-weight="bold">${label}</text>${hit}</g>`;
+   <text x="${p.x}" y="${p.y+1.1}" font-size="${label.length>3?2.1:2.6}" fill="#fff" text-anchor="middle" font-weight="bold">${label}</text>${tech}${hit}</g>`;
  });
+ if(play && play.ball && play.ball.length){
+  const b=play.ball;
+  svg += `<circle id="frp_ball" data-pts="${b.map(q=>q[0]+','+q[1]).join(';')}" cx="${b[0][0]}" cy="${b[0][1]}" r="1.5" fill="#b45309" stroke="#fff" stroke-width="0.4"/>`;
+ }
  // Gap zones are drawn AFTER the players so they sit on top and can actually
  // receive taps (they used to be drawn underneath, mostly hidden and
  // untappable, which is why tap-the-gap questions could not be answered).
@@ -5000,13 +5124,141 @@ function renderFootballField(fieldState, opts){
   const isRev = opts.revealId===g.id, isWr = opts.wrongId===g.id;
   const fill = isRev?'rgba(34,197,94,0.42)':isWr?'rgba(239,68,68,0.42)':tap?'rgba(251,146,60,0.30)':'rgba(251,146,60,0.16)';
   const stroke = isRev?'#22c55e':isWr?'#ef4444':'rgba(251,146,60,0.7)';
-  const lbl = tap ? (g.side==='weak'?'L-':'R-')+g.label : g.label;
+  const lbl = tap ? (g.id.indexOf('left')===0?'L-':'R-')+g.label : g.label;
   svg += `<g ${tap?`onclick="onFieldTap('${g.id}')" style="cursor:pointer"`:'style="pointer-events:none"'}>
    <rect x="${g.x-4}" y="41" width="8" height="15" rx="1.2" fill="${fill}" stroke="${stroke}" stroke-width="0.35" ${tap?'stroke-dasharray="1,0.8"':''}/>
    <text x="${g.x}" y="39.4" font-size="3.1" fill="#fb923c" text-anchor="middle" font-weight="bold">${lbl}</text></g>`;
  });
  svg += `</svg>`;
  return `<div class="fieldWrap">${svg}</div>`;
+}
+
+/* ---- "Watch it play out": animated replay of the right answer ---- */
+let frAnimToken=0;
+function frRunPlayOut(){
+ const root=document.getElementById('frPlayBox');
+ if(!root) return;
+ const nodes=[].slice.call(root.querySelectorAll('[data-pts]'));
+ const paths=nodes.map(n=>({ n:n, pts:n.getAttribute('data-pts').split(';').map(t=>t.split(',').map(Number)) })).filter(o=>o.pts.length>1);
+ paths.forEach(o=>{
+  o.len=[0];
+  for(let i=1;i<o.pts.length;i++) o.len[i]=o.len[i-1]+Math.hypot(o.pts[i][0]-o.pts[i-1][0], o.pts[i][1]-o.pts[i-1][1]);
+  o.total=o.len[o.len.length-1]||1;
+ });
+ const token=++frAnimToken;
+ function at(o,f){
+  const d=f*o.total; let i=1;
+  while(i<o.len.length-1 && o.len[i]<d) i++;
+  const a=o.pts[i-1], b=o.pts[i], seg=(o.len[i]-o.len[i-1])||1;
+  const k=Math.max(0,Math.min(1,(d-o.len[i-1])/seg));
+  return [a[0]+(b[0]-a[0])*k, a[1]+(b[1]-a[1])*k];
+ }
+ paths.forEach(o=>o.n.setAttribute('transform','translate(0,0)'));
+ if(typeof requestAnimationFrame!=='function'){ paths.forEach(o=>{ const p=at(o,1); o.n.setAttribute('transform','translate('+(p[0]-o.pts[0][0])+','+(p[1]-o.pts[0][1])+')'); }); return; }
+ const dur=4200; let t0=null;
+ function frame(now){
+  if(token!==frAnimToken || !document.getElementById('frPlayBox')) return;
+  if(t0===null) t0=now;
+  const f=Math.min(1,(now-t0)/dur);
+  const e=f<.5?2*f*f:1-Math.pow(-2*f+2,2)/2;
+  paths.forEach(o=>{ const p=at(o,e); o.n.setAttribute('transform','translate('+(p[0]-o.pts[0][0])+','+(p[1]-o.pts[0][1])+')'); });
+  if(f<1) requestAnimationFrame(frame);
+ }
+ requestAnimationFrame(frame);
+}
+let frPlayKey=null, frPlayRun=false;
+function frItemKey(s,item){ return item.refId+'|'+s.idx+'|'+(s.round||1); }
+function frTogglePlay(){
+ const s=state.footballIQ.todaySession; if(!s) return;
+ const item=s.items[s.idx]; if(!item) return;
+ const key=frItemKey(s,item);
+ frPlayKey = (frPlayKey===key) ? null : key;
+ frPlayRun = frPlayKey!==null;
+ render();
+}
+function frPlayBoxHTML(sc){
+ const fsx=Object.assign({}, sc.fieldState, { showGaps:false, highlight:null, note:null, showTech:false });
+ return `<div class="frPlay" id="frPlayBox">
+  ${renderFootballField(fsx,{ playOut:sc.playOut })}
+  <div class="frNote" style="margin-top:2px">🎬 ${sc.playOut.caption}</div>
+  <div class="tiny" style="margin-top:6px"><span style="color:#facc15">●</span> ball carrier / QB &nbsp; <span style="color:#94a3b8">●</span> blocker &nbsp; <span style="color:#f87171">●</span> rusher &nbsp; <span style="color:#60a5fa">●</span> route &nbsp; <span style="color:#fb923c">●</span> coverage / pursuit</div>
+  <button class="chip full" style="margin-top:8px" onclick="frRunPlayOut()">↻ Replay</button>
+ </div>`;
+}
+
+/* ---- Film: real examples via search, plus clip links you paste in ---- */
+function frParseTime(t){
+ if(!t) return 0;
+ if(/^\d+$/.test(t)) return parseInt(t,10);
+ const m=String(t).match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);
+ return m ? (parseInt(m[1]||0,10)*3600+parseInt(m[2]||0,10)*60+parseInt(m[3]||0,10)) : 0;
+}
+function frYouTubeInfo(url){
+ try{
+  const u=new URL(String(url).trim());
+  const h=u.hostname.replace(/^(www\.|m\.|music\.)/,'');
+  let id=null;
+  if(h==='youtu.be') id=u.pathname.slice(1).split('/')[0];
+  else if(h==='youtube.com' || h==='youtube-nocookie.com'){
+   if(u.pathname==='/watch') id=u.searchParams.get('v');
+   else { const m=u.pathname.match(/^\/(embed|shorts|live)\/([\w-]{6,15})/); if(m) id=m[2]; }
+  }
+  if(!id || !/^[\w-]{6,15}$/.test(id)) return null;
+  return { id:id, start: frParseTime(u.searchParams.get('t')||u.searchParams.get('start')) };
+ }catch(e){ return null; }
+}
+let frClipOpen=null;
+function frToggleClip(key){ frClipOpen = (frClipOpen===key) ? null : key; render(); }
+function frAddClip(cid){
+ const c=CONCEPTS[cid]; if(!c) return;
+ let url=null;
+ try{ url=prompt('Paste a link to a clip for "'+c.label+'" (YouTube links play right here).\n\nTip: a short clip of a real game rep that shows this exact thing works best.'); }catch(e){}
+ if(!url) return;
+ url=String(url).trim();
+ if(!/^https?:\/\//i.test(url)){ try{ alert('That does not look like a web link — it should start with http:// or https://'); }catch(e){} return; }
+ let title='';
+ try{ title=prompt('Optional: a short title for the clip (for example “Zone run vs 4-3 Under”)','')||''; }catch(e){}
+ const list=(state.footballIQ.clips[cid] = state.footballIQ.clips[cid] || []);
+ if(list.length>=6) list.shift();
+ list.push({ url:url.slice(0,400), title:String(title).trim().slice(0,80) });
+ save(); render();
+}
+function frRemoveClip(cid, i){
+ const list=state.footballIQ.clips[cid]; if(!list) return;
+ if(!confirm('Remove this clip?')) return;
+ list.splice(i,1);
+ if(!list.length) delete state.footballIQ.clips[cid];
+ frClipOpen=null; save(); render();
+}
+function frFilmHTML(cid){
+ const c=CONCEPTS[cid]; if(!c) return '';
+ const builtin=(c.clips||[]).map(x=>Object.assign({builtin:true},x));
+ const mine=(state.footballIQ.clips[cid]||[]).map((x,i)=>Object.assign({idx:i},x));
+ const rows=builtin.concat(mine).map((clip,n)=>{
+  const key=cid+':'+n;
+  const yt=frYouTubeInfo(clip.url);
+  const title=escapeHTML(clip.title||'Clip');
+  const open = frClipOpen===key;
+  const safeUrl=escapeHTML(clip.url);
+  const player = (open && yt) ? `<div class="frClipFrame"><iframe src="https://www.youtube-nocookie.com/embed/${yt.id}?rel=0&modestbranding=1${yt.start?('&start='+yt.start):''}" title="${title}" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>` : '';
+  return `<div class="frClipRow">
+   <div class="frClipTop"><span>🎞️ ${title}</span>
+    <span class="frClipBtns">${yt?`<button class="chip" onclick="frToggleClip('${key}')">${open?'Hide':'▶ Play'}</button>`:''}<a class="chip frLink" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open ↗</a>${clip.builtin?'':`<button class="chip" aria-label="Remove clip" onclick="frRemoveClip('${cid}',${clip.idx})">✕</button>`}</span></div>
+   ${player}</div>`;
+ }).join('');
+ const search = c.film ? `<a class="chip frLink full" style="display:block;text-align:center;margin-top:8px" href="${escapeHTML(filmSearchUrl(c.film))}" target="_blank" rel="noopener noreferrer">🔎 Find real NFL & college film on this (opens YouTube)</a>` : '';
+ return `<div class="frFilm"><div class="frFilmHead">🎥 See it on film</div>${rows}${search}
+  <button class="chip full" style="margin-top:8px" onclick="frAddClip('${cid}')">＋ Add a clip link</button>
+  <p class="tiny" style="margin-top:6px">Game footage belongs to its owners, so it plays from YouTube rather than inside the app. Parents and coaches: paste any clip you like and it shows up here every time this topic comes up.</p></div>`;
+}
+
+/* ---- Lesson card (used by the Learn stage AND the Study Library) ---- */
+function frLessonBodyHTML(lesson){
+ const pts=(lesson.points||[]).length ? `<div class="frLookFor">What to look for</div><ul class="frPoints">${lesson.points.map(p=>`<li>${p}</li>`).join('')}</ul>` : '';
+ const note=lesson.fieldState && lesson.fieldState.note ? `<div class="frNote">${lesson.fieldState.note}</div>` : '';
+ return `<h3 style="margin-top:8px">${lesson.title}</h3>
+  ${renderFootballField(lesson.fieldState, {})}${note}
+  <p class="small">${lesson.body}</p>${pts}`;
 }
 
 function frDotsHTML(s){
@@ -5022,20 +5274,23 @@ function frDotsHTML(s){
 function frSessionSummaryHTML(s, rating){
  const total=s.items.filter(i=>i.answeredId).length;
  const correctCount=s.items.filter(i=>i.correct).length;
- const subscoreRows=Object.keys(rating.subscores).map(k=>`<div class="checkItem"><span>${FR_SUBSCORE_LABELS[k]||k}</span><span class="tiny">${rating.subscores[k]!=null?rating.subscores[k]:'Not enough data yet'}</span></div>`).join('');
+ const track=frTrack();
+ const rows=Object.keys(rating.subscores).filter(k=>rating.subscores[k]!=null || (FR_SUBSCORE_TRACKS[track]||[]).indexOf(k)!==-1)
+  .map(k=>`<div class="checkItem"><span>${FR_SUBSCORE_LABELS[k]||k}</span><span class="tiny">${rating.subscores[k]!=null?rating.subscores[k]:'Not enough data yet'}</span></div>`).join('');
  const weak=frWeakConcepts(3).filter(id=>state.footballIQ.concepts[id].confidence<70);
- const weakHtml=weak.length?`<div class="inner" style="margin-top:10px"><h3>Focus Areas</h3><p class="small">These come up more often in your next sessions:</p>${weak.map(id=>`<div class="checkItem"><span>${CONCEPTS[id].label}</span><span class="tiny">${state.footballIQ.concepts[id].confidence}</span></div>`).join('')}</div>`:'';
+ const weakHtml=weak.length?`<div class="inner" style="margin-top:10px"><h3>Focus Areas</h3><p class="small">These come up more often in your next sessions — tap one to drill it right now:</p>${weak.map(id=>`<div class="checkItem"><span>${CONCEPTS[id].label}</span><span class="tiny">${state.footballIQ.concepts[id].confidence} · <a href="javascript:void(0)" onclick="frQuizConcept('${id}')" style="color:var(--accent)">Quiz me</a></span></div>`).join('')}</div>`:'';
  return `<div class="coachBubble" style="margin-top:12px"><strong>Film Room — ${s.round>1?'Round '+s.round+' ':''}Done ✅</strong>
   <p class="small">${correctCount} of ${total} correct this round. +${s.xpEarned||0} XP earned.</p></div>
-  <div class="inner" style="margin-top:10px"><h3>Football IQ Breakdown</h3>${subscoreRows}
+  <div class="inner" style="margin-top:10px"><h3>Football IQ Breakdown</h3>${rows}
   <p class="tiny" style="margin-top:6px">Scores are based on actual quiz performance, rolled over recent attempts — one bad session won't tank it.</p></div>
   ${weakHtml}
   <button class="gold full" style="margin-top:10px" onclick="frStartExtraRound()">🔁 Another Round (new randomized questions)</button>
   <button class="chip full" style="margin-top:8px" onclick="frBack()">← Review Last Question</button>
+  <button class="chip full" style="margin-top:8px" onclick="frToggleLibrary()">📚 Open the Study Library</button>
   <p class="small" style="margin-top:10px;text-align:center">Every round is reshuffled and leans toward what you're weakest at. Extra rounds earn XP and sharpen mastery, but the streak only counts once a day.</p>`;
 }
 function frLessonForConcept(conceptId){
- const id=LESSON_ORDER.find(lid=>LESSONS[lid].concept===conceptId);
+ const id=Object.keys(LESSONS).find(lid=>LESSONS[lid].concept===conceptId);
  return id?LESSONS[id]:null;
 }
 function frNavRowHTML(s, item, answered){
@@ -5052,9 +5307,8 @@ function frItemHTML(s, item){
  if(item.stage==='learn'){
   const lesson=LESSONS[item.refId];
   return `<div class="frStageBadge learn">Learn</div>
-   <h3 style="margin-top:8px">${lesson.title}</h3>
-   ${renderFootballField(lesson.fieldState, {})}
-   <p class="small">${lesson.body}</p>
+   ${frLessonBodyHTML(lesson)}
+   ${frFilmHTML(lesson.concept)}
    ${frDotsHTML(s)}
    ${frNavRowHTML(s,item,true)}`;
  }
@@ -5062,12 +5316,15 @@ function frItemHTML(s, item){
  const q=scenario.question;
  const answered=!!item.answeredId;
  const fieldOpts={};
- const isTapType=['tapDefender','tapGap','tapLane'].indexOf(q.type)!==-1;
+ const isTapType=['tapDefender','tapGap','tapLane','tapPlayer'].indexOf(q.type)!==-1;
  if(isTapType){
   fieldOpts.tappableIds = answered ? [] : q.options.map(o=>o.id);
   if(answered){ fieldOpts.revealId=q.correctAnswerId; if(item.answeredId!==q.correctAnswerId) fieldOpts.wrongId=item.answeredId; }
   if(q.type==='tapGap') fieldOpts.forceGaps=true;
   if(q.type==='tapDefender') fieldOpts.hideRoleLabels=true;
+  // On "tap the ___" offensive questions the candidates' labels are hidden
+  // until he answers, so the diagram can't just read out the answer.
+  if(scenario.hideOptionLabels && !answered) fieldOpts.hideLabelIds=q.options.map(o=>o.id);
  }
  const noteHtml = scenario.fieldState.note ? `<div class="frNote">${scenario.fieldState.note}</div>` : '';
  let optionsHtml;
@@ -5084,30 +5341,86 @@ function frItemHTML(s, item){
  const secs = item.responseTimeMs!=null ? ` <span class="tiny">(${(item.responseTimeMs/1000).toFixed(1)}s)</span>` : '';
  const feedbackHtml = answered ? `<div class="frFeedback ${item.correct?'correct':'wrong'}"><strong>${item.correct?'✅ Correct':'❌ Not quite'}</strong>${secs}<p class="small" style="margin-top:4px">${q.explanation}</p></div>` : '';
  const lesson=frLessonForConcept(scenario.concept);
- const reviewHtml = lesson ? `<button class="chip full" style="margin-top:8px" onclick="frToggleReview()">${frReviewOpen?'Hide':'📖 Review'} the lesson: ${lesson.title}</button>${frReviewOpen?`<div class="frNote"><b>${lesson.title}</b><br>${lesson.body}</div>`:''}` : '';
+ const reviewHtml = lesson ? `<button class="chip full" style="margin-top:8px" onclick="frToggleReview()">${frReviewOpen?'Hide':'📖 Review'} the lesson: ${lesson.title}</button>${frReviewOpen?`<div class="frReview">${frLessonBodyHTML(lesson)}<button class="gold full" style="margin-top:8px" onclick="frQuizConcept('${scenario.concept}')">🎯 Quiz me on just this</button></div>`:''}` : '';
+ // After answering: the animated replay (opens by itself when he got it
+ // right; one tap to watch it after a miss) and the film examples.
+ let playHtml='';
+ if(answered && scenario.playOut){
+  const open = frPlayKey===frItemKey(s,item);
+  playHtml = open ? frPlayBoxHTML(scenario)
+   : `<button class="gold full" style="margin-top:10px" onclick="frTogglePlay()">▶ ${item.correct?'Watch it play out':'Watch the right answer play out'}</button>`;
+  if(open) playHtml += `<button class="chip full" style="margin-top:6px" onclick="frTogglePlay()">Hide the replay</button>`;
+ }
+ const filmHtml = answered ? frFilmHTML(scenario.concept) : '';
  return `<div class="frStageBadge ${item.stage}">${item.stage}</div>
   <h3 style="margin-top:8px">${q.prompt}</h3>
   ${renderFootballField(scenario.fieldState, fieldOpts)}${noteHtml}
   ${optionsHtml}
   ${feedbackHtml}
+  ${playHtml}
+  ${filmHtml}
   ${reviewHtml}
   ${frDotsHTML(s)}
   ${frNavRowHTML(s,item,answered)}`;
 }
+
+/* ---- Study Library: read any lesson any time, then quiz yourself on it ---- */
+let frView='session', frLibOpen=null;
+function frToggleLibrary(){ frView = frView==='library' ? 'session' : 'library'; frLibOpen=null; render(); window.scrollTo({top:0}); }
+function frOpenLesson(id){ frLibOpen=id; render(); window.scrollTo({top:0}); }
+function frCloseLesson(){ frLibOpen=null; render(); }
+function frLessonGroup(l){
+ const c=l.concept;
+ if(c.indexOf('primer')===0) return '1. Start Here';
+ if(/^(personnel|formation|strengthCall)/.test(c)) return '2. Formations & Personnel';
+ if(/^(gaps|techniques|front|mikeId|willId|samId|nickelId|safetyShell)/.test(c)) return '3. Fronts, Gaps & Defenders';
+ return '4. Plays & Position Skills';
+}
+function frLibraryHTML(){
+ const track=frTrack();
+ if(frLibOpen && LESSONS[frLibOpen]){
+  const l=LESSONS[frLibOpen];
+  return `<button class="chip" style="margin-top:10px" onclick="frCloseLesson()">← All lessons</button>
+   <div class="frStageBadge learn" style="margin-top:10px">Lesson</div>
+   ${frLessonBodyHTML(l)}
+   ${frFilmHTML(l.concept)}
+   <button class="gold full" style="margin-top:10px" onclick="frQuizConcept('${l.concept}')">🎯 Quiz me on this</button>
+   <button class="chip full" style="margin-top:8px" onclick="frCloseLesson()">Back to the lesson list</button>`;
+ }
+ const ids=frLessonOrder(track).filter(id=>LESSONS[id] && frConceptInTrack(LESSONS[id].concept, track));
+ const groups={};
+ ids.forEach(id=>{ const g=frLessonGroup(LESSONS[id]); (groups[g]=groups[g]||[]).push(id); });
+ const seen=ids.filter(id=>!frIsConceptNew(LESSONS[id].concept)).length;
+ const body=Object.keys(groups).sort().map(g=>`<h3 style="margin-top:14px">${g.replace(/^\d+\.\s*/,'')}</h3>`+groups[g].map(id=>{
+  const l=LESSONS[id], rec=state.footballIQ.concepts[l.concept];
+  const status = frIsConceptNew(l.concept) ? '<span class="tiny" style="color:var(--blue)">New</span>' : (rec && rec.attempts>0 ? `<span class="tiny">IQ ${rec.confidence}</span>` : '<span class="tiny" style="color:var(--green)">Seen ✓</span>');
+  return `<div class="checkItem frLibRow" onclick="frOpenLesson('${id}')" style="cursor:pointer"><span>${l.title}</span>${status}</div>`;
+ }).join('')).join('');
+ return `<div class="coachBubble" style="margin-top:12px"><strong>📚 Study Library — ${TRACKS[track].label}</strong>
+  <p class="small">${seen} of ${ids.length} lessons seen. Read any lesson now, watch film, then tap “Quiz me on this”.</p></div>${body}
+  <button class="chip full" style="margin-top:14px" onclick="frToggleLibrary()">← Back to today’s session</button>`;
+}
+
 function renderFilmRoom(){
+ const track=frTrack();
  const s=frGetOrCreateTodaySession();
  const rating=footballIQRating();
  const level=frLevel();
- const header=`<div class="frHeader"><div><div class="small">Film Room • ${state.offPos||'RB'} Track${s.round>1?' • Round '+s.round:''}</div><h2 style="margin-top:2px">Football IQ</h2></div>
+ const header=`<div class="frHeader"><div><div class="small">Film Room • ${TRACKS[track].label}${s.round>1?' • Round '+s.round:''}${s.focus?' • Focus: '+CONCEPTS[s.focus].label:''}</div><h2 style="margin-top:2px">Football IQ</h2></div>
   <div class="statPill"><b>${rating.overall!=null?rating.overall:'--'}</b><span>IQ</span></div></div>
+  <div class="frTracks">${['RB','EDGE','LB','ALL'].map(t=>`<button class="frTrackBtn ${t===track?'active':''}" onclick="frSetTrack('${t}')">${TRACKS[t].icon} ${TRACKS[t].short}</button>`).join('')}<button class="frTrackBtn ${frView==='library'?'active':''}" onclick="frToggleLibrary()">📚 Library</button></div>
   <div class="frStatRow">
    <div class="frStatPill">🔥 <b>${state.footballIQ.streakDays||0}</b> day streak</div>
    <div class="frStatPill">⭐ <b>${state.footballIQ.xp||0}</b> XP</div>
    <div class="frStatPill">🏅 <b>Level ${level}</b></div>
   </div>`;
- const body = s.idx>=s.items.length ? frSessionSummaryHTML(s, rating) : frItemHTML(s, s.items[s.idx]);
+ let body;
+ if(frView==='library') body=frLibraryHTML();
+ else body = s.idx>=s.items.length ? frSessionSummaryHTML(s, rating) : frItemHTML(s, s.items[s.idx]);
  document.getElementById('screen_filmRoom').innerHTML = header + body;
+ if(frPlayRun){ frPlayRun=false; frRunPlayOut(); }
 }
+
 
 boot();
 </script>
