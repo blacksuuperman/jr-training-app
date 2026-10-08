@@ -162,6 +162,7 @@ function renderQueue(){
     return `<div class="card">
       <h3>${escapeHtml(d.taskName || d.taskId)}</h3>
       <p class="tiny">Submitted ${when}</p>
+      ${(d.photos&&d.photos.length)?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${d.photos.map((src,i)=>`<img src="${src}" alt="Photo ${i+1}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid var(--line)" onclick="viewPhoto('${id}',${i})">`).join('')}</div>`:''}
       <div class="row">
         <button class="green" onclick="resolve('${id}','approved')">✅ Good</button>
         <button class="red" onclick="showDenyNote('${id}')">❌ Deny</button>
@@ -172,6 +173,13 @@ function renderQueue(){
   }).join('');
 }
 
+function viewPhoto(id,i){
+  const d=pending[id]; if(!d||!d.photos||!d.photos[i]) return;
+  const v=document.createElement('div');
+  v.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px';
+  v.innerHTML='<img src="'+d.photos[i]+'" style="max-width:100%;max-height:80vh;border-radius:12px"><button style="max-width:200px;margin-top:14px;background:#2f303b;color:#fff" onclick="this.parentNode.remove()">Close</button>';
+  document.body.appendChild(v);
+}
 function showDenyNote(id){
   document.getElementById('note_'+id).classList.remove('hidden');
   document.getElementById('denyConfirm_'+id).classList.remove('hidden');

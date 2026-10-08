@@ -239,6 +239,16 @@ body.timerFlash{animation:flashPulse .7s ease}
 .frDot.wrongDot{background:var(--red)}
 .frDot.now{background:var(--accent);transform:scale(1.3)}
 .frNote{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;color:var(--muted)}
+/* Photo proof on submissions */
+.photoRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.photoThumb{position:relative;width:84px;height:84px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#000}
+.photoThumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.photoX{position:absolute;top:2px;right:2px;min-height:0;width:24px;height:24px;border-radius:50%;padding:0;background:rgba(0,0,0,.7);color:#fff;font-size:16px;line-height:1;border:0}
+.photoBtn{display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;min-height:44px}
+.photoBtn.disabled{opacity:.4;pointer-events:none}
+.photoViewer{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:1200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.photoViewer img{max-width:100%;max-height:82vh;border-radius:12px}
+.photoViewerClose{margin-top:14px;min-width:140px}
 </style>
 </head>
 <body>
@@ -326,7 +336,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v14-football-iq-film-room-phase1';
+const BUILD_VERSION='v15-film-room-nav-random-photos';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -597,7 +607,27 @@ function modeLabel(){
  return {outdoor:'Outdoor Field',home:'Home Indoor',facility:'Indoor Facility',gym:'Gym'}[state.mode]||'Outdoor Field';
 }
 
-function save(){localStorage.setItem(STORE,JSON.stringify(state));}
+// Photos attached to submissions can make saved data large. If the device
+// is ever near its storage limit, drop old photos first (never real progress)
+// and retry, instead of letting a failed write break the app.
+function dropOldPhotos(keepDays){
+ let removed=false;
+ const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-keepDays); cutoff.setHours(0,0,0,0);
+ Object.keys(state.scheduleLogs||{}).forEach(k=>{
+  if(keyToLocalDate(k)<cutoff) Object.keys(state.scheduleLogs[k]||{}).forEach(tid=>{ const e=state.scheduleLogs[k][tid]; if(e && e.photos && e.photos.length){ delete e.photos; removed=true; } });
+ });
+ return removed;
+}
+function save(){
+ try{ localStorage.setItem(STORE,JSON.stringify(state)); return; }
+ catch(err){
+  const attempts=[()=>dropOldPhotos(1),()=>dropOldPhotos(-1)];
+  for(const tryDrop of attempts){
+   if(tryDrop()){ try{ localStorage.setItem(STORE,JSON.stringify(state)); return; }catch(e2){} }
+  }
+  if(!window._saveWarned){ window._saveWarned=true; setTimeout(()=>alert('This device is almost out of storage, so the latest changes could not be saved. Clearing space (or deleting old photos/apps) will fix it.'),0); }
+ }
+}
 function clamp(n,min,max){return Math.max(min,Math.min(max,Number(n)||min));}
 function currentKey(){return 'day'+state.day;}
 function logFor(day=state.day){const k='day'+day; if(!state.logs[k])state.logs[k]={}; return state.logs[k];}
@@ -3144,7 +3174,7 @@ function syncConnected(){ return syncConfigured() && !!(state.sync && state.sync
 function jrSyncSubmit(taskId,def,e){
  if(!syncConnected()) return;
  try{
-  window.JrSync.submitApproval(state.sync.householdId, state.sync.role, taskId, def?def.name:taskId, localDateKey())
+  window.JrSync.submitApproval(state.sync.householdId, state.sync.role, taskId, def?def.name:taskId, localDateKey(), (e.photos||[]).slice(0,3))
    .then(id=>{ if(id){ e.syncApprovalId=id; save(); } })
    .catch(err=>console.error('JrSync submit failed',err));
  }catch(err){ console.error('JrSync submit threw',err); }
@@ -3248,6 +3278,9 @@ function submitForApproval(taskId){
  if(e.actualStart==null) e.actualStart=e.actualFinish;
  if(def && def.completionType==='academic') e.sub=def.sub;
  e.awaitingReview=true;
+ const pk=photoKey(taskId);
+ e.photos=(pendingPhotos[pk]||[]).slice();
+ delete pendingPhotos[pk];
  save(); render();
  jrSyncSubmit(taskId,def,e);
 }
@@ -3382,6 +3415,83 @@ function submitApprovalsCode(){
  render();
 }
 function lockApprovals(){ approvalsUnlocked=false; approvalsCodeError=false; render(); }
+
+/* =========================================================
+   PHOTO PROOF — attach pictures when submitting for inspection, so a
+   parent who can't come look in person can still check the work. Photos
+   are shrunk before saving (about 50-80KB each, max 3 per submission) and
+   automatically cleared after 3 days; they only live on the device unless
+   Mom's approver page is paired, in which case they travel with the
+   submission so she can see them on her phone.
+   ========================================================= */
+let pendingPhotos={};
+const MAX_PHOTOS_PER_SUBMISSION=3;
+function photoKey(taskId){ return localDateKey()+'|'+taskId; }
+function compressImageFile(file,maxDim,quality){
+ return new Promise((resolve,reject)=>{
+  const url=URL.createObjectURL(file);
+  const img=new Image();
+  img.onload=()=>{
+   let w=img.naturalWidth,h=img.naturalHeight;
+   const sc=Math.min(1,maxDim/Math.max(w,h));
+   w=Math.max(1,Math.round(w*sc)); h=Math.max(1,Math.round(h*sc));
+   const c=document.createElement('canvas'); c.width=w; c.height=h;
+   c.getContext('2d').drawImage(img,0,0,w,h);
+   URL.revokeObjectURL(url);
+   resolve(c.toDataURL('image/jpeg',quality));
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Could not read that picture')); };
+  img.src=url;
+ });
+}
+function addPendingPhoto(taskId,input){
+ const files=Array.from((input&&input.files)||[]);
+ if(!files.length) return;
+ const k=photoKey(taskId);
+ pendingPhotos[k]=pendingPhotos[k]||[];
+ const room=MAX_PHOTOS_PER_SUBMISSION-pendingPhotos[k].length;
+ if(room<=0){ alert('Up to '+MAX_PHOTOS_PER_SUBMISSION+' photos per submission.'); input.value=''; return; }
+ Promise.all(files.slice(0,room).map(f=>compressImageFile(f,800,0.6).catch(()=>null))).then(list=>{
+  list.filter(Boolean).forEach(d=>pendingPhotos[k].push(d));
+  input.value='';
+  render();
+ });
+}
+function removePendingPhoto(taskId,i){
+ const k=photoKey(taskId);
+ if(pendingPhotos[k]){ pendingPhotos[k].splice(i,1); render(); }
+}
+function photoThumbsHTML(list,onTapJs,removeJs){
+ if(!list||!list.length) return '';
+ return `<div class="photoRow">${list.map((src,i)=>`<div class="photoThumb"><img src="${src}" alt="Photo ${i+1}" onclick="${onTapJs(i)}">${removeJs?`<button class="photoX" aria-label="Remove photo" onclick="${removeJs(i)}">×</button>`:''}</div>`).join('')}</div>`;
+}
+function photoPickerHTML(t){
+ const list=pendingPhotos[photoKey(t.id)]||[];
+ const full=list.length>=MAX_PHOTOS_PER_SUBMISSION;
+ return `<div class="inner" style="margin-top:8px"><div class="label">📷 Show It (optional)</div>
+  <p class="tiny">Add up to ${MAX_PHOTOS_PER_SUBMISSION} photos or screenshots of the finished work, so a parent can check it even if they can't come look right now.</p>
+  ${photoThumbsHTML(list,i=>`openPendingPhoto('${t.id}',${i})`,i=>`removePendingPhoto('${t.id}',${i})`)}
+  <div class="grid" style="margin-top:8px">
+   <label class="chip photoBtn ${full?'disabled':''}">📷 Take Photo<input type="file" accept="image/*" capture="environment" hidden ${full?'disabled':''} onchange="addPendingPhoto('${t.id}',this)"></label>
+   <label class="chip photoBtn ${full?'disabled':''}">🖼 Choose / Screenshot<input type="file" accept="image/*" multiple hidden ${full?'disabled':''} onchange="addPendingPhoto('${t.id}',this)"></label>
+  </div></div>`;
+}
+function openPhotoViewer(src){
+ closePhotoViewer();
+ const d=document.createElement('div');
+ d.id='photoViewer'; d.className='photoViewer';
+ d.innerHTML=`<img src="${src}" alt="Submitted photo"><button class="photoViewerClose" onclick="closePhotoViewer()">Close</button>`;
+ d.onclick=(ev)=>{ if(ev.target===d) closePhotoViewer(); };
+ document.body.appendChild(d);
+}
+function closePhotoViewer(){ const d=document.getElementById('photoViewer'); if(d) d.remove(); }
+function openPendingPhoto(taskId,i){ const l=pendingPhotos[photoKey(taskId)]||[]; if(l[i]) openPhotoViewer(l[i]); }
+function openEntryPhoto(taskId,i){ const e=peekScheduleEntry(taskId); if(e.photos && e.photos[i]) openPhotoViewer(e.photos[i]); }
+function entryPhotosHTML(taskId){
+ const e=peekScheduleEntry(taskId);
+ if(!e.photos||!e.photos.length) return '';
+ return `<div class="inner" style="margin-top:8px"><div class="label">📷 Submitted Photos (${e.photos.length})</div>${photoThumbsHTML(e.photos,i=>`openEntryPhoto('${taskId}',${i})`,null)}<p class="tiny">Tap a photo to see it full size.</p></div>`;
+}
 function inspectionPanelHTML(t){
  if(!approvalsUnlocked){
   return `<div class="coachBubble" style="margin-top:8px"><strong>🔒 Parent Code Required</strong><p class="small">This is marked done and waiting on a real in-person check. Approving it or sending it back needs the parent code — not something to enter yourself.</p></div>
@@ -3389,9 +3499,9 @@ function inspectionPanelHTML(t){
   <input type="password" id="approvalsCodeInput" placeholder="Enter parent code" onkeydown="if(event.key==='Enter')submitApprovalsCode()">
   ${approvalsCodeError?'<p class="tiny" style="color:var(--orange)">Incorrect code.</p>':''}
   <button class="gold full" style="margin-top:8px" onclick="submitApprovalsCode()">Unlock</button>
-  </div>`;
+  </div>`+entryPhotosHTML(t.id);
  }
- return `<div class="coachBubble" style="margin-top:8px"><strong>Awaiting Inspection</strong><p class="small">Go check this in person before approving — not from memory, not because he said so.</p></div>
+ return entryPhotosHTML(t.id)+`<div class="coachBubble" style="margin-top:8px"><strong>Awaiting Inspection</strong><p class="small">Go check this in person before approving — not from memory, not because he said so.</p></div>
  <div class="inner" style="margin-top:8px"><div class="label">Parent Check</div>
  <textarea id="rejectNote_${t.id}" rows="2" placeholder="If something is wrong, note exactly what (e.g. toilet seat, mirror, trash). Leave blank if it's actually right."></textarea>
  <div class="grid" style="margin-top:8px">
@@ -3409,7 +3519,7 @@ function approvalCompletionControlsHTML(t){
   <button class="orange full" style="margin-top:6px" onclick="reopenScheduleTask('${t.id}')">Reopen</button>`;
  }
  const correctionBanner=e.correctionNeeded?`<div class="coachBubble" style="margin-top:8px;border-color:var(--orange)"><strong>Correction Needed</strong><p class="small">${e.correctionNeeded}</p><p class="tiny">Screen Time stays locked until this is redone and re-checked by a parent.</p></div>`:'';
- return correctionBanner+`<button class="green full" style="margin-top:8px" onclick="submitForApproval('${t.id}')">Submit For Inspection</button>`;
+ return correctionBanner+photoPickerHTML(t)+`<button class="green full" style="margin-top:8px" onclick="submitForApproval('${t.id}')">Submit For Inspection</button>`;
 }
 // Screen Time (TV only) — nothing to "complete" here, it's a running
 // balance shown for the day. Every chore/academic block approved clean
@@ -3443,6 +3553,7 @@ function keyToLocalDate(key){
 function purgeOldLogs(){
  const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-60); cutoff.setHours(0,0,0,0);
  let changed=false;
+ if(dropOldPhotos(3)) changed=true; // photos are proof for a parent's check, not a long-term archive
  Object.keys(state.scheduleLogs||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.scheduleLogs[k]; changed=true; } });
  Object.keys(state.accountabilityLog||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.accountabilityLog[k]; changed=true; } });
  Object.keys(state.screenTimeVoidDays||{}).forEach(k=>{ if(keyToLocalDate(k)<cutoff){ delete state.screenTimeVoidDays[k]; changed=true; } });
@@ -4599,11 +4710,60 @@ function frIsConceptDue(conceptId){
  return Date.now() >= (rec.nextReview||0);
 }
 
-// Builds today's LEARN -> RECOGNIZE -> APPLY -> TEST session. New concepts
-// are introduced a few at a time in curriculum order (LESSON_ORDER); once a
-// concept is introduced (today or on a previous day), it becomes eligible
-// for Recognize/Apply/Test scenarios, prioritizing whatever the spaced-
-// repetition scheduler says is due for review first.
+// ---- Session building: randomized, weighted toward weak areas ----
+// How much a scenario should be favored right now. Never-tested concepts and
+// weak/overdue ones get pulled in more often; concepts the athlete has truly
+// mastered still show up (so nothing is forgotten) but less often, and when
+// they do the harder variants are favored. Questions just answered
+// correctly are less likely to repeat back-to-back; ones just missed return.
+function frScenarioWeight(sc){
+ const rec=state.footballIQ.concepts[sc.concept];
+ let w=1;
+ if(!rec || rec.attempts===0){ w=3; }
+ else {
+  const conf=rec.confidence||0, acc=rec.correct/rec.attempts;
+  w=1+(100-conf)/25+(1-acc)*2;
+  if(frIsConceptDue(sc.concept)) w+=2;
+  if(conf>=85 && acc>=0.9) w=w*0.35*(1+((sc.difficulty||1)-1)*0.25);
+ }
+ const recent=state.footballIQ.sessionHistory.slice(0,80).filter(h=>h.scenarioId===sc.id);
+ const missed=recent.filter(h=>!h.correct).length;
+ w+=missed*1.5;
+ w=w/(1+0.35*Math.max(0,recent.length-missed));
+ return Math.max(0.05,w);
+}
+// Weighted random sample without replacement, gently spreading across
+// concepts (a concept already picked has its other questions down-weighted).
+function frWeightedSample(ids, count, avoidIds){
+ const avoid=avoidIds||{};
+ // Never repeat a question already used this session; only fall back to a
+ // repeat if the pool has nothing else left (tiny question banks).
+ let pool=ids.filter(id=>!avoid[id]);
+ const out=[], conceptHits={};
+ if(pool.length<count) pool=pool.concat(ids.filter(id=>avoid[id]));
+ while(out.length<count && pool.length){
+  const ws=pool.map(id=>{
+   const sc=SCENARIOS[id];
+   let w=frScenarioWeight(sc);
+   w*=Math.pow(0.4,conceptHits[sc.concept]||0);
+   if(avoid[id]) w*=0.02; // already used earlier this session
+   return w;
+  });
+  const tot=ws.reduce((a,b)=>a+b,0);
+  let r=Math.random()*tot, i=0;
+  for(;i<pool.length;i++){ r-=ws[i]; if(r<=0) break; }
+  if(i>=pool.length) i=pool.length-1;
+  const id=pool.splice(i,1)[0];
+  conceptHits[SCENARIOS[id].concept]=(conceptHits[SCENARIOS[id].concept]||0)+1;
+  out.push(id);
+ }
+ return out;
+}
+function frShuffle(arr){
+ const a=arr.slice();
+ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+ return a;
+}
 function buildFilmRoomSession(){
  const items=[];
  const introduced={};
@@ -4620,22 +4780,23 @@ function buildFilmRoomSession(){
   }
  });
 
- function pick(poolIds, count){
+ const used={};
+ function pick(stage, poolIds, count){
   const eligible=poolIds.filter(id=>introduced[SCENARIOS[id].concept]);
-  const due=eligible.filter(id=>frIsConceptDue(SCENARIOS[id].concept));
-  const notDue=eligible.filter(id=>due.indexOf(id)===-1);
-  const ordered=due.concat(notDue);
-  const out=[]; const usedConcepts={};
-  ordered.forEach(id=>{ const c=SCENARIOS[id].concept; if(out.length<count && !usedConcepts[c]){ usedConcepts[c]=true; out.push(id); } });
-  ordered.forEach(id=>{ if(out.length<count && out.indexOf(id)===-1) out.push(id); });
-  return out.slice(0,count);
+  const chosen=frWeightedSample(eligible, count, used);
+  chosen.forEach(id=>{
+   used[id]=true;
+   const sc=SCENARIOS[id];
+   const item={stage, refId:id};
+   if(sc.question.type==='mc' || sc.question.type==='tf') item.optionOrder=frShuffle(sc.question.options.map(o=>o.id));
+   items.push(item);
+  });
  }
+ pick('recognize', SCENARIOS_BY_STAGE.recognize, FR_RECOGNIZE_PER_DAY);
+ pick('apply', SCENARIOS_BY_STAGE.apply, FR_APPLY_PER_DAY);
+ pick('test', SCENARIOS_BY_STAGE.test, FR_TEST_PER_DAY);
 
- pick(SCENARIOS_BY_STAGE.recognize, FR_RECOGNIZE_PER_DAY).forEach(id=>items.push({stage:'recognize', refId:id}));
- pick(SCENARIOS_BY_STAGE.apply, FR_APPLY_PER_DAY).forEach(id=>items.push({stage:'apply', refId:id}));
- pick(SCENARIOS_BY_STAGE.test, FR_TEST_PER_DAY).forEach(id=>items.push({stage:'test', refId:id}));
-
- return { date:localDateKey(), items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0 };
+ return { date:localDateKey(), items, idx:0, startedAt:Date.now(), itemStartedAt:Date.now(), completedAt:null, xpEarned:0, round:1 };
 }
 function frGetOrCreateTodaySession(){
  const fi=state.footballIQ, today=localDateKey();
@@ -4643,6 +4804,18 @@ function frGetOrCreateTodaySession(){
  fi.todaySession=buildFilmRoomSession();
  save();
  return fi.todaySession;
+}
+// A fresh, newly-randomized round on demand — more practice any time, built
+// with the same weighting (so weak spots come up more). Extra rounds earn XP
+// and update mastery like any other, but never inflate the daily streak.
+function frStartExtraRound(){
+ const prev=state.footballIQ.todaySession;
+ const next=buildFilmRoomSession();
+ next.round=(prev&&prev.round?prev.round:1)+1;
+ state.footballIQ.todaySession=next;
+ frReviewOpen=false;
+ save(); render();
+ window.scrollTo({top:0,behavior:'smooth'});
 }
 function frCompleteLearnItem(lessonId){
  const lesson=LESSONS[lessonId];
@@ -4689,6 +4862,16 @@ function footballIQRating(){
  return { overall: frGroupScore(Object.keys(CONCEPTS)), subscores };
 }
 function frLevel(){ return Math.floor((state.footballIQ.xp||0)/100)+1; }
+// Weakest concepts, for the summary: attempted concepts sorted by confidence.
+function frWeakConcepts(limit){
+ return Object.keys(state.footballIQ.concepts)
+  .filter(id=>CONCEPTS[id] && state.footballIQ.concepts[id].attempts>0)
+  .sort((a,b)=>state.footballIQ.concepts[a].confidence-state.footballIQ.concepts[b].confidence)
+  .slice(0,limit||3);
+}
+
+let frReviewOpen=false;
+function frToggleReview(){ frReviewOpen=!frReviewOpen; render(); }
 
 function onFieldTap(id){
  const s=state.footballIQ.todaySession;
@@ -4709,21 +4892,11 @@ function frSubmitAnswer(answerId){
  const scenario=SCENARIOS[item.refId];
  const responseTimeMs=Date.now()-(s.itemStartedAt||Date.now());
  const {correct, xpGain}=frScoreAnswer(scenario, answerId, responseTimeMs, item.stage);
- item.answeredId=answerId; item.correct=correct; item.xpGain=xpGain;
+ item.answeredId=answerId; item.correct=correct; item.xpGain=xpGain; item.responseTimeMs=responseTimeMs;
  s.xpEarned=(s.xpEarned||0)+xpGain;
  save(); render();
 }
-function frAdvance(){
- const s=state.footballIQ.todaySession;
- if(!s) return;
- const item=s.items[s.idx];
- if(item && item.stage==='learn' && !item.completed){
-  frCompleteLearnItem(item.refId);
-  item.completed=true;
-  s.xpEarned=(s.xpEarned||0)+FR_XP.learnCard;
- }
- s.idx++;
- s.itemStartedAt=Date.now();
+function frFinishSessionIfDone(s){
  if(s.idx>=s.items.length && !s.completedAt){
   s.completedAt=Date.now();
   const today=localDateKey();
@@ -4736,8 +4909,51 @@ function frAdvance(){
   }
   state.footballIQ.lastSessionDate=today;
  }
+}
+function frAfterMove(s){
+ s.itemStartedAt=Date.now();
+ frReviewOpen=false;
  save(); render();
  window.scrollTo({top:0,behavior:'smooth'});
+}
+function frAdvance(){
+ const s=state.footballIQ.todaySession;
+ if(!s) return;
+ const item=s.items[s.idx];
+ if(item && item.stage==='learn' && !item.completed){
+  frCompleteLearnItem(item.refId);
+  item.completed=true;
+  s.xpEarned=(s.xpEarned||0)+FR_XP.learnCard;
+ }
+ s.idx++;
+ frFinishSessionIfDone(s);
+ frAfterMove(s);
+}
+// Go back to the previous card/question — answered ones stay locked (no
+// re-scoring) but can be re-read, including the explanation, to study.
+function frBack(){
+ const s=state.footballIQ.todaySession;
+ if(!s || s.idx<=0) return;
+ s.idx--;
+ frAfterMove(s);
+}
+function frGoTo(i){
+ const s=state.footballIQ.todaySession;
+ if(!s || i<0 || i>=s.idx) return; // only jump back to places already visited
+ s.idx=i;
+ frAfterMove(s);
+}
+// "Not sure yet" — sends an unanswered question to the back of today's
+// session so it comes around again at the end (twice at most).
+function frSkip(){
+ const s=state.footballIQ.todaySession;
+ if(!s) return;
+ const item=s.items[s.idx];
+ if(!item || item.stage==='learn' || item.answeredId || (item.skips||0)>=2) return;
+ if(s.idx>=s.items.length-1) return;
+ item.skips=(item.skips||0)+1;
+ s.items.push(s.items.splice(s.idx,1)[0]);
+ frAfterMove(s);
 }
 
 /* ---- Interactive football field — one reusable component (section 6) ---- */
@@ -4745,18 +4961,17 @@ function renderFootballField(fieldState, opts){
  opts=opts||{};
  const offense = fieldState && fieldState.offense ? FORMATIONS[fieldState.offense] : null;
  const defense = fieldState && fieldState.defense ? DEFENSIVE_FRONTS[fieldState.defense] : null;
- const players = [].concat(offense?offense.players:[], defense?defense.players:[]);
- const gaps = fieldState && fieldState.showGaps ? GAPS_VS_TRIPS_RIGHT : [];
+ const overrides = (fieldState && fieldState.overrides) || {};
+ const players = [].concat(offense?offense.players:[], defense?defense.players:[]).map(p=>overrides[p.id]?Object.assign({},p,overrides[p.id]):p);
+ const showGaps = !!(fieldState && fieldState.showGaps) || !!opts.forceGaps;
+ const gaps = showGaps ? GAPS_VS_TRIPS_RIGHT : [];
  const tappableIds = opts.tappableIds||[];
  const highlightId = (fieldState&&fieldState.highlight) || opts.highlightId;
+ const genericLabel={DL:'DL',LB:'LB',DB:'DB'};
  let svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" class="fieldSvg" role="img" aria-label="Football field diagram">`;
  svg += `<rect x="0" y="0" width="100" height="100" fill="#0b3d1f"/>`;
  for(let i=10;i<100;i+=10) svg += `<line x1="0" y1="${i}" x2="100" y2="${i}" stroke="rgba(255,255,255,0.08)" stroke-width="0.3"/>`;
  svg += `<line x1="0" y1="50" x2="100" y2="50" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>`;
- gaps.forEach(g=>{
-  svg += `<rect x="${g.x-3}" y="44" width="6" height="12" fill="rgba(251,146,60,0.18)" stroke="rgba(251,146,60,0.5)" stroke-width="0.3"/>
-   <text x="${g.x}" y="41" font-size="3.4" fill="#fb923c" text-anchor="middle">${g.label}</text>`;
- });
  players.forEach(p=>{
   const isTappable = tappableIds.indexOf(p.id)!==-1;
   const isReveal = opts.revealId===p.id;
@@ -4767,9 +4982,28 @@ function renderFootballField(fieldState, opts){
   if(isReveal) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#22c55e" stroke-width="0.8"/>`;
   else if(isWrong) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#ef4444" stroke-width="0.8"/>`;
   else if(isHighlight) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="#facc15" stroke-width="0.8" stroke-dasharray="1,1"/>`;
+  else if(isTappable) ring=`<circle cx="${p.x}" cy="${p.y}" r="4.6" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.4" stroke-dasharray="0.8,0.8"/>`;
+  // Role names (Mike/Will/NB) are hidden on recognition questions so the
+  // diagram doesn't hand over the answer — generic DL/LB/DB labels instead.
+  const label = opts.hideRoleLabels && genericLabel[p.group] ? genericLabel[p.group] : p.label;
+  // A bigger invisible hit circle on tappable players so a thumb can hit it.
+  const hit = isTappable ? `<circle cx="${p.x}" cy="${p.y}" r="5.8" fill="transparent"/>` : '';
   svg += `<g ${isTappable?`onclick="onFieldTap('${p.id}')" style="cursor:pointer"`:''}>${ring}
    <circle cx="${p.x}" cy="${p.y}" r="3.6" fill="${fill}" stroke="#050505" stroke-width="0.2"/>
-   <text x="${p.x}" y="${p.y+1.1}" font-size="2.6" fill="#fff" text-anchor="middle" font-weight="bold">${p.label}</text></g>`;
+   <text x="${p.x}" y="${p.y+1.1}" font-size="${label.length>3?2.1:2.6}" fill="#fff" text-anchor="middle" font-weight="bold">${label}</text>${hit}</g>`;
+ });
+ // Gap zones are drawn AFTER the players so they sit on top and can actually
+ // receive taps (they used to be drawn underneath, mostly hidden and
+ // untappable, which is why tap-the-gap questions could not be answered).
+ gaps.forEach(g=>{
+  const tap = tappableIds.indexOf(g.id)!==-1;
+  const isRev = opts.revealId===g.id, isWr = opts.wrongId===g.id;
+  const fill = isRev?'rgba(34,197,94,0.42)':isWr?'rgba(239,68,68,0.42)':tap?'rgba(251,146,60,0.30)':'rgba(251,146,60,0.16)';
+  const stroke = isRev?'#22c55e':isWr?'#ef4444':'rgba(251,146,60,0.7)';
+  const lbl = tap ? (g.side==='weak'?'L-':'R-')+g.label : g.label;
+  svg += `<g ${tap?`onclick="onFieldTap('${g.id}')" style="cursor:pointer"`:'style="pointer-events:none"'}>
+   <rect x="${g.x-4}" y="41" width="8" height="15" rx="1.2" fill="${fill}" stroke="${stroke}" stroke-width="0.35" ${tap?'stroke-dasharray="1,0.8"':''}/>
+   <text x="${g.x}" y="39.4" font-size="3.1" fill="#fb923c" text-anchor="middle" font-weight="bold">${lbl}</text></g>`;
  });
  svg += `</svg>`;
  return `<div class="fieldWrap">${svg}</div>`;
@@ -4781,18 +5015,38 @@ function frDotsHTML(s){
   if(i===s.idx) cls+=' now';
   else if(it.answeredId) cls += it.correct?' done':' wrongDot';
   else if(it.completed) cls+=' done';
-  return `<span class="${cls}"></span>`;
+  const clickable = i<s.idx ? `onclick="frGoTo(${i})" style="cursor:pointer"` : '';
+  return `<span class="${cls}" ${clickable}></span>`;
  }).join('')}</div>`;
 }
 function frSessionSummaryHTML(s, rating){
  const total=s.items.filter(i=>i.answeredId).length;
  const correctCount=s.items.filter(i=>i.correct).length;
  const subscoreRows=Object.keys(rating.subscores).map(k=>`<div class="checkItem"><span>${FR_SUBSCORE_LABELS[k]||k}</span><span class="tiny">${rating.subscores[k]!=null?rating.subscores[k]:'Not enough data yet'}</span></div>`).join('');
- return `<div class="coachBubble" style="margin-top:12px"><strong>Film Room — Done For Today ✅</strong>
-  <p class="small">${correctCount} of ${total} correct this session. +${s.xpEarned||0} XP earned.</p></div>
+ const weak=frWeakConcepts(3).filter(id=>state.footballIQ.concepts[id].confidence<70);
+ const weakHtml=weak.length?`<div class="inner" style="margin-top:10px"><h3>Focus Areas</h3><p class="small">These come up more often in your next sessions:</p>${weak.map(id=>`<div class="checkItem"><span>${CONCEPTS[id].label}</span><span class="tiny">${state.footballIQ.concepts[id].confidence}</span></div>`).join('')}</div>`:'';
+ return `<div class="coachBubble" style="margin-top:12px"><strong>Film Room — ${s.round>1?'Round '+s.round+' ':''}Done ✅</strong>
+  <p class="small">${correctCount} of ${total} correct this round. +${s.xpEarned||0} XP earned.</p></div>
   <div class="inner" style="margin-top:10px"><h3>Football IQ Breakdown</h3>${subscoreRows}
   <p class="tiny" style="margin-top:6px">Scores are based on actual quiz performance, rolled over recent attempts — one bad session won't tank it.</p></div>
-  <p class="small" style="margin-top:10px;text-align:center">Come back tomorrow for the next session — weak concepts come back around sooner than strong ones.</p>`;
+  ${weakHtml}
+  <button class="gold full" style="margin-top:10px" onclick="frStartExtraRound()">🔁 Another Round (new randomized questions)</button>
+  <button class="chip full" style="margin-top:8px" onclick="frBack()">← Review Last Question</button>
+  <p class="small" style="margin-top:10px;text-align:center">Every round is reshuffled and leans toward what you're weakest at. Extra rounds earn XP and sharpen mastery, but the streak only counts once a day.</p>`;
+}
+function frLessonForConcept(conceptId){
+ const id=LESSON_ORDER.find(lid=>LESSONS[lid].concept===conceptId);
+ return id?LESSONS[id]:null;
+}
+function frNavRowHTML(s, item, answered){
+ const canBack=s.idx>0;
+ const isLearn=item.stage==='learn';
+ let right;
+ if(isLearn) right=`<button class="gold" onclick="frAdvance()">Got It — Continue</button>`;
+ else if(answered) right=`<button class="gold" onclick="frAdvance()">Next →</button>`;
+ else if((item.skips||0)<2 && s.idx<s.items.length-1) right=`<button onclick="frSkip()">Not Sure — Come Back</button>`;
+ else right=`<button disabled>Answer To Continue</button>`;
+ return `<div class="grid" style="margin-top:10px;grid-template-columns:1fr 1.6fr"><button ${canBack?'':'disabled'} onclick="frBack()">← Back</button>${right}</div>`;
 }
 function frItemHTML(s, item){
  if(item.stage==='learn'){
@@ -4802,42 +5056,49 @@ function frItemHTML(s, item){
    ${renderFootballField(lesson.fieldState, {})}
    <p class="small">${lesson.body}</p>
    ${frDotsHTML(s)}
-   <button class="gold full" style="margin-top:10px" onclick="frAdvance()">Got It — Continue</button>`;
+   ${frNavRowHTML(s,item,true)}`;
  }
  const scenario=SCENARIOS[item.refId];
  const q=scenario.question;
  const answered=!!item.answeredId;
  const fieldOpts={};
- if(['tapDefender','tapGap','tapLane'].indexOf(q.type)!==-1){
+ const isTapType=['tapDefender','tapGap','tapLane'].indexOf(q.type)!==-1;
+ if(isTapType){
   fieldOpts.tappableIds = answered ? [] : q.options.map(o=>o.id);
   if(answered){ fieldOpts.revealId=q.correctAnswerId; if(item.answeredId!==q.correctAnswerId) fieldOpts.wrongId=item.answeredId; }
+  if(q.type==='tapGap') fieldOpts.forceGaps=true;
+  if(q.type==='tapDefender') fieldOpts.hideRoleLabels=true;
  }
  const noteHtml = scenario.fieldState.note ? `<div class="frNote">${scenario.fieldState.note}</div>` : '';
  let optionsHtml;
  if(q.type==='mc' || q.type==='tf'){
-  optionsHtml = q.options.map(o=>{
+  const order=(item.optionOrder && item.optionOrder.length===q.options.length)?item.optionOrder:q.options.map(o=>o.id);
+  optionsHtml = order.map(oid=>q.options.find(o=>o.id===oid)).map(o=>{
    let cls='frOptionBtn';
    if(answered){ if(o.id===q.correctAnswerId) cls+=' correct'; else if(o.id===item.answeredId) cls+=' wrong'; }
    return `<button class="${cls}" ${answered?'disabled':''} onclick="frSubmitAnswer('${o.id}')">${o.label}</button>`;
   }).join('');
  } else {
-  optionsHtml = `<p class="tiny" style="margin-top:6px">Tap the correct spot directly on the field above.</p>`;
+  optionsHtml = answered?'':`<p class="tiny" style="margin-top:6px">Tap the correct spot directly on the field above.</p>`;
  }
- const feedbackHtml = answered ? `<div class="frFeedback ${item.correct?'correct':'wrong'}"><strong>${item.correct?'✅ Correct':'❌ Not quite'}</strong><p class="small" style="margin-top:4px">${q.explanation}</p></div>` : '';
- const nextBtn = answered ? `<button class="gold full" style="margin-top:10px" onclick="frAdvance()">Next</button>` : '';
+ const secs = item.responseTimeMs!=null ? ` <span class="tiny">(${(item.responseTimeMs/1000).toFixed(1)}s)</span>` : '';
+ const feedbackHtml = answered ? `<div class="frFeedback ${item.correct?'correct':'wrong'}"><strong>${item.correct?'✅ Correct':'❌ Not quite'}</strong>${secs}<p class="small" style="margin-top:4px">${q.explanation}</p></div>` : '';
+ const lesson=frLessonForConcept(scenario.concept);
+ const reviewHtml = lesson ? `<button class="chip full" style="margin-top:8px" onclick="frToggleReview()">${frReviewOpen?'Hide':'📖 Review'} the lesson: ${lesson.title}</button>${frReviewOpen?`<div class="frNote"><b>${lesson.title}</b><br>${lesson.body}</div>`:''}` : '';
  return `<div class="frStageBadge ${item.stage}">${item.stage}</div>
   <h3 style="margin-top:8px">${q.prompt}</h3>
   ${renderFootballField(scenario.fieldState, fieldOpts)}${noteHtml}
   ${optionsHtml}
   ${feedbackHtml}
+  ${reviewHtml}
   ${frDotsHTML(s)}
-  ${nextBtn}`;
+  ${frNavRowHTML(s,item,answered)}`;
 }
 function renderFilmRoom(){
  const s=frGetOrCreateTodaySession();
  const rating=footballIQRating();
  const level=frLevel();
- const header=`<div class="frHeader"><div><div class="small">Film Room • ${state.offPos||'RB'} Track</div><h2 style="margin-top:2px">Football IQ</h2></div>
+ const header=`<div class="frHeader"><div><div class="small">Film Room • ${state.offPos||'RB'} Track${s.round>1?' • Round '+s.round:''}</div><h2 style="margin-top:2px">Football IQ</h2></div>
   <div class="statPill"><b>${rating.overall!=null?rating.overall:'--'}</b><span>IQ</span></div></div>
   <div class="frStatRow">
    <div class="frStatPill">🔥 <b>${state.footballIQ.streakDays||0}</b> day streak</div>
@@ -4944,10 +5205,10 @@ if(!looksConfigured){
       return data.householdId;
     };
 
-    JrSync.submitApproval = async function(householdId, role, taskId, taskName, dateKey){
+    JrSync.submitApproval = async function(householdId, role, taskId, taskName, dateKey, photos){
       const ref = await addDoc(collection(db, 'households', householdId, 'approvals'), {
         taskId, taskName, date: dateKey, status: 'pending',
-        submittedBy: role, createdAt: Date.now()
+        submittedBy: role, createdAt: Date.now(), photos: photos || []
       });
       return ref.id;
     };

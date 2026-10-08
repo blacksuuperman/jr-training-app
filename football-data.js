@@ -51,7 +51,7 @@ const OFFENSE_SHOTGUN_TRIPS_RIGHT = [
 // own worked example.
 const DEFENSE_42_NICKEL_VS_TRIPS = [
   { id: 'LE',  label: 'LE',  x: 22, y: 46, group: 'DL', technique: '5tech' },
-  { id: 'DT1', label: 'DT',  x: 42, y: 46, group: 'DL', technique: '3tech' },
+  { id: 'DT1', label: 'DT',  x: 37, y: 46, group: 'DL', technique: '3tech' },
   { id: 'DT2', label: 'DT',  x: 58, y: 46, group: 'DL', technique: '1tech' },
   { id: 'RE',  label: 'RE',  x: 74, y: 44, group: 'DL', technique: '5tech' },
   { id: 'WILL', label: 'Will', x: 28, y: 38, group: 'LB', role: 'Will' },
@@ -110,7 +110,7 @@ const RUN_CONCEPTS = {
   insideZone: {
     id: 'insideZone',
     name: 'Inside Zone',
-    aimingPoint: 'The outside hip of the play-side guard at the snap.',
+    aimingPoint: 'The play-side guard\u2019s hip at the snap — many coaches teach the outside hip of the play-side guard, though the exact aiming point varies a little by coach and system.',
     primaryRead: 'The play-side double team — the first down lineman past the center on the play side. If that double team is winning and pushing vertically, and the backside is cut off, the back presses and runs through the called gap.',
     secondaryRead: 'If the play-side double team gets squeezed or beaten backward, the back looks to bend the run back toward the backside cutback lane, reading the backside linebacker’s pursuit.',
     cutbackNotes: 'A good Inside Zone back never commits to a single predetermined gap before the snap — the whole point of zone blocking is that the hole shows up live, based on how the defensive line reacts to the double teams.',
@@ -211,7 +211,7 @@ const LESSONS = {
   l_insideZone: {
     id: 'l_insideZone', concept: 'insideZone', position: 'RB', difficulty: 3,
     title: 'What Is Inside Zone?',
-    body: 'Inside Zone is a zone run — the line blocks areas/gaps instead of specific defenders, double-teaming the first down lineman past the center on the play side. The running back’s aiming point is the play-side guard’s outside hip. He presses that double team: if it’s winning and the backside is cut off, he runs through the called gap. If it’s getting squeezed, he reads the backside linebacker’s pursuit and cuts back.',
+    body: 'Inside Zone is a zone run — the line blocks areas/gaps instead of specific defenders, double-teaming the first down lineman past the center on the play side. The running back’s aiming point is the play-side guard’s hip (most coaches teach the outside hip — the exact point varies a little by system). He presses that double team: if it’s winning and the backside is cut off, he runs through the called gap. If it’s getting squeezed, he reads the backside linebacker’s pursuit and cuts back.',
     fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: true }
   },
   l_nickelBlitz: {
@@ -297,10 +297,10 @@ const SCENARIOS = {
   },
   s_tapNickelThreat: {
     id: 's_tapNickelThreat', concept: 'nickelBlitz', position: 'RB', difficulty: 3, stage: 'recognize',
-    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false },
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false, overrides: { NB: { x: 80, y: 45 } } },
     question: {
       type: 'tapDefender',
-      prompt: 'The Nickel has walked up tight to the line and squared his shoulders toward the backfield. Tap the defender showing the blitz tell.',
+      prompt: 'One defender has walked up tight to the line and squared toward the backfield instead of a receiver. Tap the defender showing the blitz tell.',
       options: [
         { id: 'NB', label: 'Nickel' }, { id: 'CBR', label: 'Corner' }, { id: 'SS', label: 'Safety' }
       ],
@@ -338,7 +338,7 @@ const SCENARIOS = {
   },
   s_protectionResponsibility: {
     id: 's_protectionResponsibility', concept: 'rbProtectionRule', position: 'RB', difficulty: 4, stage: 'apply',
-    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false,
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false, overrides: { NB: { x: 80, y: 45 } },
       note: 'Half-slide protection, line sliding LEFT (toward Will). The Nickel walks up and blitzes off the right edge — the side the line is NOT sliding toward.' },
     question: {
       type: 'tapDefender',
@@ -368,13 +368,125 @@ const SCENARIOS = {
   }
 };
 
+
+/* ---------- Additional scenarios (more variety, so sessions can be randomized) ---------- */
+Object.assign(SCENARIOS, {
+  s_tapNickel: {
+    id: 's_tapNickel', concept: 'nickelId', position: 'RB', difficulty: 2, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false },
+    question: { type: 'tapDefender', prompt: 'Tap the Nickel defender.',
+      options: [ { id: 'NB', label: 'Nickel' }, { id: 'CBR', label: 'Corner' }, { id: 'SS', label: 'Safety' } ],
+      correctAnswerId: 'NB',
+      explanation: 'The Nickel is the 5th defensive back who replaced a 3rd linebacker — here he is aligned over the slot receiver, between the linebackers and the corner.' }
+  },
+  s_tapGapStrongA: {
+    id: 's_tapGapStrongA', concept: 'gaps', position: 'RB', difficulty: 1, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: true },
+    question: { type: 'tapGap', prompt: 'Tap the A gap on the strong (tight end) side.',
+      options: [ { id: 'rightA' }, { id: 'rightB' }, { id: 'leftA' } ],
+      correctAnswerId: 'rightA',
+      explanation: 'The strong side is the side with the tight end — the right. The A gap is the gap between the center and the guard on that side.' }
+  },
+  s_tapGapWeakB: {
+    id: 's_tapGapWeakB', concept: 'gaps', position: 'RB', difficulty: 1, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: true },
+    question: { type: 'tapGap', prompt: 'Tap the B gap on the weak (open) side.',
+      options: [ { id: 'leftA' }, { id: 'leftB' }, { id: 'leftC' } ],
+      correctAnswerId: 'leftB',
+      explanation: 'The weak side is away from the tight end — the left. The B gap sits between the guard and the tackle.' }
+  },
+  s_tapGapD: {
+    id: 's_tapGapD', concept: 'gaps', position: 'RB', difficulty: 2, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: true },
+    question: { type: 'tapGap', prompt: 'Tap the D gap.',
+      options: [ { id: 'rightC' }, { id: 'rightD' }, { id: 'leftC' } ],
+      correctAnswerId: 'rightD',
+      explanation: 'The D gap is outside an attached tight end, so it only exists on the tight end side. The left side has no tight end, so it stops at the C gap.' }
+  },
+  s_strongSide: {
+    id: 's_strongSide', concept: 'gaps', position: 'RB', difficulty: 1, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: null, showGaps: false },
+    question: { type: 'mc', prompt: 'Which side of this formation is the strong side?',
+      options: [ { id: 'left', label: 'Left — the side with the lone receiver' }, { id: 'right', label: 'Right — the tight end and trips side' } ],
+      correctAnswerId: 'right',
+      explanation: 'Strong side is the side with the tight end (and here, the extra receivers) — it has more blockers and receivers to defend. The open left side is the weak side.' }
+  },
+  s_countWR: {
+    id: 's_countWR', concept: 'personnel11', position: 'RB', difficulty: 1, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: null, showGaps: false },
+    question: { type: 'mc', prompt: 'In 11 Personnel, how many wide receivers are on the field?',
+      options: [ { id: '1', label: '1' }, { id: '2', label: '2' }, { id: '3', label: '3' }, { id: '4', label: '4' } ],
+      correctAnswerId: '3',
+      explanation: 'The two digits are 1 RB and 1 TE. Five eligible skill players minus those two leaves 3 wide receivers.' }
+  },
+  s_whyShotgun: {
+    id: 's_whyShotgun', concept: 'formationShotgun', position: 'RB', difficulty: 1, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: null, showGaps: false },
+    question: { type: 'mc', prompt: 'Why do offenses often line up in Shotgun?',
+      options: [ { id: 'a', label: 'The QB gets a better look at the defense and more time to read it' }, { id: 'b', label: 'It lets the offensive line stand farther off the ball' }, { id: 'c', label: 'It is required whenever 3 receivers are on the field' } ],
+      correctAnswerId: 'a',
+      explanation: 'Starting a few yards behind the center gives the QB a clearer pre-snap picture and extra time after the snap. It is a choice, not a rule.' }
+  },
+  s_blitzTellMC: {
+    id: 's_blitzTellMC', concept: 'nickelBlitz', position: 'RB', difficulty: 2, stage: 'recognize',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false, overrides: { NB: { x: 80, y: 45 } } },
+    question: { type: 'mc', prompt: 'Which pre-snap clue most suggests the Nickel is about to blitz?',
+      options: [ { id: 'a', label: 'He walks up tight to the line and squares toward the backfield' }, { id: 'b', label: 'He backpedals to ten yards of depth' }, { id: 'c', label: 'He lines up directly behind the free safety' } ],
+      correctAnswerId: 'a',
+      explanation: 'Moving up close to the line and facing the backfield instead of a receiver is the classic tell — he is about to rush, not cover.' }
+  },
+  s_insideZoneRead: {
+    id: 's_insideZoneRead', concept: 'insideZone', position: 'RB', difficulty: 3, stage: 'apply',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false },
+    question: { type: 'mc', prompt: 'What is the running back’s primary read on Inside Zone?',
+      options: [ { id: 'a', label: 'The play-side double team and how it is pushing' }, { id: 'b', label: 'The free safety’s depth' }, { id: 'c', label: 'The quarterback’s eyes' } ],
+      correctAnswerId: 'a',
+      explanation: 'The play-side double team tells you whether the hole is opening where you aimed or whether the run needs to bend back.' }
+  },
+  s_insideZoneNoPreset: {
+    id: 's_insideZoneNoPreset', concept: 'insideZone', position: 'RB', difficulty: 3, stage: 'apply',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false },
+    question: { type: 'mc', prompt: 'Why should the back NOT pick one gap before the snap on Inside Zone?',
+      options: [ { id: 'a', label: 'Zone blocking creates the hole live, based on how the defensive line reacts' }, { id: 'b', label: 'The offensive line has not decided who to block' }, { id: 'c', label: 'It is against the rules to pick a gap' } ],
+      correctAnswerId: 'a',
+      explanation: 'The line blocks areas, not set defenders, so the opening depends on how the defense moves. Committing early means running into a hole that is not there.' }
+  },
+  s_protectionLookFirst: {
+    id: 's_protectionLookFirst', concept: 'rbProtectionRule', position: 'RB', difficulty: 4, stage: 'apply',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false },
+    question: { type: 'mc', prompt: 'The line slides LEFT in half-slide protection. Which side do you check first for an unblocked rusher?',
+      options: [ { id: 'a', label: 'The right side — away from the slide' }, { id: 'b', label: 'The left side — where the line slid' }, { id: 'c', label: 'Straight downfield at the safeties' } ],
+      correctAnswerId: 'a',
+      explanation: 'The slide already accounts for the left. Whoever the slide does not cover shows up on the opposite side — that is where your responsibility lives.' }
+  },
+  s_protectionWill: {
+    id: 's_protectionWill', concept: 'rbProtectionRule', position: 'RB', difficulty: 4, stage: 'apply',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false, overrides: { WILL: { x: 30, y: 45 } },
+      note: 'Half-slide protection, line sliding RIGHT (toward the tight end side). The Will creeps up and blitzes off the left edge.' },
+    question: { type: 'tapDefender', prompt: 'Who is your protection responsibility?',
+      options: [ { id: 'WILL', label: 'Will' }, { id: 'NB', label: 'Nickel' }, { id: 'MIKE', label: 'Mike' } ],
+      correctAnswerId: 'WILL',
+      explanation: 'The line slid right, so the right side is accounted for. The Will rushing from the left is the one the slide does not pick up — he is your fill.' }
+  },
+  s_cover2Deep: {
+    id: 's_cover2Deep', concept: 'cover2Flat', position: 'RB', difficulty: 2, stage: 'apply',
+    fieldState: { offense: 'shotgunTripsRight', defense: '42nickel', showGaps: false },
+    question: { type: 'mc', prompt: 'In Cover 2, who splits the deep part of the field?',
+      options: [ { id: 'a', label: 'Two safeties, each taking a deep half' }, { id: 'b', label: 'Three defenders, each taking a deep third' }, { id: 'c', label: 'The two corners' } ],
+      correctAnswerId: 'a',
+      explanation: 'Cover 2 means two deep defenders — the safeties — each responsible for half of the field deep, which is why the corners play underneath.' }
+  }
+});
+
 /* Scenario ids grouped by stage, used by the session builder in the main
    app script — kept here so adding/removing scenarios never requires
    touching the engine code. */
 const SCENARIOS_BY_STAGE = {
-  recognize: ['s_recognizeFront', 's_recognizePersonnelFormation', 's_tapMike', 's_tapWill', 's_tapNickelThreat'],
-  apply: ['s_insideZoneCut', 's_insideZoneCutback', 's_protectionResponsibility', 's_cover2Flat'],
-  test: ['s_recognizeFront', 's_tapMike', 's_tapWill', 's_tapNickelThreat', 's_insideZoneCut', 's_protectionResponsibility', 's_cover2Flat']
+  recognize: ['s_recognizeFront', 's_recognizePersonnelFormation', 's_tapMike', 's_tapWill', 's_tapNickel', 's_tapNickelThreat', 's_tapGapStrongA', 's_tapGapWeakB', 's_tapGapD', 's_strongSide', 's_countWR', 's_whyShotgun', 's_blitzTellMC'],
+  apply: ['s_insideZoneCut', 's_insideZoneCutback', 's_insideZoneRead', 's_insideZoneNoPreset', 's_protectionResponsibility', 's_protectionWill', 's_protectionLookFirst', 's_cover2Flat', 's_cover2Deep'],
+  // TEST draws from everything (the session builder avoids repeating a
+  // question already used earlier in the same session whenever it can).
+  test: ['s_recognizeFront', 's_tapMike', 's_tapWill', 's_tapNickel', 's_tapNickelThreat', 's_tapGapStrongA', 's_tapGapWeakB', 's_tapGapD', 's_blitzTellMC', 's_insideZoneCut', 's_insideZoneCutback', 's_insideZoneRead', 's_protectionResponsibility', 's_protectionWill', 's_protectionLookFirst', 's_cover2Flat', 's_cover2Deep', 's_countWR', 's_strongSide']
 };
 
 const LESSON_ORDER = [
