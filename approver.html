@@ -57,6 +57,7 @@ textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:v
 
   <div id="connectedSection" class="card hidden">
     <h3>Connected ✅</h3>
+    <p class="tiny" id="hhLine" style="margin:0 0 8px"></p>
     <button class="gold" id="notifBtn" onclick="enableNotifications()">Enable Notifications On This Phone</button>
     <button class="orange" onclick="disconnect()">Disconnect</button>
   </div>
@@ -104,6 +105,7 @@ function renderConnectionUI(){
   document.getElementById('pairSection').classList.toggle('hidden', paired);
   document.getElementById('connectedSection').classList.toggle('hidden', !paired);
   const notifBtn = document.getElementById('notifBtn');
+  const hh=document.getElementById('hhLine'); if(hh) hh.textContent = paired ? ('Household '+String(myState.householdId).slice(0,8)) : '';
   if(notifBtn) notifBtn.textContent = myState.notificationsEnabled ? '✅ Notifications On' : 'Enable Notifications On This Phone';
 }
 

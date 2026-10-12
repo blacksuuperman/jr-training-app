@@ -3623,9 +3623,15 @@ function jrSyncSubmit(taskId,def,e){
  if(!syncConnected()) return;
  try{
   window.JrSync.submitApproval(state.sync.householdId, state.sync.role, taskId, def?def.name:taskId, localDateKey(), (e.photos||[]).slice(0,3))
-   .then(id=>{ if(id){ e.syncApprovalId=id; save(); } })
-   .catch(err=>console.error('JrSync submit failed',err));
- }catch(err){ console.error('JrSync submit threw',err); }
+   .then(id=>{ if(id){ e.syncApprovalId=id; state.sync.lastError=''; state.sync.lastSentAt=Date.now(); save(); } })
+   .catch(err=>{ console.error('JrSync submit failed',err); state.sync.lastError='Could not send to Mom: '+((err&&(err.code||err.message))||'unknown error'); save(); try{ alert(state.sync.lastError+'\n\nThe task is still saved on this phone. Open Settings > Sync With Mom and tap "Send A Test To Mom" to see more.'); }catch(x){} });
+ }catch(err){ console.error('JrSync submit threw',err); state.sync.lastError='Could not send to Mom: '+(err&&err.message||'unknown error'); save(); }
+}
+function jrSyncTest(){
+ if(!syncConnected()){ alert('Connect with Mom’s phone first.'); return; }
+ window.JrSync.submitApproval(state.sync.householdId,state.sync.role,'syncTest','Test from Jr’s phone — tap Good',localDateKey(),[])
+  .then(id=>{ state.sync.lastError=''; state.sync.lastSentAt=Date.now(); save(); render(); alert('Sent! Open Mom’s page — it should show “Test from Jr’s phone” within a few seconds. (Household '+String(state.sync.householdId).slice(0,8)+')'); })
+  .catch(err=>{ state.sync.lastError='Test failed: '+((err&&(err.code||err.message))||'unknown error'); save(); render(); alert(state.sync.lastError); });
 }
 function jrSyncResolve(taskId,e,status,note){
  if(suppressSyncResolve) return;
@@ -3715,6 +3721,8 @@ function syncPanelHTML(){
  ${codeLive
    ? `<div class="inner" style="text-align:center"><div style="font-size:34px;font-weight:bold;letter-spacing:4px">${state.sync.pairingCode}</div><p class="tiny">Expires in about ${minsLeft} minute${minsLeft===1?'':'s'}.</p></div>`
    : `<button class="gold full" onclick="generateSyncPairingCode()">Generate A Pairing Code For Mom</button>`}
+ <button class="gold full" style="margin-top:8px" onclick="jrSyncTest()">Send A Test To Mom</button>
+ ${state.sync.lastError?`<p class="small" style="color:var(--orange)">⚠️ ${state.sync.lastError}</p>`:(state.sync.lastSentAt?`<p class="tiny">Last sent to Mom: ${new Date(state.sync.lastSentAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}. Household ${String(state.sync.householdId).slice(0,8)}.</p>`:`<p class="tiny">Household ${String(state.sync.householdId).slice(0,8)}.</p>`)}
  <button class="${state.sync.notificationsEnabled?'green':'gold'} full" style="margin-top:8px" onclick="enableSyncNotifications()">${state.sync.notificationsEnabled?'✅ Notifications On For This Device':'Enable Notifications On This Device'}</button>
  <button class="orange full" style="margin-top:8px" onclick="disconnectSync()">Disconnect</button>`;
 }
