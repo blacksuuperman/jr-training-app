@@ -1,13 +1,17 @@
 // Jr Level 13 Athlete Hub — service worker
 // Bump CACHE_NAME any time index.html/approver.html or the icons change so
 // devices pick up the new version instead of serving a stale offline copy.
-const CACHE_NAME = 'jr-level13-shell-v19-film-restart-exact-videos-vitamins';
+const CACHE_NAME = 'jr-level13-shell-v21-formation-tester-schedule';
 const CORE_ASSETS = [
   './',
   './index.html',
   './approver.html',
   './football-data.js',
+  './football-data-positions.js',
+  './football-formations.js',
+  './schedule-guides.js',
   './football-demos.js',
+  './football-demos-positions.js',
   './football-videos.js',
   './manifest.json',
   './manifest-approver.json',
@@ -84,12 +88,12 @@ self.addEventListener('fetch', (event) => {
    approver.html) — see SETUP_FIREBASE.md.
    ========================================================= */
 const SW_FIREBASE_CONFIG = {
-  apiKey: "REPLACE_WITH_YOUR_API_KEY",
-  authDomain: "REPLACE_WITH_YOUR_PROJECT.firebaseapp.com",
-  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-  storageBucket: "REPLACE_WITH_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
-  appId: "REPLACE_WITH_YOUR_APP_ID"
+  apiKey: "AIzaSyAq4sp8632O4dl9JEDAtrh9m30r_uXO-ug",
+  authDomain: "jr-level-13-athlete-hub.firebaseapp.com",
+  projectId: "jr-level-13-athlete-hub",
+  storageBucket: "jr-level-13-athlete-hub.firebasestorage.app",
+  messagingSenderId: "724590803450",
+  appId: "1:724590803450:web:0841cedfc3906bec318c43"
 };
 
 try {

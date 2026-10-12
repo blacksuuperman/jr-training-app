@@ -33,6 +33,12 @@ button{display:block;width:100%;padding:13px;border-radius:12px;border:none;font
 .row button{margin-top:0}
 .pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--muted)}
 .hidden{display:none!important}
+select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:15px;margin:6px 0}
+.blk{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.blk .t{min-width:72px;color:var(--muted);font-size:12px;padding-top:2px}
+.tag{display:inline-block;font-size:10px;font-weight:bold;border-radius:99px;padding:1px 7px;margin-left:6px;border:1px solid var(--line);color:var(--muted)}
+.tag.ok{color:#86efac;border-color:rgba(34,197,94,.6)}
+.rule{font-size:13px;line-height:1.45;margin:6px 0;color:var(--text)}
 textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px;font-size:14px;margin-top:8px}
 </style>
 </head>
@@ -56,16 +62,32 @@ textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:v
   </div>
 
   <div id="queue"></div>
+
+  <div id="scheduleSection" class="card">
+    <h3>📋 Jr's Schedule</h3>
+    <p class="tiny" id="schedMeta">Not loaded yet. Open the paste box below and paste what Jr's app copied.</p>
+    <div id="schedBody" class="hidden">
+      <select id="schedType" onchange="renderSchedule()"></select>
+      <div id="schedView"></div>
+    </div>
+    <details id="schedPasteBox" style="margin-top:10px">
+      <summary class="tiny" style="cursor:pointer">Paste a new schedule from Jr's phone</summary>
+      <p class="tiny" style="margin-top:8px">On Jr's phone: Settings → JR Daily Schedule (Admin) → <b>Copy schedule for Mom's app</b>. Then paste it here.</p>
+      <textarea id="schedPaste" rows="5" placeholder="Paste here"></textarea>
+      <button class="gold" onclick="savePastedSchedule()">Save Schedule</button>
+      <p class="tiny" id="schedErr" style="color:var(--orange)"></p>
+    </details>
+  </div>
 </div>
 
 <script>
 window.FIREBASE_CONFIG = {
-  apiKey: "REPLACE_WITH_YOUR_API_KEY",
-  authDomain: "REPLACE_WITH_YOUR_PROJECT.firebaseapp.com",
-  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-  storageBucket: "REPLACE_WITH_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
-  appId: "REPLACE_WITH_YOUR_APP_ID"
+  apiKey: "AIzaSyAq4sp8632O4dl9JEDAtrh9m30r_uXO-ug",
+  authDomain: "jr-level-13-athlete-hub.firebaseapp.com",
+  projectId: "jr-level-13-athlete-hub",
+  storageBucket: "jr-level-13-athlete-hub.firebasestorage.app",
+  messagingSenderId: "724590803450",
+  appId: "1:724590803450:web:0841cedfc3906bec318c43"
 };
 window.FIREBASE_VAPID_KEY = "REPLACE_WITH_YOUR_VAPID_KEY";
 
@@ -203,6 +225,57 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;',
 window.onJrSyncReady = function(){
   if(myState.householdId) startListening();
 };
+
+/* ---------- Jr's schedule (pasted from his app; stays on this phone) ---------- */
+const SCHED_KEY='jrApproverSchedule_v21';
+let schedSpec=null;
+try{ schedSpec=JSON.parse(localStorage.getItem(SCHED_KEY)||'null'); }catch(e){ schedSpec=null; }
+function clock12(str){ const p=String(str).split(':'); let h=Number(p[0])||0, m=Number(p[1])||0; const ap=h>=12?'PM':'AM'; h=h%12; if(h===0)h=12; return h+':'+String(m).padStart(2,'0')+' '+ap; }
+function parseSchedulePaste(text){
+  text=String(text||'').trim();
+  const fence=text.match(/```json\s*([\s\S]*?)```/);
+  const raw=fence?fence[1]:text;
+  const j=JSON.parse(raw);
+  if(!j || !j.dayTypes || !j.weekPattern) throw new Error('That does not look like Jr\'s schedule.');
+  return j;
+}
+function savePastedSchedule(){
+  const err=document.getElementById('schedErr'); err.textContent='';
+  try{
+    schedSpec=parseSchedulePaste(document.getElementById('schedPaste').value);
+    localStorage.setItem(SCHED_KEY, JSON.stringify(schedSpec));
+    document.getElementById('schedPaste').value='';
+    document.getElementById('schedPasteBox').open=false;
+    renderSchedule();
+  }catch(e){ err.textContent='Could not read that: '+(e&&e.message?e.message:'try copying again from Jr\'s phone.'); }
+}
+function renderSchedule(){
+  const meta=document.getElementById('schedMeta'), body=document.getElementById('schedBody');
+  if(!schedSpec){ body.classList.add('hidden'); meta.textContent='Not loaded yet. Open the paste box below and paste what Jr\'s app copied.'; return; }
+  body.classList.remove('hidden');
+  const sp=schedSpec, sel=document.getElementById('schedType');
+  meta.textContent='From Jr\'s app build '+sp.build+' • copied '+sp.generated+'. Be there: training '+clock12(sp.arriveTimes.trainingDay)+', practice '+clock12(sp.arriveTimes.practiceDay)+', game team arrival '+clock12(sp.arriveTimes.gameTeamArrival)+'.';
+  const keep=sel.value;
+  sel.innerHTML=Object.keys(sp.dayTypes).map(k=>'<option value="'+k+'">'+escapeHtml(sp.dayTypes[k].label)+'</option>').join('');
+  if(keep && sp.dayTypes[keep]) sel.value=keep;
+  const dt=sp.dayTypes[sel.value];
+  const blocks=dt.blocks.map(b=>'<div class="blk"><div class="t">'+clock12(b.start)+'<br>'+b.minutes+' min</div><div>'+escapeHtml(b.name)+(b.fixed?'<span class="tag">fixed</span>':'')+(b.needsParentApproval?'<span class="tag ok">needs your OK</span>':'')+'</div></div>').join('');
+  const pat=Object.keys(sp.weekPattern).map(d=>d+': '+(sp.dayTypes[sp.weekPattern[d]]?sp.dayTypes[sp.weekPattern[d]].label:sp.weekPattern[d])).join(' • ');
+  const g=sp.nightlyGrade, w=sp.weekendVideoGames, st=sp.screenTime;
+  document.getElementById('schedView').innerHTML=
+    '<div>'+blocks+'</div>'+
+    '<h3 style="margin-top:14px">Normal week</h3><p class="rule">'+escapeHtml(pat)+'</p>'+
+    '<h3 style="margin-top:10px">Rules</h3>'+
+    '<p class="rule">🚿 '+escapeHtml(sp.showers.morning+' '+sp.showers.other)+'</p>'+
+    '<p class="rule">🍽️ Breakfast: '+escapeHtml(sp.kitchenBlocks.breakfast)+'. Lunch: '+escapeHtml(sp.kitchenBlocks.lunch)+'. Last of the day: '+escapeHtml(sp.kitchenBlocks.lastOfDay)+'.</p>'+
+    '<p class="rule">✅ '+escapeHtml(sp.approvalFlow)+'</p>'+
+    '<p class="rule">📺 Screen time per approved block: '+Object.keys(st.approvedWorkMinutes).map(k=>escapeHtml(k)+' +'+st.approvedWorkMinutes[k]).join(', ')+'. Early finish bonus: '+st.earlyFinishBonus.map(x=>'+'+x.bonusMinutes+' at '+x.finishedMinutesBeforeLightsOut+'+ min before lights out').join(', ')+'.</p>'+
+    '<h3 style="margin-top:10px">Nightly grade (you give it on Jr\'s phone)</h3>'+
+    '<p class="rule">⭐ 1–5 stars each: '+g.categories.map(c=>escapeHtml(c.name)).join(', ')+'. Letter: A '+escapeHtml(g.letterFromAverageStars.A)+', B '+escapeHtml(g.letterFromAverageStars.B)+', C '+escapeHtml(g.letterFromAverageStars.C)+', D '+escapeHtml(g.letterFromAverageStars.D)+'. '+escapeHtml(g.weekCounts)+'.</p>'+
+    '<p class="rule">🎮 '+escapeHtml(w.rule)+' A = '+w.aMinutesPerDay+' min/day, B = '+w.bMinutesPerDay+' min/day, below B = '+(w.belowBMinutesPerDay?w.belowBMinutesPerDay+' min/day':'TV only')+'.</p>'+
+    '<h3 style="margin-top:10px">Blocks that will come to you for approval</h3><p class="rule">'+sp.tasksNeedingApproval.map(escapeHtml).join(' • ')+'</p>';
+}
+renderSchedule();
 
 renderConnectionUI();
 setStatus(myState.householdId ? 'Connecting...' : 'Enter the code from Jr\'s phone to get started.');

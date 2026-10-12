@@ -25,6 +25,9 @@ function _demoStart(field){
   const off = FORMATIONS[field.offense];
   if (off) off.players.forEach(p => { out[p.id] = [p.x, p.y]; });
   if (field.defense) defenseFor(field.defense, field.offense).forEach(p => { out[p.id] = [p.x, p.y]; });
+  // v20: scenes can start a player somewhere else (e.g. a safety shown deep) via field.overrides
+  const ov = field.overrides || {};
+  Object.keys(ov).forEach(id => { if (out[id]) out[id] = [ov[id].x != null ? ov[id].x : out[id][0], ov[id].y != null ? ov[id].y : out[id][1]]; });
   return out;
 }
 // Build one scene. mv = list of [id, style, offsets, delay]
@@ -225,7 +228,7 @@ _demo('bootContain', 'Edge: Backside Contain', [
     [0.40, 'Do not chase the flow. If the QB hides the ball and slides your way, stay home with outside leverage.'],
     [0.76, 'Contain: keep the QB inside you and force him to cut it up or throw on the run. Squeeze if the ball is handed off.']
   ], [
-    ['LT', 'block', [[5, -2], [6, -3]]], ['LG', 'block', [[-2, 4], [-6, 6]]], ['C', 'block', [[4, -2]]], ['RG', 'block', [[4, -2]]], ['RT', 'block', [[3, -2]]], ['TE', 'block', [[-2, -2]]],
+    ['LT', 'block', [[5, -2], [6, -3]]], ['LG', 'block', [[-2, 4], [-6, 6]]], ['C', 'block', [[4, -2]]], ['RG', 'block', [[4, -2]]], ['RT', 'block', [[3, -2]]],
     ['RB', 'run', [[8, -4], [14, -8]]], ['QB', 'run', [[-3, 2], [-14, 4], [-22, 2], [-26, -6]]],
     ['WDE', 'rush', [[-1, 4], [3, 8], [8, 12]], 0.2], ['WDT', 'rush', [[5, 3]], 0.1], ['SDT', 'rush', [[5, 3]], 0.1], ['SDE', 'rush', [[0, 3]], 0.1],
     ['MIKE', 'cover', [[5, 4], [8, 6]], 0.2], ['WILL', 'cover', [[3, 3], [-4, 5]], 0.25], ['H', 'route', [[5, -8], [10, -16]]], ['X', 'route', [[3, -10], [10, -18]]],
