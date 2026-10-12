@@ -141,6 +141,10 @@ function disconnect(){
 
 function enableNotifications(){
   if(!window.JrSync || !myState.householdId) return;
+  if(!window.FIREBASE_VAPID_KEY || String(window.FIREBASE_VAPID_KEY).indexOf('REPLACE_') === 0){
+    alert('Lock-screen alerts are not turned on yet. Everything else works: open this page any time to see what is waiting for you, and tap Good or Deny.');
+    return;
+  }
   window.JrSync.registerPush(myState.householdId, 'mom').then(ok => {
     myState.notificationsEnabled = !!ok;
     saveMyState();
@@ -166,6 +170,9 @@ function startListening(){
     }
     renderQueue();
   });
+  // An empty approvals list never fires the callback above, so show the
+  // 'Connected / Nothing waiting' state right away instead of staying on 'Connecting...'.
+  renderQueue();
 }
 
 function renderQueue(){
