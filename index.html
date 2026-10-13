@@ -164,7 +164,8 @@ body.timerFlash{animation:flashPulse .7s ease}
    card, that content scrolls internally (overflow-y) while the swipe
    gesture stays horizontal. */
 .todayFeed{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;border-radius:24px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 60%,transparent)}
-.feedCard{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;max-height:calc(100dvh - 250px);min-height:340px;overflow-y:auto;padding:16px 14px 26px;box-sizing:border-box}
+.frPosBadge{display:inline-block;margin:0 0 8px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent2)}.frPosShared{border-color:var(--muted);background:rgba(255,255,255,.06);color:var(--muted)}
+.feedCard{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;max-height:calc(100dvh - 360px);min-height:300px;overflow-y:auto;overscroll-behavior:contain;padding:16px 14px 44px;box-sizing:border-box}
 .feedCover{text-align:center;padding:18px 10px 14px;cursor:pointer;border-radius:20px}
 .feedCover:active{background:rgba(255,255,255,.04)}
 .feedCardIcon{font-size:52px;line-height:1;width:92px;height:92px;margin:0 auto;display:flex;align-items:center;justify-content:center;border-radius:50%;background:color-mix(in srgb,var(--accent) 20%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
@@ -379,7 +380,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v21-formation-tester-schedule';
+const BUILD_VERSION='v22-grade-compartments-film-fixes';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -2068,7 +2069,7 @@ function renderHome(){
  </div>
  <div class="coachBubble"><strong>Today's Dad Coach Note</strong><p>${a.note}</p></div>
  ${dayProgressFooterHTML()}
- <div class="inner"><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap Check-In below.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
+ <div class="inner" ${checkinDue()?'data-open="1"':''}><h3>Check-In</h3><p class="small">${checkinDue()?'Your next Check-In is ready — tap Check-In below.':`${checkinCompletedCount()} of ${nextCheckinTarget()} completed days toward your next Check-In.`}</p></div>`;
 }
 function outlineRow(item){
  if(item.target!==undefined){
@@ -3717,10 +3718,11 @@ function syncPanelHTML(){
  }
  const codeLive = state.sync.pairingCode && Date.now() < state.sync.pairingCodeExpiresAt;
  const minsLeft = codeLive ? Math.max(1,Math.ceil((state.sync.pairingCodeExpiresAt-Date.now())/60000)) : 0;
- return `<p class="small">Connected. On Mom’s phone, open <b>approver.html</b> from this same site and enter the code below.</p>
+ return `<p class="small">Connected. On a parent’s phone, open <b>approver.html</b> from this same site and enter the code below.</p>
  ${codeLive
    ? `<div class="inner" style="text-align:center"><div style="font-size:34px;font-weight:bold;letter-spacing:4px">${state.sync.pairingCode}</div><p class="tiny">Expires in about ${minsLeft} minute${minsLeft===1?'':'s'}.</p></div>`
-   : `<button class="gold full" onclick="generateSyncPairingCode()">Generate A Pairing Code For Mom</button>`}
+   : `<button class="gold full" onclick="generateSyncPairingCode()">Pair Another Parent Phone (new code)</button>`}
+ <p class="tiny">Both parents can pair their own phone to this same household. Each one opens approver.html and enters a code. Whoever answers a task first counts.</p>
  <button class="gold full" style="margin-top:8px" onclick="jrSyncTest()">Send A Test To Mom</button>
  ${state.sync.lastError?`<p class="small" style="color:var(--orange)">⚠️ ${state.sync.lastError}</p>`:(state.sync.lastSentAt?`<p class="tiny">Last sent to Mom: ${new Date(state.sync.lastSentAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}. Household ${String(state.sync.householdId).slice(0,8)}.</p>`:`<p class="tiny">Household ${String(state.sync.householdId).slice(0,8)}.</p>`)}
  <button class="${state.sync.notificationsEnabled?'green':'gold'} full" style="margin-top:8px" onclick="enableSyncNotifications()">${state.sync.notificationsEnabled?'✅ Notifications On For This Device':'Enable Notifications On This Device'}</button>
@@ -3861,7 +3863,7 @@ function openCorrectionTasks(d=new Date()){
 // history, this one's for actually signing off on a task). Same
 // session-only pattern as Parent Logs: entering it once unlocks approvals
 // for the rest of this session; a reload locks it again.
-const APPROVAL_CODE='0215';
+const APPROVAL_CODE='2013';
 let approvalsUnlocked=false;
 let approvalsCodeError=false;
 function submitApprovalsCode(){
@@ -4717,7 +4719,7 @@ function copyMomBrief(){
    after reviewing it. This never persists "unlocked" across a reload —
    the code has to be entered again each fresh app open.
    ========================================================= */
-const PARENT_LOGS_CODE='lovedevonrico';
+const PARENT_LOGS_CODE='2013';
 let parentLogsUnlocked=false;
 let parentLogsCodeError=false;
 function keyToLocalDate(key){
@@ -5138,7 +5140,112 @@ let todayResizeBound=false;
 function ensureTodayResizeSync(){
  if(todayResizeBound) return;
  todayResizeBound=true;
- window.addEventListener('resize',()=>{ if(state.screen==='today') todayScrollTo(todayCardIndex); });
+ window.addEventListener('resize',()=>{ if(state.screen==='today'){ fitFeedCards(); todayScrollTo(todayCardIndex); } });
+ window.addEventListener('orientationchange',()=>{ setTimeout(()=>{ if(state.screen==='today'){ fitFeedCards(); todayScrollTo(todayCardIndex); } },250); });
+}
+// The task cards scroll inside themselves. Their height must end ABOVE the fixed
+// bottom menu, or the last buttons (Submit, Unlock, star rows) slide under it
+// and can only be reached by turning the phone sideways. Measure the real
+// space instead of guessing a number.
+
+/* Same idea inside the Today cards: long guides fold into tap-to-open sections.
+   The part he has to actually work through (ordered steps, checklists) and any
+   box that needs typing start open; reference text starts closed. His own
+   open/close choices are remembered while the app stays open. */
+const CARD_COMP={};
+function compartmentalizeCards(){
+ document.querySelectorAll('#todayFeed .feedCard').forEach(card=>{
+  const tid=card.getAttribute('data-tid')||'';
+  const h2=card.querySelector('.feedCover h2'); const taskName=h2?h2.textContent.trim():'';
+  let firstBlock=true;
+  Array.from(card.children).forEach(el=>{
+   if(!el.classList || !el.classList.contains('inner')) return;
+   const h=Array.from(el.children).find(c=>c.tagName==='H3'); if(!h) return;
+   let title=h.textContent.trim(); if(!title) return;
+   const isFirst=firstBlock; firstBlock=false;
+   const hasWork=!!el.querySelector('.sgItem,input,textarea,select,.areaCard,button');
+   const intro=(title===taskName);
+   // The task's own block: if he has to DO something in it (steps, boxes, buttons) it is
+   // his start-here section and stays open; if it is only reading, it folds up.
+   if(intro) title=hasWork?('✅ '+taskName+' — start here'):'ℹ️ About this block';
+   const key=tid+'|'+title;
+   const mainWork=/steps|order|checklist|do these|inspection|areas/i.test(title);
+   const def=(intro||isFirst) ? hasWork : mainWork;   // boxes to type in stay closed until he taps them; the steps list tells him which one
+   const det=document.createElement('details'); det.className='clean compSection';
+   const sum=document.createElement('summary'); sum.textContent=title;
+   const body=document.createElement('div'); body.className='detailBody';
+   h.remove();
+   while(el.firstChild) body.appendChild(el.firstChild);
+   det.appendChild(sum); det.appendChild(body);
+   det.open = (key in CARD_COMP) ? CARD_COMP[key] : def;
+   det.addEventListener('toggle',()=>{ CARD_COMP[key]=det.open; });
+   el.replaceWith(det);
+   foldPhases(body,tid);
+   [body].concat(Array.from(body.querySelectorAll('.detailBody'))).forEach(b=>foldSteps(b,tid));
+   // Several already-open inner lists (e.g. house zones): leave only the first one open.
+   const innerOpen=Array.from(body.querySelectorAll('details[open]'));
+   if(innerOpen.length>1) innerOpen.slice(1).forEach(d=>{ const k=tid+'|in|'+(d.querySelector('summary')||{}).textContent; if(!(k in CARD_COMP)) d.open=false; d.addEventListener('toggle',()=>{ CARD_COMP[k]=d.open; }); });
+  });
+ });
+}
+
+
+// A long ordered list is overwhelming when every step shows at once. Focus view:
+// finished steps fold into '✅ Done so far', the NEXT step stays in full view, and
+// the rest wait inside '⏭ Coming up'. (The rules are unchanged: only the next step
+// can be ticked.) Applies to any group holding the NEXT step with 5+ steps.
+function foldSteps(box,tid){
+ const items=Array.from(box.children).filter(c=>c.classList&&c.classList.contains('sgItem'));
+ if(items.length<5) return;
+ const ni=items.findIndex(i=>i.classList.contains('next'));
+ if(ni<0) return;
+ const done=items.slice(0,ni), later=items.slice(ni+1);
+ const mk=(label,list,key,anchor,before)=>{
+  if(!list.length) return;
+  const det=document.createElement('details'); det.className='clean compSection';
+  const sum=document.createElement('summary'); sum.textContent=label; det.appendChild(sum);
+  const inner=document.createElement('div'); inner.className='detailBody'; list.forEach(i=>inner.appendChild(i)); det.appendChild(inner);
+  const k=tid+'|steps|'+key; det.open=(k in CARD_COMP)?CARD_COMP[k]:false;
+  det.addEventListener('toggle',()=>{ CARD_COMP[k]=det.open; });
+  if(before) box.insertBefore(det,anchor); else if(anchor.nextSibling) box.insertBefore(det,anchor.nextSibling); else box.appendChild(det);
+ };
+ mk('✅ Done so far ('+done.length+')',done,'done',items[ni],true);
+ mk('⏭ Coming up ('+later.length+' more step'+(later.length===1?'':'s')+')',later,'later',items[ni],false);
+}
+// Ordered lists with 'Part 1 / Part 2 / Part 3' headings: each part becomes its own
+// tap-to-open group; the part holding his next step starts open.
+function foldPhases(body,tid){
+ const labels=Array.from(body.children).filter(c=>c.classList&&c.classList.contains('label'));
+ if(labels.length<2 || !body.querySelector('.sgItem')) return;
+ const kids=Array.from(body.children); const groups=[]; let cur=null;
+ kids.forEach(k=>{
+  if(k.classList&&k.classList.contains('label')){ cur={label:k,items:[]}; groups.push(cur); }
+  else if(cur) cur.items.push(k);
+ });
+ if(groups.length<2) return;
+ let nextIdx=groups.findIndex(g=>g.items.some(i=>i.classList&&i.classList.contains('next')));
+ if(nextIdx<0) nextIdx=0;
+ groups.forEach((g,gi)=>{
+  const title=g.label.textContent.replace(/\s+/g,' ').trim();
+  const key=tid+'|part|'+title;
+  const det=document.createElement('details'); det.className='clean compSection';
+  const sum=document.createElement('summary'); sum.textContent=title;
+  const inner=document.createElement('div'); inner.className='detailBody';
+  g.items.forEach(i=>inner.appendChild(i));
+  det.appendChild(sum); det.appendChild(inner);
+  det.open=(key in CARD_COMP)?CARD_COMP[key]:(gi===nextIdx);
+  det.addEventListener('toggle',()=>{ CARD_COMP[key]=det.open; });
+  g.label.replaceWith(det);
+ });
+}
+function fitFeedCards(){
+ const feed=document.getElementById('todayFeed'); if(!feed) return;
+ const nav=document.getElementById('bottomNav');
+ const navH=(nav && !nav.classList.contains('hidden'))?nav.getBoundingClientRect().height:0;
+ const top=feed.getBoundingClientRect().top+(window.pageYOffset||0);
+ const vh=(window.visualViewport?window.visualViewport.height:window.innerHeight);
+ const room=Math.max(300,Math.floor(vh-top-navH-14));
+ feed.querySelectorAll('.feedCard').forEach(c=>{ c.style.maxHeight=room+'px'; });
 }
 function onTodayFeedScroll(el){
  // Every render() replaces #todayFeed with a brand-new element (innerHTML
@@ -5170,6 +5277,7 @@ function todayGoTo(idx){
  todayAttentionOpen=false;
  render();
 }
+function todayGoToGrade(i){ todayRevealedIds.add('nightlyGrade'); todayGoTo(i); }
 function toggleTodayAttention(){ todayAttentionOpen=!todayAttentionOpen; render(); }
 function toggleTodayReveal(id){
  if(todayRevealedIds.has(id)) todayRevealedIds.delete(id); else todayRevealedIds.add(id);
@@ -5235,6 +5343,7 @@ function renderToday(){
  let body=`<div class="todayTopBar">
   <div><div class="small">${dateStr}</div><b>${DAY_TYPE_LABELS[sched.dayType]||sched.dayType} • ${pct}% done</b></div>
   <div class="row" style="gap:6px">
+  ${(()=>{ const gi=sched.tasks.findIndex(x=>x.id==='nightlyGrade'); if(gi<0) return ''; const g=state.nightlyGrades[localDateKey()]; return g?`<button class="chip" style="background:var(--green);color:#000" onclick="todayGoToGrade(${gi})">⭐ Graded: ${g.letter}</button>`:`<button class="chip" style="background:var(--gold);color:#000" onclick="todayGoToGrade(${gi})">⭐ Grade Tonight</button>`; })()}
   ${pendingApproval.length?`<button class="chip" style="background:var(--gold);color:#000" onclick="toggleTodayPending()">🔍 ${pendingApproval.length} Awaiting Your Check</button>`:''}
   ${attention.length?`<button class="chip" style="background:var(--orange);color:#000" onclick="toggleTodayAttention()">⚠ ${attention.length} Needs Attention</button>`:''}
   </div>
@@ -5261,7 +5370,9 @@ function renderToday(){
  document.getElementById('screen_today').innerHTML=body;
  ensureTodayLiveTimer();
  ensureTodayResizeSync();
+ compartmentalizeCards();
  requestAnimationFrame(()=>{
+  fitFeedCards();
   todayScrollTo(todayCardIndex);
   const c2=document.querySelector('#todayFeed .feedCard[data-idx="'+todayCardIndex+'"]');
   if(c2 && prevTid && c2.getAttribute('data-tid')===prevTid) c2.scrollTop=prevScroll;
@@ -5383,12 +5494,40 @@ function renderShell(){
  renderTiles();
  updateCompleteButton();
 }
+
+/* ---- Tap-to-open sections -------------------------------------------------
+   Long screens used to show everything at once. After a screen draws, every
+   '.inner' block that has a heading is folded into a tap-to-open section
+   (same look as the existing 'details.clean' cards). Sections he opened stay
+   open when the screen redraws, so tapping a setting does not slam it shut.
+   A block with data-open="1" starts open (e.g. a Check-In that is due now). */
+const COMP_OPEN=new Set();
+function compartmentalize(screenId){
+ const root=document.getElementById(screenId); if(!root) return;
+ Array.from(root.children).forEach(el=>{
+  if(!el.classList || !el.classList.contains('inner')) return;
+  const h=Array.from(el.children).find(c=>c.tagName==='H3'); if(!h) return;
+  const title=h.textContent.trim(); if(!title) return;
+  const key=screenId+'|'+title;
+  const det=document.createElement('details'); det.className='clean compSection';
+  const sum=document.createElement('summary'); sum.textContent=title;
+  const body=document.createElement('div'); body.className='detailBody';
+  h.remove();
+  while(el.firstChild) body.appendChild(el.firstChild);
+  det.appendChild(sum); det.appendChild(body);
+  if(COMP_OPEN.has(key) || el.getAttribute('data-open')==='1') det.open=true;
+  det.addEventListener('toggle',()=>{ if(det.open) COMP_OPEN.add(key); else COMP_OPEN.delete(key); });
+  el.replaceWith(det);
+ });
+}
+const COMP_SCREENS=['home','morning','strength','touches','nutrition','settings'];
 function render(){
  ensureGlobalTaskAlarmTimer();
  renderShell();
  (screenRenderers[state.screen]||renderHome)();
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
  document.getElementById('screen_'+state.screen).classList.add('active');
+ if(COMP_SCREENS.indexOf(state.screen)!==-1) compartmentalize('screen_'+state.screen);
  save();
 }
 function toggleMusic(){
@@ -6465,7 +6604,7 @@ function frSubmitAnswer(answerId){
  item.hinted=hinted;
  item.answeredId=answerId; item.correct=correct; item.xpGain=xpGain; item.responseTimeMs=responseTimeMs;
  if(!correct) frQueueHelpers(s,item,scenario);
- frPlayKey = (correct && scenario.playOut) ? frItemKey(s,item) : null; frPlayRun = frPlayKey!==null; frClipOpen=null;
+ frPlayKey = null; frPlayRun = false; frClipOpen=null; // the replay waits for his tap on 'Watch it play out'
  s.xpEarned=(s.xpEarned||0)+xpGain;
  save(); render();
 }
@@ -6747,13 +6886,13 @@ function frDemoRestart(){
  frDemoToken++; frDemoProg[cur.key]=0; frDemoApply(0); frDemoPlay();
 }
 function frDemoScrub(v){ frDemoPause(); frDemoApply((parseInt(v,10)||0)/1000); }
-// Called after every Film Room render: restores the frame, and auto-plays a demo the first time it appears.
+// Called after every Film Room render: restores the frame. Demos never start by themselves.
 function frDemoAfterRender(){
  const cur=frDemoCurrent();
  if(!cur){ frDemoPlaying=false; return; }
  if(frDemoPlayedKey!==cur.key){
-  frDemoPlayedKey=cur.key; frDemoProg[cur.key]=0; frDemoApply(0);
-  setTimeout(()=>{ const c2=frDemoCurrent(); if(c2 && c2.key===cur.key && !frDemoPlaying) frDemoPlay(); }, 450);
+  // Shows the first frame and WAITS — he taps ▶ Play to start it (no autoplay).
+  frDemoPlayedKey=cur.key; frDemoProg[cur.key]=0; frDemoApply(0); frDemoSetBtn();
  } else {
   frDemoApply(frDemoProg[cur.key]||0); frDemoSetBtn();
   if(frDemoPlaying){ frDemoPlaying=false; const k=cur.key; setTimeout(()=>{ const c2=frDemoCurrent(); if(c2&&c2.key===k) frDemoPlay(); },0); }
@@ -6893,10 +7032,39 @@ function frNavRowHTML(s, item, answered){
  else right=`<button disabled>Answer To Continue</button>`;
  return `<div class="grid" style="margin-top:10px;grid-template-columns:1fr 1.6fr"><button ${canBack?'':'disabled'} onclick="frBack()">← Back</button>${right}</div>`;
 }
+
+// Which position(s) a lesson / scenario is really about, shown as a badge so it is
+// always clear who the question is for. Own-position topics name that position;
+// shared topics (formations, fronts, personnel) say so and list who uses them.
+let _frConceptPosCache=null;
+function frConceptPositions(cid){
+ if(!_frConceptPosCache){
+  const found={};
+  ['QB','RB','WR','TE','OL','EDGE','DL','LB','CB','S'].forEach(p=>{
+   (LESSON_ORDER_BY_TRACK[p]||[]).forEach(lid=>{
+    const L=LESSONS[lid]; if(!L||!L.concept) return;
+    if(typeof _FOUNDATION!=='undefined' && _FOUNDATION.indexOf(lid)!==-1) return;
+    (found[L.concept]=found[L.concept]||[]).push(p);
+   });
+  });
+  _frConceptPosCache=found;
+ }
+ return _frConceptPosCache[cid]||[];
+}
+function frPosBadgeHTML(cid){
+ const mine=frPositions();
+ const list=frConceptPositions(cid).filter((p,i,a)=>a.indexOf(p)===i);
+ let txt, cls='frPosOwn';
+ const you=mine.length?(' · you: '+mine.map(p=>FR_POSITION_INFO[p].short).join(' / ')):'';
+ if(!list.length){ txt='🏈 Shared foundation — every position needs this'+you; cls='frPosShared'; }
+ else if(list.length===1){ const I=FR_POSITION_INFO[list[0]]; txt='🎯 Position: '+I.label+' ('+I.short+') — '+I.side; }
+ else { txt='🏈 Shared by: '+list.map(p=>FR_POSITION_INFO[p].short).join(' · ')+(mine.some(p=>list.indexOf(p)!==-1)?' — includes your position':''); cls='frPosShared'; }
+ return '<div class="frPosBadge '+cls+'">'+txt+'</div>';
+}
 function frItemHTML(s, item){
  if(item.stage==='learn'){
   const lesson=LESSONS[item.refId];
-  return `<div class="frStageBadge learn">Learn</div> <span class="tiny">${frProgressText(s,item)}${item.refresher?' · quick refresher':' · new'}</span>
+  return `${frPosBadgeHTML(lesson.concept)}<div class="frStageBadge learn">Learn</div> <span class="tiny">${frProgressText(s,item)}${item.refresher?' · quick refresher':' · new'}</span>
    ${item.helper && item.helperReason ? `<div class="frNote" style="border-color:#60a5fa;margin-top:8px">🔁 ${item.helperReason}</div>` : ''}
    ${frLessonBodyHTML(lesson)}
    ${frFilmHTML(lesson.concept)}
@@ -6952,7 +7120,7 @@ function frItemHTML(s, item){
   if(open) playHtml += `<button class="chip full" style="margin-top:6px" onclick="frTogglePlay()">Hide the replay</button>`;
  }
  const filmHtml = answered ? frFilmHTML(scenario.concept) : '';
- return `<div class="frStageBadge ${item.stage}">${item.helper?'helper':item.stage}</div> <span class="tiny">${frProgressText(s,item)}</span>
+ return `${frPosBadgeHTML(scenario.concept)}<div class="frStageBadge ${item.stage}">${item.helper?'helper':item.stage}</div> <span class="tiny">${frProgressText(s,item)}</span>
   ${helperHtml}
   <h3 style="margin-top:8px">${q.prompt}</h3>
   ${renderFootballField(scenario.fieldState, fieldOpts)}${noteHtml}${hintHtml}
@@ -7068,18 +7236,20 @@ function frBriefingHTML(s){
  const pos=frTrackPositions(s.track||frTrack()).map(p=>`${FR_POS_ICON[p]} ${FR_POSITION_INFO[p].label}`).join(' &nbsp;•&nbsp; ');
  const firstTime=Object.keys(state.footballIQ.concepts).length===0;
  return `<div class="coachBubble" style="margin-top:12px"><strong>Today’s Film Study</strong><p class="small">${pos}</p></div>
-  <div class="inner" style="margin-top:10px">
+  <details class="clean" style="margin-top:10px"><summary>How today’s session works (tap to read)</summary><div class="detailBody">
    <h3>Step 1 — Learn first 📖</h3>
    <p class="small">${learnCards.length} short teaching cards (${newCount} new, ${learnCards.length-newCount} quick refresher${learnCards.length-newCount===1?'':'s'}). Each one shows a diagram and what to look for <b>before</b> you’re asked anything. Take your time — you can go back at any point.</p>
    <h3 style="margin-top:12px">Step 2 — Prove it 🎯</h3>
    <p class="small">${qItems.length} questions: ${off} offense, ${def} defense${shared?`, ${shared} shared (formations / gaps)`:''}. Fresh questions every time, in a new order, leaning toward what you’re weakest at.</p>
    ${weak.length?`<p class="small"><b>Focus areas:</b> ${weak.map(id=>CONCEPTS[id].label).join(', ')}.</p>`:(firstTime?`<p class="small">First time through — everything starts from the beginning.</p>`:'')}
-  </div>
+  </div></details>
   <button class="gold full" style="margin-top:12px" onclick="frStartSession()">Start Film Study →</button>
-  <button class="chip full" style="margin-top:8px" onclick="frOpenSetup()">✏️ Change my positions</button>
-  <button class="chip full" style="margin-top:8px" onclick="frStartDrill()">🎯 Formation & Front Drill (20 questions on every look)</button>
+  <details class="clean" style="margin-top:10px"><summary>More ways to study</summary><div class="detailBody">
+  <button class="chip full" onclick="frStartDrill()">🎯 Formation & Front Drill (20 questions on every look)</button>
   <button class="chip full" style="margin-top:8px" onclick="frToggleLibrary()">📚 Study Library (read any lesson first)</button>
-  <button class="chip full" style="margin-top:8px" onclick="frToggleLingo()">📖 Pro Lingo glossary</button>`;
+  <button class="chip full" style="margin-top:8px" onclick="frToggleLingo()">📖 Pro Lingo glossary</button>
+  <button class="chip full" style="margin-top:8px" onclick="frOpenSetup()">✏️ Change my positions</button>
+  </div></details>`;
 }
 function renderFilmRoom(){
  if(frPositions().length===0 && !frSetupOpen){ frSetupOpen=true; frPosDraft=frDefaultPositionsFromProfile(); }

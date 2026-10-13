@@ -58,6 +58,8 @@ textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:v
   <div id="connectedSection" class="card hidden">
     <h3>Connected ✅</h3>
     <p class="tiny" id="hhLine" style="margin:0 0 8px"></p>
+    <p class="tiny" style="margin:0 0 4px">This phone belongs to:</p>
+    <select id="roleSel" onchange="setMyRole(this.value)" style="width:100%;padding:12px;border-radius:12px;margin-bottom:8px;font-size:16px;background:#111;color:#fff;border:1px solid #333"><option value="mom">Mom</option><option value="dad">Dad</option><option value="parent">Another parent</option></select>
     <button class="gold" id="notifBtn" onclick="enableNotifications()">Enable Notifications On This Phone</button>
     <button class="orange" onclick="disconnect()">Disconnect</button>
   </div>
@@ -105,10 +107,12 @@ function renderConnectionUI(){
   document.getElementById('pairSection').classList.toggle('hidden', paired);
   document.getElementById('connectedSection').classList.toggle('hidden', !paired);
   const notifBtn = document.getElementById('notifBtn');
+  const rs=document.getElementById('roleSel'); if(rs) rs.value = myState.role || 'mom';
   const hh=document.getElementById('hhLine'); if(hh) hh.textContent = paired ? ('Household '+String(myState.householdId).slice(0,8)) : '';
   if(notifBtn) notifBtn.textContent = myState.notificationsEnabled ? '✅ Notifications On' : 'Enable Notifications On This Phone';
 }
 
+function setMyRole(v){ myState.role = (v==='dad'||v==='parent')?v:'mom'; saveMyState(); }
 function redeem(){
   const code = document.getElementById('codeInput').value;
   document.getElementById('pairError').textContent = '';
@@ -220,11 +224,15 @@ function resolve(id, status){
   if(!window.JrSync || !myState.householdId) return;
   const noteEl = document.getElementById('note_'+id);
   const note = noteEl ? noteEl.value.trim() : '';
-  window.JrSync.resolveApproval(myState.householdId, id, 'mom', status, note).then(() => {
+  window.JrSync.resolveApproval(myState.householdId, id, myState.role||'mom', status, note).then(() => {
     delete pending[id];
     renderQueue();
   }).catch(err => {
     console.error(err);
+    if(err && err.message === 'already-answered'){
+      alert('The other parent already answered this one.');
+      delete pending[id]; renderQueue(); return;
+    }
     alert('Could not send that -- check your connection and try again.');
   });
 }
@@ -297,7 +305,7 @@ if('serviceWorker' in navigator){
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot
+  getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, runTransaction
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getMessaging, getToken, isSupported } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
@@ -350,8 +358,12 @@ if(!looksConfigured){
     };
 
     JrSync.resolveApproval = async function(householdId, approvalId, role, status, note){
-      await updateDoc(doc(db, 'households', householdId, 'approvals', approvalId), {
-        status, resolvedBy: role, resolvedAt: Date.now(), rejectNote: note || ''
+      // Two parents can both be paired: whoever answers first wins, the second one is told.
+      const ref = doc(db, 'households', householdId, 'approvals', approvalId);
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(ref);
+        if(snap.exists() && snap.data().status && snap.data().status !== 'pending') throw new Error('already-answered');
+        tx.update(ref, { status, resolvedBy: role, resolvedAt: Date.now(), rejectNote: note || '' });
       });
     };
 
