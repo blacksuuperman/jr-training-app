@@ -39,7 +39,7 @@ select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);b
 .tag{display:inline-block;font-size:10px;font-weight:bold;border-radius:99px;padding:1px 7px;margin-left:6px;border:1px solid var(--line);color:var(--muted)}
 .tag.ok{color:#86efac;border-color:rgba(34,197,94,.6)}
 .rule{font-size:13px;line-height:1.45;margin:6px 0;color:var(--text)}
-textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px;font-size:14px;margin-top:8px}
+details.day{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--panel2)}details.day>summary{padding:11px 12px;font-weight:bold;font-size:14px;cursor:pointer}details.day .in{padding:0 12px 12px}.ltr{display:inline-block;min-width:24px;text-align:center;border-radius:99px;padding:1px 8px;font-weight:bold;color:#000;background:#888;margin-right:4px}.ltr.A{background:#22c55e}.ltr.B{background:#38bdf8}.ltr.C{background:#facc15}.ltr.D{background:#fb923c}.ltr.F{background:#ef4444;color:#fff}.crd{border-top:1px solid var(--line);padding:8px 0;font-size:13px}.crd .why{color:#fca5a5;font-size:12px}.crd button{display:inline-block;width:auto;padding:7px 12px;margin:6px 6px 0 0;font-size:12px;background:#2f303b;color:#fff}.statrow{display:flex;gap:8px;margin:8px 0}.stat{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}.stat b{display:block;font-size:18px}textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px;font-size:14px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -65,6 +65,12 @@ textarea{width:100%;border-radius:10px;border:1px solid var(--line);background:v
   </div>
 
   <div id="queue"></div>
+
+  <div id="reportsSection" class="card hidden">
+    <h3>📊 Grades &amp; Cards</h3>
+    <p class="tiny" id="reportsMeta">Waiting for Jr's phone to send grades and card reports…</p>
+    <div id="reportsBody"></div>
+  </div>
 
   <div id="scheduleSection" class="card">
     <h3>📋 Jr's Schedule</h3>
@@ -142,6 +148,7 @@ function disconnect(){
   saveMyState();
   renderConnectionUI();
   document.getElementById('queue').innerHTML = '';
+  document.getElementById('reportsSection').classList.add('hidden');
   setStatus('Disconnected.');
 }
 
@@ -176,6 +183,8 @@ function startListening(){
     }
     renderQueue();
   });
+  if(window.JrSync.listenReports){ window.JrSync.listenReports(myState.householdId, (doc) => { reports[doc.id] = doc; renderReports(); }); }
+  document.getElementById('reportsSection').classList.remove('hidden');
   // An empty approvals list never fires the callback above, so show the
   // 'Connected / Nothing waiting' state right away instead of staying on 'Connecting...'.
   renderQueue();
@@ -243,6 +252,69 @@ window.onJrSyncReady = function(){
   if(myState.householdId) startListening();
 };
 
+/* ---------- Grades & cards (sent from Jr's phone) ---------- */
+const reports = {};
+function dkLabelA(k){ const p=String(k).split('-').map(Number); return new Date(p[0],p[1]-1,p[2]).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
+function catName(id){
+  try{ const c=(schedSpec&&schedSpec.nightlyGrade&&schedSpec.nightlyGrade.categories||[]).find(x=>x.id===id); if(c) return c.name; }catch(e){}
+  return String(id).replace(/([A-Z])/g,' $1').replace(/^./,m=>m.toUpperCase());
+}
+function mm(min){ if(min==null) return ''; let h=Math.floor(min/60), m=Math.round(min%60); const ap=h>=12?'PM':'AM'; h=h%12; if(h===0)h=12; return h+':'+String(m).padStart(2,'0')+' '+ap; }
+function pctText(c,r){ return r?Math.round(c/r*100)+'%':'—'; }
+function renderReports(){
+  const days={};
+  Object.keys(reports).forEach(id=>{ const d=reports[id]; if(!d.date) return; days[d.date]=days[d.date]||{day:null,cards:[]}; if(d.kind==='dayReport') days[d.date].day=d; else if(d.kind==='cardReport') days[d.date].cards.push(d); });
+  const keys=Object.keys(days).sort().reverse().slice(0,35);
+  const meta=document.getElementById('reportsMeta'), body=document.getElementById('reportsBody');
+  if(!keys.length){ meta.textContent='Nothing yet. Grades, comments and card reports (with the XP pictures) show up here as Jr\'s phone sends them.'; body.innerHTML=''; return; }
+  const now=new Date(); const cut7=new Date(now.getFullYear(),now.getMonth(),now.getDate()-6); const cut30=new Date(now.getFullYear(),now.getMonth(),now.getDate()-29);
+  let g7=[],r7=0,c7=0,r30=0,c30=0;
+  keys.forEach(k=>{ const p=k.split('-').map(Number); const dt=new Date(p[0],p[1]-1,p[2]); const d=days[k].day; if(!d) return; if(dt>=cut7&&d.grade) g7.push(d.grade.avg); if(dt>=cut7&&d.part){ r7+=d.part.req||0; c7+=d.part.cnt||0; } if(dt>=cut30&&d.part){ r30+=d.part.req||0; c30+=d.part.cnt||0; } });
+  const avg7=g7.length?(g7.reduce((a,b)=>a+b,0)/g7.length):null;
+  meta.textContent='Last 30 days. Tap a day to open it.';
+  const summary='<div class="statrow"><div class="stat"><b>'+(avg7==null?'—':avg7.toFixed(1)+'★')+'</b><span class="tiny">7-day grade avg</span></div><div class="stat"><b>'+pctText(c7,r7)+'</b><span class="tiny">Participation (7d)</span></div><div class="stat"><b>'+pctText(c30,r30)+'</b><span class="tiny">Participation (30d)</span></div></div>';
+  body.innerHTML=summary+keys.map(k=>{
+    const e=days[k], d=e.day, g=d&&d.grade;
+    const head=dkLabelA(k)+' · '+(g?('<span class="ltr '+escapeHtml(g.letter)+'">'+escapeHtml(g.letter)+'</span>'+g.avg.toFixed(1)+'★'+(g.late?' (late entry)':'')):'not graded')+(d&&d.part&&d.part.req?' · cards '+d.part.cnt+'/'+d.part.req:'');
+    let inner='';
+    if(g){
+      inner+=Object.keys(g.stars||{}).map(id=>'<div class="crd" style="display:flex;justify-content:space-between"><span>'+escapeHtml(catName(id))+'</span><span>'+'★'.repeat(g.stars[id]||0)+'☆'.repeat(5-(g.stars[id]||0))+'</span></div>').join('');
+      if(g.note) inner+='<p class="rule">💬 '+escapeHtml(g.note)+'</p>';
+      if(g.improve) inner+='<p class="rule" style="color:#fed7aa">🎯 Work on: '+escapeHtml(g.improve)+'</p>';
+    }
+    (d&&d.comments||[]).forEach(c=>{ inner+='<p class="rule">💬 '+escapeHtml(c.text)+' <span class="tiny">— '+escapeHtml(c.by||'Parent')+'</span></p>'; });
+    const byId={}; e.cards.forEach(c=>{ byId[c.taskId]=c; });
+    const rows=(d&&d.rows)||[];
+    const used={};
+    const cardHtml=rows.map(r=>{
+      const c=e.cards.find(x=>x.name===r.name); if(c) used[c.taskId]=1;
+      const ic={counted:'✅',missed:'❌',active:'⏳',upcoming:'🕒',excused:'🟦'}[r.state]||'•';
+      let h='<div class="crd"><b>'+ic+' '+escapeHtml(r.name)+'</b>';
+      if(r.state==='missed'&&r.reasons&&r.reasons.length) h+='<div class="why">'+r.reasons.map(escapeHtml).join(' · ')+'</div>';
+      if(c){
+        if(c.startGrade||c.score!=null) h+='<div class="tiny">Start: '+escapeHtml(c.startGrade||'—')+' · End: '+(c.score!=null?escapeHtml(String(c.score))+'%':'—')+(c.evo&&c.evo.atMin!=null?' · submitted '+mm(c.evo.atMin):'')+'</div>';
+        if(c.xp&&c.xp.start) h+='<button onclick="viewReportPhoto(\''+k+'\',\''+c.taskId+'\',\'start\')">Start XP'+(c.xp.start.min!=null?' · '+mm(c.xp.start.min):'')+'</button>';
+        if(c.xp&&c.xp.end) h+='<button onclick="viewReportPhoto(\''+k+'\',\''+c.taskId+'\',\'end\')">End XP'+(c.xp.end.min!=null?' · '+mm(c.xp.end.min):'')+'</button>';
+      }
+      return h+'</div>';
+    }).join('');
+    const extra=e.cards.filter(c=>!used[c.taskId]).map(c=>'<div class="crd"><b>'+escapeHtml(c.name)+'</b><div class="tiny">'+(c.evo?(c.evo.counted?'counted':'did not count'):'in progress')+(c.startGrade||c.score!=null?' · Start: '+escapeHtml(c.startGrade||'—')+' · End: '+(c.score!=null?escapeHtml(String(c.score))+'%':'—'):'')+'</div>'+(c.xp&&c.xp.start?'<button onclick="viewReportPhoto(\''+k+'\',\''+c.taskId+'\',\'start\')">Start XP</button>':'')+(c.xp&&c.xp.end?'<button onclick="viewReportPhoto(\''+k+'\',\''+c.taskId+'\',\'end\')">End XP</button>':'')+'</div>').join('');
+    inner+=cardHtml+extra;
+    if(!inner) inner='<p class="tiny">Nothing sent for this day yet.</p>';
+    return '<details class="day"><summary>'+head+'</summary><div class="in">'+inner+'</div></details>';
+  }).join('');
+}
+function viewReportPhoto(date,taskId,kind){
+  if(!window.JrSync||!myState.householdId||!window.JrSync.getPhoto) return;
+  window.JrSync.getPhoto(myState.householdId,'ph_'+date+'_'+taskId+'_'+kind).then(src=>{
+    if(!src){ alert('That picture has not arrived from Jr\'s phone yet. It sends when his phone is online.'); return; }
+    const v=document.createElement('div');
+    v.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px';
+    v.innerHTML='<img src="'+src+'" style="max-width:100%;max-height:80vh;border-radius:12px"><button style="max-width:200px;margin-top:14px;background:#2f303b;color:#fff" onclick="this.parentNode.remove()">Close</button>';
+    document.body.appendChild(v);
+  }).catch(err=>{ console.error(err); alert('Could not load that picture. Check your connection.'); });
+}
+
 /* ---------- Jr's schedule (pasted from his app; stays on this phone) ---------- */
 const SCHED_KEY='jrApproverSchedule_v21';
 let schedSpec=null;
@@ -295,6 +367,7 @@ function renderSchedule(){
 renderSchedule();
 
 renderConnectionUI();
+if(myState.householdId) document.getElementById('reportsSection').classList.remove('hidden');
 setStatus(myState.householdId ? 'Connecting...' : 'Enter the code from Jr\'s phone to get started.');
 
 if('serviceWorker' in navigator){
@@ -305,7 +378,7 @@ if('serviceWorker' in navigator){
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, runTransaction
+  getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, runTransaction, query, where
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getMessaging, getToken, isSupported } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
@@ -349,12 +422,26 @@ if(!looksConfigured){
     };
 
     JrSync.listen = function(householdId, onChange){
-      return onSnapshot(collection(db, 'households', householdId, 'approvals'), (snap) => {
+      return onSnapshot(query(collection(db, 'households', householdId, 'approvals'), where('status', 'in', ['pending','approved','rejected'])), (snap) => {
         snap.docChanges().forEach((change) => {
           if(change.type === 'removed') return;
           onChange({ id: change.doc.id, ...change.doc.data() });
         });
       }, (err) => console.error('listen error', err));
+    };
+
+    // Grade, comment and card reports (small docs; the XP pictures are fetched one at a time on tap).
+    JrSync.listenReports = function(householdId, onChange){
+      return onSnapshot(query(collection(db, 'households', householdId, 'approvals'), where('status', '==', 'report')), (snap) => {
+        snap.docChanges().forEach((change) => {
+          if(change.type === 'removed') return;
+          onChange({ id: change.doc.id, ...change.doc.data() });
+        });
+      }, (err) => console.error('reports listen error', err));
+    };
+    JrSync.getPhoto = async function(householdId, docId){
+      const snap = await getDoc(doc(db, 'households', householdId, 'approvals', docId));
+      return snap.exists() ? (snap.data().data || null) : null;
     };
 
     JrSync.resolveApproval = async function(householdId, approvalId, role, status, note){

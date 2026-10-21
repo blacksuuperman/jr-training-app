@@ -97,6 +97,69 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
   .grid,.grid3,.logGrid{grid-template-columns:1fr}.rx{grid-template-columns:1fr 1fr 1fr}.statCards{grid-template-columns:1fr 1fr}.card{border-radius:22px;padding:12px}.exercise{grid-template-columns:1fr}.num{margin-bottom:-3px}
   .bottomNav{grid-template-columns:1fr 1fr 1fr 1fr 1fr}.bottomNav button{font-size:9px;padding:5px 1px}
 }
+/* ===== v23 ===== */
+.bottomNav{grid-template-columns:repeat(6,1fr)}
+.bottomNav button.nvB{flex-direction:column;gap:2px;line-height:1.1;padding:4px 1px;min-height:46px}
+.bottomNav button .nvI{font-size:17px;line-height:1}
+.bottomNav button .nvT{font-size:9.5px;font-weight:900;letter-spacing:-.01em}
+@media(max-width:640px){body{padding-bottom:176px}.bottomNav{grid-template-columns:repeat(6,1fr)}.bottomNav button.nvB{font-size:9px;padding:4px 0}}
+.timerBar{bottom:calc(124px + env(safe-area-inset-bottom))}
+.evoStrip{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:12px;background:#0d0d14;border:1px solid var(--line);font-size:12px;font-weight:800;min-height:32px;cursor:pointer;color:#fff}
+.evoStrip .evoP{flex:0 0 auto;color:var(--accent)}
+.evoStrip .evoL{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.evoStrip .evoR{flex:0 0 auto;font-size:15px;font-variant-numeric:tabular-nums}
+.evoStrip.win{border-color:var(--green);background:rgba(34,197,94,.16)}
+.evoStrip.late{border-color:#ef4444;background:rgba(239,68,68,.16)}
+.evoStrip.work .evoR{color:var(--accent)}
+.evoPanel{border:1px solid var(--line);background:#0b0b10;border-radius:20px;padding:12px;margin:10px 0}
+.evoPanel.win{border-color:var(--green);background:rgba(34,197,94,.10)}
+.evoPanel.late,.evoPanel.missed{border-color:#ef4444;background:rgba(239,68,68,.10)}
+.evoPanel.done{border-color:var(--green)}
+.evoPanel.excused{border-color:#38bdf8;font-size:13px}
+.evoHead{display:flex;align-items:center;gap:12px}
+.evoIco{font-size:30px}
+.evoBig{font-size:34px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+.evoCap{font-size:12px;color:var(--muted);font-weight:800;margin-top:3px}
+.evoTrack{position:relative;height:10px;border-radius:99px;background:#26262f;margin:10px 0 6px;overflow:hidden}
+.evoTrack i{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:var(--accent)}
+.evoTrack b{position:absolute;top:0;bottom:0;left:var(--z,90%);right:0;background:rgba(34,197,94,.5)}
+.evoList{display:grid;gap:6px;margin-top:8px}
+.evoRow{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#0d0d12;border:1px solid var(--line);border-radius:14px;padding:7px 10px;font-size:13px;font-weight:800}
+.evoRow.ok{border-color:rgba(34,197,94,.55)}
+.evoAct{display:flex;gap:6px;flex:0 0 auto}
+.evoAct .photoBtn{min-height:36px;padding:6px 12px;font-size:16px}
+.evoResult{font-weight:900;font-size:15px}
+.evoWhy{margin:6px 0 0 18px;padding:0;font-size:13px}
+.evoWhyLine{margin:-4px 0 6px 6px;color:#fca5a5}
+.xpRow{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.xpThumb{display:flex;flex-direction:column;gap:3px;align-items:center;max-width:44%}
+.xpThumb img{width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#16161f}
+.xpThumb img.xpGone{opacity:.4}
+.grHero,.grBig{display:flex;align-items:center;gap:12px}
+.grPct{font-size:30px;font-weight:900;line-height:1}.grPct small{font-size:12px;color:var(--muted);font-weight:800}
+.grBig .ltr{width:58px;height:58px;font-size:30px}
+.ltr{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;font-weight:900;color:#000;background:#8a8a99;flex:0 0 auto}
+.ltr.lA{background:#22c55e}.ltr.lB{background:#38bdf8}.ltr.lC{background:#facc15}.ltr.lD{background:#fb923c}.ltr.lF{background:#ef4444;color:#fff}
+.grSub{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+.trChart{display:flex;align-items:flex-end;gap:2px;height:96px;background:#0a0a0f;border:1px solid var(--line);border-radius:14px;padding:6px}
+.trBar{flex:1;border-radius:3px 3px 0 0;background:#8a8a99;min-width:3px}.trBar.none{background:#2a2a35}
+.trBar.lA{background:#22c55e}.trBar.lB{background:#38bdf8}.trBar.lC{background:#facc15}.trBar.lD{background:#fb923c}.trBar.lF{background:#ef4444}
+.trAxis{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px}
+.habit{background:#0d0d12;border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-top:6px;font-size:13px}
+.cmtItem{margin-top:8px}.improve{color:#fed7aa}
+.parentTiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.pTile{flex-direction:column;align-items:flex-start;justify-content:flex-start;min-height:96px;text-align:left;background:linear-gradient(180deg,var(--panel2),var(--panel3));border:1px solid var(--line);border-radius:20px;padding:12px;gap:3px;color:var(--text)}
+.pTile .pIcon{font-size:26px}.pTile b{font-size:14px}.pTile small{font-size:11px;color:var(--muted);font-weight:700}
+.pgRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+.pgBtns{display:flex;gap:8px;align-items:center;flex:0 0 auto}.pgBtns .chip{min-height:38px}
+.dayChips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}
+.dayChip{flex:0 0 auto;min-width:62px;min-height:54px;font-size:11px;line-height:1.2;text-align:center;flex-direction:column}
+.dayChip.on{background:var(--accent);color:var(--buttonText)}
+.grBox>summary span{display:block}
+.tag{display:inline-block;font-size:10px;font-weight:800;border:1px solid var(--line);border-radius:99px;padding:1px 7px;color:var(--muted)}
+
+@media(max-height:720px){.todayFeed .feedCard{min-height:220px}.bottomNav{padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:4px}.bottomNav button.nvB{min-height:38px;padding:2px 0}.bottomNav button .nvI{font-size:14px}.evoStrip{min-height:26px;padding:3px 9px;font-size:11px}.evoStrip .evoR{font-size:13px}body{padding-bottom:128px}.timerBar{bottom:calc(88px + env(safe-area-inset-bottom))}}
+.statCards.three{grid-template-columns:repeat(3,1fr)!important}.statCards.three .stat{padding:8px 4px}.statCards.three .stat b{font-size:16px}.statCards.three .stat span{font-size:10px}
 body.timerFlash{animation:flashPulse .7s ease}
 @keyframes flashPulse{0%{background-color:var(--bg)}30%{background-color:color-mix(in srgb,var(--accent) 55%,var(--bg))}100%{background-color:var(--bg)}}
 .timerBar{position:fixed;left:10px;right:10px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:90;background:rgba(6,6,9,.97);border:1px solid var(--accent);border-radius:22px;padding:10px 12px;box-shadow:0 14px 30px rgba(0,0,0,.5);display:flex;align-items:center;gap:10px;backdrop-filter:blur(10px)}
@@ -342,6 +405,8 @@ a.frLink{text-decoration:none;color:#fff;display:inline-flex;align-items:center;
   <div id="screen_dadtalk" class="card screen"></div>
   <div id="screen_settings" class="card screen"></div>
   <div id="screen_filmRoom" class="card screen"></div>
+  <div id="screen_grades" class="card screen"></div>
+  <div id="screen_parent" class="card screen"></div>
 </div>
 
 <div class="timerBar hidden" id="timerBar">
@@ -354,11 +419,13 @@ a.frLink{text-decoration:none;color:#fff;display:inline-flex;align-items:center;
 </div>
 
 <div class="bottomNav" id="bottomNav">
-  <button id="navToday" onclick="showScreen('today')">📅 Today</button>
-  <button id="navHome" onclick="showScreen('home')">🏈 Training</button>
-  <button id="navFilmRoom" onclick="showScreen('filmRoom')">🎥 Film Room</button>
-  <button id="navSettings" onclick="showScreen('settings')">🎨 Settings</button>
-  <button id="navNutrition" onclick="showScreen('nutrition')">🍽️ Nutrition</button>
+  <div class="evoStrip" id="evoStrip" onclick="evoStripTap()"><span class="evoP">🎯 —</span><span class="evoL">Loading…</span><span class="evoR"></span></div>
+  <button class="nvB" id="navToday" onclick="showScreen('today')"><span class="nvI">📅</span><span class="nvT">Today</span></button>
+  <button class="nvB" id="navHome" onclick="showScreen('home')"><span class="nvI">🏈</span><span class="nvT">Training</span></button>
+  <button class="nvB" id="navFilmRoom" onclick="showScreen('filmRoom')"><span class="nvI">🎥</span><span class="nvT">Film Room</span></button>
+  <button class="nvB" id="navNutrition" onclick="showScreen('nutrition')"><span class="nvI">🍽️</span><span class="nvT">Nutrition</span></button>
+  <button class="nvB" id="navGrades" onclick="showScreen('grades')"><span class="nvI">⭐</span><span class="nvT">Grades</span></button>
+  <button class="nvB" id="navParent" onclick="showScreen('parent')"><span class="nvI">🔐</span><span class="nvT">Parent</span></button>
 </div>
 
 <script src="football-data.js"></script>
@@ -380,7 +447,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v22-grade-compartments-film-fixes';
+const BUILD_VERSION='v23-cards-participation-parent-portal';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -693,6 +760,20 @@ state.nightlyGrades = (state.nightlyGrades && typeof state.nightlyGrades==='obje
 state.schoolXPGoal = Number(state.schoolXPGoal)>0 ? Number(state.schoolXPGoal) : 0;
 state.schoolXP = (state.schoolXP && typeof state.schoolXP==='object') ? state.schoolXP : {};
 state.dogName = typeof state.dogName==='string' ? state.dogName : '';
+// v23: evolution cards / participation / parent comments. Every field has a default; nothing existing is touched.
+state.evo = (state.evo && typeof state.evo==='object') ? state.evo : {};
+(function(){
+ const E=state.evo;
+ if(!(E.windowMin>=1&&E.windowMin<=15)) E.windowMin=5;
+ if(!(E.graceMin>=0&&E.graceMin<=5)) E.graceMin=0;
+ if(typeof E.weightPct!=='number'||isNaN(E.weightPct)||E.weightPct<0||E.weightPct>60) E.weightPct=20;
+ if(!Array.isArray(E.cats)) E.cats=['Academic','Meal','Hygiene','Responsibility','Training','Correction','Accountability','LifeSkills'];
+ if(!Array.isArray(E.xpCats)) E.xpCats=['Academic'];
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(E.startDate||'')) E.startDate=localDateKey();
+ if(typeof E.startMin!=='number') E.startMin=(E.startDate===localDateKey())?(new Date().getHours()*60+new Date().getMinutes()):0;
+})();
+state.parentComments = (state.parentComments && typeof state.parentComments==='object') ? state.parentComments : {};
+state.evoDone = (state.evoDone && typeof state.evoDone==='object') ? state.evoDone : {};
 state.gradeTiers = (state.gradeTiers && typeof state.gradeTiers==='object') ? state.gradeTiers : {};
 (function(){ const D={aMin:4.5,bMin:3.5,aMinutes:180,bMinutes:120,belowMinutes:0}; Object.keys(D).forEach(function(k){ if(typeof state.gradeTiers[k]!=='number' || isNaN(state.gradeTiers[k])) state.gradeTiers[k]=D[k]; }); })();
 state.academic = state.academic || defaultAcademicProfile();
@@ -712,6 +793,7 @@ state.screenTimeVoidDays = state.screenTimeVoidDays || {};
 state.sync = state.sync || {householdId:'',role:'primary',pairingCode:'',pairingCodeExpiresAt:0,notificationsEnabled:false,appliedApprovalIds:[]};
 state.sync.role = state.sync.role || 'primary';
 if(!Array.isArray(state.sync.appliedApprovalIds)) state.sync.appliedApprovalIds=[];
+if(!state.sync.dirty || typeof state.sync.dirty!=='object') state.sync.dirty={};
 /* ---------------------------------------------------------------
    FILM STUDY RESTART (v19): Film Study progress restarts from the
    beginning ONE time on this update (everything else is untouched),
@@ -2589,7 +2671,7 @@ function skipToday(){
 }
 function renderSettings(){
  const colors=['#facc15','#22c55e','#38bdf8','#3b82f6','#a78bfa','#8b5cf6','#fb7185','#ef4444','#f97316','#14b8a6','#06b6d4','#84cc16','#eab308','#ffffff','#0ea5e9','#d946ef'];
- document.getElementById('screen_settings').innerHTML=`<h2>Settings</h2><p class="small">The athlete can change the vibe, training environment, and athlete tier any day. The next day is earned by finishing Speed & Agility, Workout, and Touches — Check-In runs every 5 completed days.</p>
+ document.getElementById('screen_settings').innerHTML=`${settingsBackBtn()}<h2>Settings</h2><p class="small">The athlete can change the vibe, training environment, and athlete tier any day. The next day is earned by finishing Speed & Agility, Workout, and Touches — Check-In runs every 5 completed days.</p>
  <div class="inner"><h3>Install As An App</h3><p class="small">Gets a real home-screen icon, opens full-screen with no browser bar, and still works with no signal at the field. Not on the App Store or Play Store — installs straight from this page.</p>
  <button id="installBtn" class="gold full hidden" onclick="promptInstall()">Install Athlete Hub</button>
  <p class="tiny" style="margin-top:8px"><b>iPhone:</b> tap the Share icon in Safari, then "Add to Home Screen."<br><b>Android:</b> tap the button above, or the browser menu, then "Install app" / "Add to Home Screen."</p></div>
@@ -3401,7 +3483,7 @@ function findTaskDef(taskId,dayType=resolvedDayType()){
 
 let pendingCompleteTaskId=null;
 let pendingDifficulty=null;
-function openCompleteRating(taskId){ pendingCompleteTaskId=taskId; pendingDifficulty=null; render(); }
+function openCompleteRating(taskId){ if(evoPre(taskId,{soft:true})===false) return; pendingCompleteTaskId=taskId; pendingDifficulty=null; render(); }
 function chooseDifficulty(d){ pendingDifficulty=d; render(); }
 function cancelCompleteRating(){ pendingCompleteTaskId=null; pendingDifficulty=null; render(); }
 function startScheduleTask(taskId){
@@ -3412,6 +3494,8 @@ function startScheduleTask(taskId){
 }
 function submitTaskCompletion(help){
  if(!pendingCompleteTaskId) return;
+ const evoSnap=evoPre(pendingCompleteTaskId); if(evoSnap===false) return;
+ const evoTid=pendingCompleteTaskId;
  const def=findTaskDef(pendingCompleteTaskId);
  const e=scheduleEntry(pendingCompleteTaskId);
  e.status='completed';
@@ -3421,16 +3505,19 @@ function submitTaskCompletion(help){
  e.help=help;
  if(def && def.completionType==='academic') e.sub=def.sub;
  pendingCompleteTaskId=null; pendingDifficulty=null;
+ evoPost(evoTid,evoSnap);
  save(); render();
 }
 function quickComplete(taskId){
+ const evoSnap=evoPre(taskId); if(evoSnap===false) return;
  const e=scheduleEntry(taskId);
  e.status='completed'; e.actualFinish=nowMinutes();
  if(e.actualStart==null) e.actualStart=e.actualFinish;
+ evoPost(taskId,evoSnap);
  save(); render();
 }
 function skipScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='skipped'; save(); render(); }
-function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; e.approved=false; e.awaitingReview=false; e.correctionNeeded=null; e.escalated=false; delete e.correctionSetAt; e.timeoutPenaltyApplied=false; save(); render(); }
+function reopenScheduleTask(taskId){ const e=scheduleEntry(taskId); e.status='notStarted'; delete e.actualStart; delete e.actualFinish; e.approved=false; e.awaitingReview=false; e.correctionNeeded=null; e.escalated=false; delete e.correctionSetAt; e.timeoutPenaltyApplied=false; evoOnReopen(taskId); save(); render(); }
 
 function saveAcademicScore(taskId,sub){
  const input=document.getElementById('academicScoreInput_'+taskId);
@@ -3647,7 +3734,7 @@ function jrSyncResolve(taskId,e,status,note){
 // it locally). Applies her decision through the normal local functions so
 // every strike/Screen-Time rule still runs exactly the same way.
 function applyRemoteApprovalResolution(doc){
- if(!doc || doc.status==='pending') return;
+ if(!doc || doc.status==='pending' || doc.status==='report' || doc.status==='photo' || doc.kind) return;
  if(doc.resolvedBy && doc.resolvedBy===state.sync.role) return; // this device already resolved it
  if(state.sync.appliedApprovalIds.indexOf(doc.id)!==-1) return;
  state.sync.appliedApprovalIds.push(doc.id);
@@ -3693,7 +3780,7 @@ function generateSyncPairingCode(){
 }
 function disconnectSync(){
  if(!confirm('Disconnect from Mom’s phone? You can always pair again with a new code.')) return;
- state.sync={householdId:'',role:'primary',pairingCode:'',pairingCodeExpiresAt:0,notificationsEnabled:false,appliedApprovalIds:[]};
+ state.sync={householdId:'',role:'primary',pairingCode:'',pairingCodeExpiresAt:0,notificationsEnabled:false,appliedApprovalIds:[],dirty:{}};
  syncListenerStarted=false;
  save(); render();
 }
@@ -3729,6 +3816,7 @@ function syncPanelHTML(){
  <button class="orange full" style="margin-top:8px" onclick="disconnectSync()">Disconnect</button>`;
 }
 function submitForApproval(taskId){
+ const evoSnap=evoPre(taskId); if(evoSnap===false) return;
  const def=findTaskDef(taskId);
  const e=scheduleEntry(taskId);
  e.status='completed';
@@ -3739,6 +3827,7 @@ function submitForApproval(taskId){
  const pk=photoKey(taskId);
  e.photos=(pendingPhotos[pk]||[]).slice();
  delete pendingPhotos[pk];
+ evoPost(taskId,evoSnap);
  save(); render();
  jrSyncSubmit(taskId,def,e);
 }
@@ -3801,6 +3890,7 @@ function rejectTask(taskId,forcedNote){
  // 4th distinct instance of doing something wrong.
  const strikesToday=state.strikeLog.filter(s=>s.date===key && s.type!=='timeoutPenalty').length;
  if(strikesToday>=3) state.screenTimeVoidDays[key]=true;
+ evoOnReject(taskId);
  save(); render();
  jrSyncResolve(taskId,e,'rejected',e.correctionNeeded);
 }
@@ -4045,7 +4135,7 @@ function refreshGate(taskId){
  const t=computeTodaySchedule().tasks.find(x=>x.id===taskId);
  if(!t) return;
  const h=fn(t);
- if(GATE_SIG[taskId]!==h){ GATE_SIG[taskId]=h; el.innerHTML=h; }
+ if(GATE_SIG[taskId]!==h){ GATE_SIG[taskId]=h; el.innerHTML=h; evoLockButtons(); }
 }
 function setEntryField(taskId,field,value){
  const e=scheduleEntry(taskId); e[field]=value; save(); refreshGate(taskId);
@@ -4433,7 +4523,7 @@ function parentHeardIt(taskId){
 }
 
 /* ---- Nightly stars → letter grade → weekend video-game time ---- */
-let gradeDraft={}, gradeDraftNote='';
+let gradeDraft={}, gradeDraftNote='', gradeDraftImprove='';
 function starsAvg(stars){ const v=SG.gradeCategories.map(c=>Number(stars[c.id])||0); return v.reduce((a,b)=>a+b,0)/v.length; }
 function setGradeStar(cat,n){ if(!approvalsUnlocked) return; gradeDraft[cat]=n; render(); }
 function saveNightlyGrade(){
@@ -4441,15 +4531,16 @@ function saveNightlyGrade(){
  if(!SG.gradeCategories.every(c=>gradeDraft[c.id]>=1)) { alert('Give every category 1–5 stars first.'); return; }
  const key=localDateKey(), avg=starsAvg(gradeDraft);
  const noteEl=document.getElementById('gradeNote'); const note=noteEl?noteEl.value.trim():gradeDraftNote;
- state.nightlyGrades[key]={stars:Object.assign({},gradeDraft),avg:Math.round(avg*100)/100,letter:letterForAvg(avg),note,at:Date.now()};
+ const impEl=document.getElementById('gradeImprove'); const improve=impEl?impEl.value.trim():gradeDraftImprove;
+ state.nightlyGrades[key]={stars:Object.assign({},gradeDraft),avg:Math.round(avg*100)/100,letter:letterForAvg(avg),note,improve,at:Date.now()};
  const e=scheduleEntry('nightlyGrade'); e.status='completed'; e.actualFinish=nowMinutes(); if(e.actualStart==null) e.actualStart=e.actualFinish;
- gradeDraft={}; gradeDraftNote='';
- save(); render();
+ gradeDraft={}; gradeDraftNote=''; gradeDraftImprove='';
+ save(); evoQueue('day',key); render();
 }
 function editNightlyGrade(){
  if(!approvalsUnlocked) return;
  const g=state.nightlyGrades[localDateKey()];
- if(g){ gradeDraft=Object.assign({},g.stars); gradeDraftNote=g.note||''; }
+ if(g){ gradeDraft=Object.assign({},g.stars); gradeDraftNote=g.note||''; gradeDraftImprove=g.improve||''; }
  const e=scheduleEntry('nightlyGrade'); e.status='notStarted';
  delete state.nightlyGrades[localDateKey()];
  save(); render();
@@ -4479,14 +4570,15 @@ function gradeTaskHTML(t){
  if(g){
   head='<div class="coachBubble"><h2 style="margin:0">Tonight: '+g.letter+' <span class="small">('+g.avg.toFixed(1)+' ★)</span></h2>'
    +'<div style="margin-top:6px">'+SG.gradeCategories.map(c=>'<div class="checkItem"><span>'+c.icon+' '+c.name+'</span><span class="stars">'+'★'.repeat(g.stars[c.id]||0)+'☆'.repeat(5-(g.stars[c.id]||0))+'</span></div>').join('')+'</div>'
-   +(g.note?'<p class="small" style="margin-top:6px">“'+escapeHTML(g.note)+'”</p>':'')+'</div>';
+   +(g.note?'<p class="small" style="margin-top:6px">“'+escapeHTML(g.note)+'”</p>':'')+(g.improve?'<p class="small improve">🎯 Work on: '+escapeHTML(g.improve)+'</p>':'')+'</div>';
  } else if(!approvalsUnlocked){
   head='<div class="coachBubble"><strong>⭐ Waiting for tonight’s grade</strong><p class="small">A parent gives 1–5 stars in five areas after looking at the whole day. Your Monday–Friday average decides your weekend video-game time.</p></div>'
    +'<div class="inner" style="margin-top:8px"><p class="tiny">Parent code</p><input type="password" id="approvalsCodeInput" placeholder="Enter parent code" onkeydown="if(event.key===\'Enter\')submitApprovalsCode()"><button class="gold full" style="margin-top:8px" onclick="submitApprovalsCode()">Unlock</button></div>';
  } else {
   const ready=SG.gradeCategories.every(c=>gradeDraft[c.id]>=1);
   head='<div class="inner"><h3>⭐ Grade tonight</h3><p class="small">Think about the whole day, then give each area 1–5 stars.</p>'+SG.gradeCategories.map(starRowHTML).join('')
-   +'<div class="label" style="margin-top:8px">Note (optional)</div><textarea id="gradeNote" rows="2" placeholder="One thing he did well, one thing to work on.">'+escapeHTML(gradeDraftNote)+'</textarea>'
+   +'<div class="label" style="margin-top:8px">Note (optional)</div><textarea id="gradeNote" rows="2" placeholder="One thing he did well.">'+escapeHTML(gradeDraftNote)+'</textarea>'
+   +'<div class="label" style="margin-top:8px">What he needs to improve (optional)</div><textarea id="gradeImprove" rows="2" placeholder="One thing to work on tomorrow.">'+escapeHTML(gradeDraftImprove)+'</textarea>'
    +'<button class="green full" style="margin-top:8px" '+(ready?'':'disabled')+' onclick="saveNightlyGrade()">Save Tonight’s Grade</button>'
    +'<button class="chip full" style="margin-top:8px" onclick="lockApprovals()">🔒 Lock Again</button></div>';
  }
@@ -5244,7 +5336,7 @@ function fitFeedCards(){
  const navH=(nav && !nav.classList.contains('hidden'))?nav.getBoundingClientRect().height:0;
  const top=feed.getBoundingClientRect().top+(window.pageYOffset||0);
  const vh=(window.visualViewport?window.visualViewport.height:window.innerHeight);
- const room=Math.max(300,Math.floor(vh-top-navH-14));
+ const room=Math.max(240,Math.floor(vh-top-navH-14));
  feed.querySelectorAll('.feedCard').forEach(c=>{ c.style.maxHeight=room+'px'; });
 }
 function onTodayFeedScroll(el){
@@ -5317,7 +5409,7 @@ function feedCardHTML(t,idx,total,allTasks){
  if(revealed){
   detail=t.status==='skipped'
    ?`<div class="coachBubble"><strong>Skipped</strong><p>The day ran behind and this was pure extra time, not a core task — it got dropped so meals, hygiene, and academics never had to move. Nothing to do here.</p></div>`
-   :taskDetailHTML(t);
+   :(evoPanelHTML(t)+taskDetailHTML(t));
  }
  return `<div class="feedCard" data-idx="${idx}" data-tid="${t.id}">
   ${cover}
@@ -5468,7 +5560,7 @@ function setJustAthlete(){
  state.posMode='hybrid'; state.offPos=''; state.defPos='';
  save(); render();
 }
-const screenRenderers={today:renderToday,home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,settings:renderSettings,filmRoom:renderFilmRoom};
+const screenRenderers={today:renderToday,home:renderHome,morning:renderMorning,strength:renderStrength,touches:renderTouches,nutrition:renderNutrition,dadtalk:renderDadTalk,settings:renderSettings,filmRoom:renderFilmRoom,grades:renderGrades,parent:renderParent};
 // Perf note: only the screen the athlete is actually looking at gets rebuilt.
 // The other seven stay untouched until he navigates to them (they always
 // redraw fresh from state at that point, so nothing goes stale).
@@ -5529,6 +5621,7 @@ function render(){
  document.getElementById('screen_'+state.screen).classList.add('active');
  if(COMP_SCREENS.indexOf(state.screen)!==-1) compartmentalize('screen_'+state.screen);
  save();
+ try{ evoAfterRender(); }catch(err){ console.error('evoAfterRender',err); }
 }
 function toggleMusic(){
  state.musicOpen=!state.musicOpen;save();
@@ -5772,8 +5865,8 @@ function getDB(){
  if(dbPromise)return dbPromise;
  dbPromise=new Promise((resolve,reject)=>{
   if(!window.indexedDB){reject(new Error('no indexeddb'));return;}
-  const req=indexedDB.open('jr_level13_media',1);
-  req.onupgradeneeded=()=>{ req.result.createObjectStore('clips'); };
+  const req=indexedDB.open('jr_level13_media',2);
+  req.onupgradeneeded=()=>{ const d=req.result; if(!d.objectStoreNames.contains('clips')) d.createObjectStore('clips'); if(!d.objectStoreNames.contains('xp')) d.createObjectStore('xp'); };
   req.onsuccess=()=>resolve(req.result);
   req.onerror=()=>reject(req.error);
  });
@@ -7280,6 +7373,802 @@ function renderFilmRoom(){
  frDemoAfterRender();
 }
 
+/* =====================================================================
+   v23 — EVOLUTION CARDS: clock, 5-minute submit window, XP pictures,
+   participation score, grade history, parent comments, and the sync of
+   all of it to both parents' phones.
+
+   How a card counts (rules a parent can change in Parent > Participation):
+     1. Academic cards need a Starting XP picture, a Starting grade, an Ending
+        XP picture and an Ending %.
+     2. Every tracked card must be SUBMITTED inside the last few minutes of its
+        own block (default 5), before the next block takes over.
+     3. A card that is not submitted in full, in the window, does not count.
+   Participation % = cards that counted ÷ cards that were required (their
+   deadline has passed or they were submitted). It is 20% of his overall grade.
+   ===================================================================== */
+const EVO_EXCLUDE_IDS=['nightlyGrade','screenTime','bedtime','videoGames','weeklyPlanning'];
+const EVO_SKIP_DAYTYPES=['sick','travel','special'];
+const EVO_CAT_LABELS={Academic:'School / academic blocks',Meal:'Meals',Hygiene:'Hygiene & getting ready',Responsibility:'Chores & responsibility',Training:'Training blocks',Correction:'Catch-up / correction',Accountability:'Accountability journal',LifeSkills:'Life skills',Family:'Family time','Football IQ':'Film study',Recovery:'Breaks & recovery',Travel:'Travel',Sleep:'Sleep'};
+function evoCfg(){ return state.evo; }
+function nowF(d){ d=d||new Date(); return d.getHours()*60+d.getMinutes()+d.getSeconds()/60; }
+function fmtClock(mins){
+ const s=Math.max(0,Math.ceil(mins*60-0.001)); const m=Math.floor(s/60), r=s%60;
+ if(m>=60) return Math.floor(m/60)+':'+pad2(m%60)+':'+pad2(r);
+ return m+':'+pad2(r);
+}
+function dkAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return localDateKey(d); }
+function dkLabel(k){ return keyToLocalDate(k).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
+function dkLong(k){ return keyToLocalDate(k).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); }
+function evoWeekKeys(){ // Monday of this week → today
+ const d=new Date(); const dow=d.getDay(); const back=(dow===0?6:dow-1); const out=[];
+ for(let i=back;i>=0;i--) out.push(dkAgo(i));
+ return out;
+}
+function evoMonthKeys(){ const out=[]; for(let i=29;i>=0;i--) out.push(dkAgo(i)); return out; }
+
+/* ---------- which cards are tracked ---------- */
+function evoTrackedTask(t,dayType){
+ if(!t || t.status==='skipped') return false;
+ if(EVO_EXCLUDE_IDS.indexOf(t.id)!==-1) return false;
+ if(t.fixed) return false;
+ const dt=dayType||resolvedDayType();
+ if(EVO_SKIP_DAYTYPES.indexOf(dt)!==-1) return false;
+ return evoCfg().cats.indexOf(t.category)!==-1;
+}
+function evoNeedsXP(t){ return !!t && t.completionType==='academic' && evoCfg().xpCats.indexOf(t.category)!==-1; }
+
+/* ---------- the evolution window ---------- */
+function evoInfo(t,nf){
+ nf=(nf==null)?nowF():nf;
+ const tracked=evoTrackedTask(t);
+ if(!tracked) return {tracked:false};
+ const e=t.entry||{};
+ const w=e.win;
+ const s=w?w.s:t.schedStart, en=w?w.e:t.schedEnd;
+ if(s==null||en==null) return {tracked:false};
+ const cfg=evoCfg();
+ const open=Math.max(s,en-cfg.windowMin);
+ const closeAt=en+cfg.graceMin;
+ let phase;
+ if(nf<s) phase='before'; else if(nf<open) phase='work'; else if(nf<=closeAt) phase='window'; else phase='late';
+ return {tracked:true,xp:evoNeedsXP(t),s,e:en,open,closeAt,phase,frozen:!!w,nf};
+}
+function evoMissing(t){
+ const e=t.entry||{}; const out=[];
+ if(!evoNeedsXP(t)) return out;
+ if(!(e.xp&&e.xp.start)) out.push('Starting XP picture');
+ if(!String(e.startGrade==null?'':e.startGrade).trim()) out.push('Starting grade');
+ if(!(e.xp&&e.xp.end)) out.push('Ending XP picture');
+ if(e.score==null||e.score==='') out.push('Ending %');
+ return out;
+}
+function evoTaskObj(taskId){ return computeTodaySchedule().tasks.find(x=>x.id===taskId); }
+// Pin the block's real start/end the first time it is live, so finishing late
+// (which shifts later blocks) can never move the goalposts for this one.
+function evoFreezeWindows(sched){
+ const nf=nowF(); let changed=false;
+ sched.tasks.forEach(t=>{
+  if(!evoTrackedTask(t,sched.dayType)) return;
+  if(t.status==='completed'||t.status==='skipped') return;
+  const pe=peekScheduleEntry(t.id);
+  if(pe.win||pe.evo) return;
+  if(t.schedStart==null||t.schedEnd==null) return;
+  if(localDateKey()===evoCfg().startDate && t.schedStart<(evoCfg().startMin||0)) return; // blocks that began before he installed this version are not held against him
+  if(nf>=t.schedStart){
+   const en=scheduleEntry(t.id);
+   en.win={s:t.schedStart,e:t.schedEnd,name:t.name,cat:t.category,xp:evoNeedsXP(t)};
+   changed=true;
+  }
+ });
+ if(changed) save();
+}
+// Called at the top of every submit/complete path. Returns false when the
+// submit must be blocked, otherwise a snapshot for evoPost() to record.
+function evoPre(taskId,opts){
+ opts=opts||{};
+ const t=evoTaskObj(taskId); if(!t) return {tracked:false};
+ if(!evoTrackedTask(t)) return {tracked:false};
+ const pe=peekScheduleEntry(taskId);
+ if(pe.evoExcused) return {tracked:false};
+ if(!pe.win && t.schedStart!=null && t.status!=='completed'){
+  const en=scheduleEntry(taskId); en.win={s:t.schedStart,e:t.schedEnd,name:t.name,cat:t.category,xp:evoNeedsXP(t)};
+ }
+ const t2=evoTaskObj(taskId)||t;
+ const i=evoInfo(t2);
+ if(i.phase==='before'||i.phase==='work'){
+  const msg=i.phase==='before'?'This block has not started yet.':'This card can only be submitted in the last '+evoCfg().windowMin+' minutes of its block ('+fmtClock(i.open-i.nf)+' from now). Use the time to finish, then double-check your XP pictures and grades.';
+  alert('Not yet — '+msg);
+  return false;
+ }
+ if(opts.soft) return {tracked:true,soft:true};
+ const miss=i.xp?evoMissing(t2):[];
+ const late=(i.phase==='late');
+ if(miss.length||late){
+  const lines=[];
+  if(miss.length) lines.push('Still missing: '+miss.join(', ')+'.');
+  if(late) lines.push('The submit window for this block already closed.');
+  if(!confirm(lines.join('\n')+'\n\nIf you submit it now it will NOT count toward your participation grade. Submit anyway?')) return false;
+ }
+ const reasons=[];
+ if(late) reasons.push('Submitted after the last-'+evoCfg().windowMin+'-minute window closed');
+ miss.forEach(m=>reasons.push('Missing: '+m));
+ return {tracked:true,counted:(!late&&!miss.length),inWindow:!late,xpOK:!(miss.indexOf('Starting XP picture')!==-1||miss.indexOf('Ending XP picture')!==-1),gradesOK:!(miss.indexOf('Starting grade')!==-1||miss.indexOf('Ending %')!==-1),reasons,atMs:Date.now(),atMin:nowMinutes(),phase:i.phase,rejected:false};
+}
+function evoPost(taskId,snap){
+ if(!snap||!snap.tracked||snap.soft) return;
+ const e=scheduleEntry(taskId);
+ e.evo={counted:snap.counted,inWindow:snap.inWindow,xpOK:snap.xpOK,gradesOK:snap.gradesOK,reasons:snap.reasons,atMs:snap.atMs,atMin:snap.atMin,rejected:false};
+ save();
+ evoQueue('card',localDateKey(),taskId); evoQueue('day',localDateKey());
+}
+function evoOnReject(taskId){
+ const e=peekScheduleEntry(taskId);
+ if(e.evo){ const en=scheduleEntry(taskId); en.evo.rejected=true; en.evo.counted=false; en.evo.reasons=(en.evo.reasons||[]).concat(['Sent back for correction']); evoQueue('card',localDateKey(),taskId); evoQueue('day',localDateKey()); }
+}
+function evoOnReopen(taskId){ const e=peekScheduleEntry(taskId); if(e.evo){ const en=scheduleEntry(taskId); delete en.evo; evoQueue('card',localDateKey(),taskId); evoQueue('day',localDateKey()); } }
+
+/* ---------- days that ended: anything not submitted counts as missed ---------- */
+function evoFinalizeDay(key){
+ // A day the app was never used on (a trip, a sick day nobody logged) has no data to judge, so it is skipped rather than scored as all missed.
+ const lg=state.scheduleLogs[key]||{};
+ const used=Object.keys(lg).some(id=>{ const e=lg[id]; return e && ((e.status&&e.status!=='notStarted')||e.win||e.evo||e.xp); });
+ if(!used){ state.evoDone[key]=true; save(); return; }
+ const dt=keyToLocalDate(key); dt.setHours(23,59,0,0);
+ let sched; try{ sched=computeTodaySchedule(dt); }catch(err){ state.evoDone[key]=true; return; }
+ let changed=false;
+ sched.tasks.forEach(t=>{
+  if(!evoTrackedTask(t,sched.dayType)) return;
+  if(t.status==='skipped') return;
+  const pe=peekScheduleEntry(t.id,dt);
+  if(pe.evo||pe.evoExcused) return;
+  if(t.status==='completed' && !pe.win) return; // finished before v23 tracking existed
+  if(key===evoCfg().startDate && t.schedStart<(evoCfg().startMin||0)) return;
+  const en=scheduleEntry(t.id,dt);
+  if(!en.win) en.win={s:t.schedStart,e:t.schedEnd,name:t.name,cat:t.category,xp:evoNeedsXP(t)};
+  en.evo={counted:false,inWindow:false,xpOK:false,gradesOK:false,reasons:['Never submitted'],atMs:0,atMin:null,rejected:false,missed:true};
+  changed=true;
+ });
+ state.evoDone[key]=true;
+ save();
+ if(changed) evoQueue('day',key);
+}
+function evoRollover(){
+ const start=evoCfg().startDate; const today=localDateKey();
+ for(let i=1;i<=35;i++){
+  const k=dkAgo(i);
+  if(k<start) break;
+  if(!state.evoDone[k]) evoFinalizeDay(k);
+ }
+ // keep the done-markers from growing forever
+ Object.keys(state.evoDone).forEach(k=>{ if(keyToLocalDate(k)<keyToLocalDate(dkAgo(70))) delete state.evoDone[k]; });
+ void today;
+}
+
+/* ---------- participation numbers ---------- */
+function evoDayStats(key,sched){
+ const cfg=evoCfg(); const today=localDateKey(); const isToday=(key===today);
+ const log=state.scheduleLogs[key]||{}; const nf=nowF();
+ let req=0,cnt=0; const rows=[];
+ const seen={};
+ Object.keys(log).forEach(id=>{
+  const e=log[id]; if(!e) return; if(!e.win && !e.evo) return;
+  seen[id]=true;
+  const name=(e.win&&e.win.name)||id; const s=e.win?e.win.s:null, en=e.win?e.win.e:null;
+  if(e.evoExcused){ rows.push({id,name,state:'excused',reasons:['Excused by a parent'],s,e:en}); return; }
+  const forced=e.evoOverride==='count';
+  if(e.evo){
+   const counted=forced||!!e.evo.counted;
+   req++; if(counted) cnt++;
+   rows.push({id,name,state:counted?'counted':'missed',reasons:forced?['A parent counted this card']:(e.evo.reasons||[]),s,e:en,submittedMin:e.evo.atMin,rejected:!!e.evo.rejected});
+  } else if(e.win){
+   const passed=(!isToday)||nf>e.win.e+cfg.graceMin;
+   if(passed){ req++; if(forced) cnt++; rows.push({id,name,state:forced?'counted':'missed',reasons:forced?['A parent counted this card']:['Not submitted'],s,e:en}); }
+   else rows.push({id,name,state:'active',reasons:[],s,e:en});
+  }
+ });
+ if(isToday && sched){
+  sched.tasks.forEach(t=>{
+   if(seen[t.id]) return;
+   if(!evoTrackedTask(t,sched.dayType)) return;
+   if(t.status==='completed'||t.status==='skipped') return;
+   rows.push({id:t.id,name:t.name,state:'upcoming',reasons:[],s:t.schedStart,e:t.schedEnd});
+  });
+ }
+ rows.sort((a,b)=>(a.s==null?9999:a.s)-(b.s==null?9999:b.s));
+ const afterStart=(key>=cfg.startDate);
+ if(!afterStart) return {key,req:0,cnt:0,pct:null,rows,tracking:false};
+ return {key,req,cnt,pct:req?Math.round(cnt/req*1000)/10:null,rows,tracking:true};
+}
+function evoRangeStats(keys,sched){
+ let req=0,cnt=0;
+ keys.forEach(k=>{ const s=evoDayStats(k,k===localDateKey()?sched:null); req+=s.req; cnt+=s.cnt; });
+ return {req,cnt,pct:req?Math.round(cnt/req*1000)/10:null};
+}
+function evoPctLabel(p){ return p==null?'—':(Math.round(p)+'%'); }
+function pctToLetter(p){ return p==null?'—':letterForAvg(p/20); }
+function evoOverall(keys,partKeys){ // week-style overall: nightly stars (80%) + participation (20%)
+ const nights=keys.map(k=>state.nightlyGrades[k]).filter(Boolean);
+ const nAvg=nights.length?nights.reduce((a,g)=>a+g.avg,0)/nights.length:null;
+ const nPct=nAvg==null?null:nAvg*20;
+ const part=evoRangeStats(partKeys||keys);
+ const w=Math.max(0,Math.min(60,Number(evoCfg().weightPct)||20))/100;
+ let overall=null,basis='';
+ if(nPct!=null&&part.pct!=null){ overall=nPct*(1-w)+part.pct*w; basis='both'; }
+ else if(nPct!=null){ overall=nPct; basis='nightly'; }
+ else if(part.pct!=null){ overall=part.pct; basis='participation'; }
+ return {nights:nights.length,nAvg,nPct,part,overall,basis,weight:w};
+}
+
+/* ---------- XP pictures (kept in the phone's own storage, 45 days) ---------- */
+const XP_MEM={};
+function xpKey(date,taskId,kind){ return date+'|'+taskId+'|'+kind; }
+async function xpPut(key,data){
+ XP_MEM[key]=data;
+ try{
+  const db=await getDB();
+  await new Promise((res,rej)=>{ const tx=db.transaction('xp','readwrite'); tx.objectStore('xp').put({data,ts:Date.now()},key); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); });
+  return true;
+ }catch(err){ console.error('xpPut failed (kept in memory only)',err); return false; }
+}
+async function xpGet(key){
+ if(XP_MEM[key]) return XP_MEM[key];
+ try{
+  const db=await getDB();
+  const r=await new Promise((res,rej)=>{ const tx=db.transaction('xp','readonly'); const q=tx.objectStore('xp').get(key); q.onsuccess=()=>res(q.result||null); q.onerror=()=>rej(q.error); });
+  if(r&&r.data){ XP_MEM[key]=r.data; return r.data; }
+ }catch(err){}
+ return null;
+}
+async function xpPurgeOld(){
+ try{
+  const db=await getDB(); const cutoff=dkAgo(45);
+  await new Promise((res)=>{ const tx=db.transaction('xp','readwrite'); const st=tx.objectStore('xp'); const rq=st.openCursor();
+   rq.onsuccess=()=>{ const c=rq.result; if(!c) return; if(String(c.key).split('|')[0]<cutoff) c.delete(); c.continue(); };
+   tx.oncomplete=()=>res(); tx.onerror=()=>res(); });
+ }catch(err){}
+}
+function xpHydrate(root){
+ (root||document).querySelectorAll('img[data-xpkey]').forEach(img=>{
+  if(img.getAttribute('src')) return;
+  xpGet(img.getAttribute('data-xpkey')).then(d=>{ if(d) img.setAttribute('src',d); else { img.alt='(picture no longer on this phone)'; img.classList.add('xpGone'); } });
+ });
+}
+function openXpPhoto(key){ xpGet(key).then(d=>{ if(d) openPhotoViewer(d); else alert('That picture is no longer stored on this phone.'); }); }
+function addXpPhoto(taskId,kind,input){
+ const f=input&&input.files&&input.files[0]; if(!f) return;
+ const date=localDateKey();
+ compressImageFile(f,720,0.55).then(async data=>{
+  await xpPut(xpKey(date,taskId,kind),data);
+  const e=scheduleEntry(taskId); e.xp=e.xp||{}; e.xp[kind]={at:Date.now(),min:nowMinutes()};
+  save(); input.value='';
+  evoQueue('card',date,taskId);
+  render();
+ }).catch(err=>{ alert('Could not read that picture — try again.'); });
+}
+function xpThumbHTML(date,taskId,kind,label){
+ const k=xpKey(date,taskId,kind);
+ return '<div class="xpThumb"><img data-xpkey="'+k+'" alt="'+label+'" onclick="openXpPhoto(\''+k+'\')"><span class="tiny">'+label+'</span></div>';
+}
+
+/* ---------- sync to both parents (reports ride in the same approvals collection) ---------- */
+function evoQueue(type,date,taskId){
+ if(!state.sync) return;
+ state.sync.dirty=state.sync.dirty||{};
+ state.sync.dirty[type==='card'?('card|'+date+'|'+taskId):('day|'+date)]=Date.now();
+ save();
+ evoFlushSoon();
+}
+let evoFlushTimer=null, evoFlushing=false;
+function evoFlushSoon(){ clearTimeout(evoFlushTimer); evoFlushTimer=setTimeout(evoFlush,1500); }
+function evoCardDoc(date,taskId){
+ const e=(state.scheduleLogs[date]||{})[taskId]||{};
+ const w=e.win||{};
+ return {kind:'cardReport',status:'report',date,taskId,name:w.name||taskId,category:w.cat||'',win:e.win?{s:e.win.s,e:e.win.e}:null,
+  evo:e.evo?{counted:!!e.evo.counted,inWindow:!!e.evo.inWindow,reasons:e.evo.reasons||[],atMin:e.evo.atMin,rejected:!!e.evo.rejected,missed:!!e.evo.missed}:null,
+  override:e.evoOverride||'',excused:!!e.evoExcused,
+  startGrade:(e.startGrade==null?'':String(e.startGrade)),score:(e.score==null?null:Number(e.score)),
+  xp:{start:e.xp&&e.xp.start?{min:e.xp.start.min,at:e.xp.start.at}:null,end:e.xp&&e.xp.end?{min:e.xp.end.min,at:e.xp.end.at}:null},
+  approved:!!e.approved,awaiting:!!e.awaitingReview,correction:e.correctionNeeded||'',updatedAt:Date.now()};
+}
+function evoDayDoc(date){
+ const g=state.nightlyGrades[date]||null;
+ const st=evoDayStats(date,null);
+ return {kind:'dayReport',status:'report',date,
+  grade:g?{stars:g.stars,avg:g.avg,letter:g.letter,note:g.note||'',improve:g.improve||'',late:!!g.late}:null,
+  comments:(state.parentComments[date]||[]).map(c=>({text:c.text,by:c.by||'',at:c.at||0})),
+  part:{req:st.req,cnt:st.cnt,pct:st.pct},
+  rows:st.rows.map(r=>({name:r.name,state:r.state,reasons:r.reasons||[]})),updatedAt:Date.now()};
+}
+async function evoSendKey(key){
+ const p=key.split('|'); const hh=state.sync.householdId;
+ if(p[0]==='day'){ await window.JrSync.putDoc(hh,'day_'+p[1],evoDayDoc(p[1])); return; }
+ const date=p[1], taskId=p[2];
+ const e=(state.scheduleLogs[date]||{})[taskId];
+ if(!e) return;
+ await window.JrSync.putDoc(hh,'card_'+date+'_'+taskId,evoCardDoc(date,taskId));
+ for(const kind of ['start','end']){
+  const x=e.xp&&e.xp[kind]; if(!x) continue;
+  if(x.sentAt && x.sentAt>=x.at) continue;
+  const data=await xpGet(xpKey(date,taskId,kind)); if(!data) continue;
+  await window.JrSync.putDoc(hh,'ph_'+date+'_'+taskId+'_'+kind,{status:'photo',kind:'photo',date,taskId,which:kind,data,updatedAt:Date.now()});
+  x.sentAt=Date.now();
+ }
+}
+async function evoFlush(){
+ if(evoFlushing) return;
+ if(!syncConnected() || !window.JrSync.putDoc) return;
+ if(navigator.onLine===false) return;
+ const dirty=state.sync.dirty||{}; const keys=Object.keys(dirty);
+ if(!keys.length) return;
+ evoFlushing=true;
+ try{
+  for(const k of keys){
+   try{ await evoSendKey(k); if(state.sync.dirty[k]===dirty[k]) delete state.sync.dirty[k]; }
+   catch(err){ console.error('evo sync failed',k,err); state.sync.lastError='Could not send reports to the parents’ phones: '+((err&&(err.code||err.message))||'unknown error'); save(); break; }
+  }
+  if(!Object.keys(state.sync.dirty).length){ state.sync.lastReportAt=Date.now(); if(/reports/.test(state.sync.lastError||'')) state.sync.lastError=''; }
+  save();
+ } finally { evoFlushing=false; }
+}
+function evoResendAll(){ // parent tool: re-send the last 30 days
+ if(!syncConnected()){ alert('Pair with a parent phone first (Parent → Sync).'); return; }
+ state.sync.dirty=state.sync.dirty||{};
+ evoMonthKeys().forEach(k=>{
+  const log=state.scheduleLogs[k]||{};
+  Object.keys(log).forEach(id=>{ const e=log[id]; if(e&&(e.win||e.evo)){ if(e.xp){ ['start','end'].forEach(kd=>{ if(e.xp[kd]) delete e.xp[kd].sentAt; }); } state.sync.dirty['card|'+k+'|'+id]=Date.now(); } });
+  if(state.nightlyGrades[k]||(state.parentComments[k]||[]).length||Object.keys(log).length) state.sync.dirty['day|'+k]=Date.now();
+ });
+ save(); evoFlush();
+ alert('Sending the last 30 days to the parents’ phones now.');
+}
+
+/* ---------- parent comments ---------- */
+function addParentComment(date,text,by){
+ text=String(text||'').trim(); if(!text) return false;
+ state.parentComments[date]=state.parentComments[date]||[];
+ state.parentComments[date].push({id:'c'+Date.now()+Math.floor(Math.random()*1000),text,by:by||'Parent',at:Date.now()});
+ save(); evoQueue('day',date); return true;
+}
+function delParentComment(date,id){
+ state.parentComments[date]=(state.parentComments[date]||[]).filter(c=>c.id!==id);
+ if(!state.parentComments[date].length) delete state.parentComments[date];
+ save(); evoQueue('day',date); render();
+}
+
+/* =====================================================================
+   v23 UI — clock strip, card panel, ticker, Jr's report card (Grades tab)
+   and the code-locked Parent portal.
+   ===================================================================== */
+function evoClockParts(i){
+ const cfg=evoCfg();
+ if(i.phase==='before') return {big:fmtClock(i.s-i.nf),cap:'until this block starts',cls:'before',short:'starts in'};
+ if(i.phase==='work') return {big:fmtClock(i.open-i.nf),cap:'until the submit window opens (the last '+cfg.windowMin+' minutes)',cls:'work',short:'submit opens in'};
+ if(i.phase==='window') return {big:fmtClock(Math.max(0,i.closeAt-i.nf)),cap:'SUBMIT NOW — the window closes in',cls:'win',short:'SUBMIT NOW'};
+ return {big:'0:00',cap:'The window closed. You can still submit, but it will not count.',cls:'late',short:'window closed'};
+}
+function evoCurrentInfo(sched){
+ const nf=nowF(); const live=[],late=[]; let next=null;
+ sched.tasks.forEach((t,idx)=>{
+  if(!evoTrackedTask(t,sched.dayType)) return;
+  if(t.status==='completed'||t.status==='skipped') return;
+  if(t.entry&&(t.entry.evoExcused||t.entry.evo)) return;
+  const i=evoInfo(t,nf); if(!i.tracked) return;
+  const o={t,idx,i};
+  if(i.phase==='before'){ if(!next||i.s<next.i.s) next=o; }
+  else if(i.phase==='late') late.push(o);
+  else live.push(o);
+ });
+ live.sort((a,b)=>a.i.s-b.i.s); late.sort((a,b)=>a.i.s-b.i.s);
+ return live[0]||late[0]||next||null;
+}
+function evoStripTap(){
+ const cur=evoSched?evoCurrentInfo(evoSched):null;
+ if(cur){ evoGoToCard(cur.t.id); return; }
+ showScreen('grades');
+}
+function evoGoToCard(taskId){
+ const sched=computeTodaySchedule(); const idx=sched.tasks.findIndex(x=>x.id===taskId); if(idx<0) return;
+ todayRevealedIds.add(taskId); state.screen='today'; todayGoTo(idx);
+}
+let evoPartCache={at:0,wk:null};
+function evoUpdateStrip(sched){
+ const el=document.getElementById('evoStrip'); if(!el) return;
+ const now=Date.now();
+ if(!evoPartCache.wk||now-evoPartCache.at>5000){ evoPartCache={at:now,wk:evoRangeStats(evoWeekKeys(),sched)}; }
+ const pp=evoPctLabel(evoPartCache.wk.pct);
+ const cur=evoCurrentInfo(sched);
+ let cls='evoStrip',left='',right='';
+ if(cur){
+  const i=evoInfo(cur.t,nowF()); const p=evoClockParts(i);
+  cls+=' '+p.cls; left=escapeHTML(cur.t.name.replace(/ — Texas Sports Academy/,''))+' · '+p.short; right=(i.phase==='late')?'⚠':p.big;
+ } else { left='No card running right now'; right='⭐'; }
+ const html='<span class="evoP">🎯 '+pp+'</span><span class="evoL">'+left+'</span><span class="evoR">'+right+'</span>';
+ if(el.className!==cls) el.className=cls;
+ if(el.getAttribute('data-h')!==html){ el.setAttribute('data-h',html); el.innerHTML=html; }
+}
+function evoUpdatePanels(sched){
+ document.querySelectorAll('.evoPanel[data-tid]').forEach(p=>{
+  const t=sched.tasks.find(x=>x.id===p.getAttribute('data-tid')); if(!t) return;
+  const i=evoInfo(t,nowF()); if(!i.tracked) return;
+  const parts=evoClockParts(i);
+  const big=p.querySelector('.evoBig'), cap=p.querySelector('.evoCap'), tr=p.querySelector('.evoTrack');
+  if(big&&big.textContent!==parts.big) big.textContent=parts.big;
+  if(cap&&cap.textContent!==parts.cap) cap.textContent=parts.cap;
+  const cls='evoPanel '+parts.cls; if(p.className!==cls) p.className=cls;
+  if(tr){ const total=Math.max(1,i.e-i.s); const pct=Math.max(0,Math.min(100,(i.nf-i.s)/total*100)); const z=Math.max(0,Math.min(100,(i.open-i.s)/total*100)); tr.style.setProperty('--p',pct.toFixed(1)+'%'); tr.style.setProperty('--z',z.toFixed(1)+'%'); }
+ });
+}
+function evoPhaseSignature(sched){
+ const nf=nowF(); const out=[];
+ sched.tasks.forEach(t=>{ if(!evoTrackedTask(t,sched.dayType)||t.status==='completed'||t.status==='skipped') return; const i=evoInfo(t,nf); if(i.tracked) out.push(t.id+':'+i.phase); });
+ return out.join(',');
+}
+let evoTickTimer=null, evoSched=null, evoSchedAt=0, evoDirty=true, evoPhaseSig='', evoPendingRender=false, evoLastMinute=0;
+function evoInputFocused(){ const a=document.activeElement; return !!a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName); }
+function evoStartTicker(){
+ if(evoTickTimer) return;
+ evoTickTimer=setInterval(evoTick,1000);
+ document.addEventListener('focusout',()=>{ if(evoPendingRender){ setTimeout(()=>{ if(!evoInputFocused()){ evoPendingRender=false; render(); } },80); } });
+ document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ evoDirty=true; evoTick(); } });
+ window.addEventListener('online',()=>evoFlushSoon());
+}
+function evoTick(){
+ if(!appEntered||!state.onboarded) return;
+ const gate=document.getElementById('gateScreen'); if(gate&&!gate.classList.contains('hidden')) return;
+ const now=Date.now();
+ if(!evoSched||evoDirty||now-evoSchedAt>5000){ evoSched=computeTodaySchedule(); evoSchedAt=now; evoDirty=false; evoFreezeWindows(evoSched); }
+ if(now-evoLastMinute>60000){ evoLastMinute=now; evoRollover(); evoFlushSoon(); }
+ evoUpdateStrip(evoSched);
+ evoUpdatePanels(evoSched);
+ const sig=evoPhaseSignature(evoSched);
+ if(sig!==evoPhaseSig){ const first=(evoPhaseSig===''); evoPhaseSig=sig; if(!first&&state.screen==='today'){ if(evoInputFocused()) evoPendingRender=true; else render(); } }
+}
+function evoAfterRender(){
+ evoDirty=true;
+ evoStartTicker();
+ try{ evoRollover(); }catch(err){ console.error('evoRollover',err); }
+ const sched=computeTodaySchedule(); evoSched=sched; evoSchedAt=Date.now(); evoDirty=false;
+ evoFreezeWindows(sched);
+ evoPhaseSig=evoPhaseSignature(sched);
+ evoPartCache={at:0,wk:null};
+ evoUpdateStrip(sched);
+ evoLockButtons();
+ xpHydrate(document);
+}
+function evoLockButtons(){
+ if(state.screen!=='today') return;
+ const sched=evoSched||computeTodaySchedule(); const cfg=evoCfg();
+ document.querySelectorAll('#todayFeed .feedCard').forEach(card=>{
+  const t=sched.tasks.find(x=>x.id===card.getAttribute('data-tid')); if(!t) return;
+  const i=evoInfo(t); if(!i.tracked||(t.entry&&(t.entry.evo||t.entry.evoExcused))) return;
+  if(i.phase!=='before'&&i.phase!=='work') return;
+  card.querySelectorAll('button[onclick]').forEach(b=>{
+   if(/^(submitForApproval|quickComplete|openCompleteRating)\(/.test(b.getAttribute('onclick')||'')){
+    b.disabled=true; if(b.textContent.indexOf('🔒')!==0) b.textContent='🔒 Opens in the last '+cfg.windowMin+' min';
+   }
+  });
+ });
+}
+
+/* ---------- the panel at the top of every tracked card ---------- */
+function evoRowHTML(ok,label,actions){ return '<div class="evoRow '+(ok?'ok':'todo')+'"><span>'+(ok?'✅':'⬜')+' '+label+'</span><span class="evoAct">'+(actions||'')+'</span></div>'; }
+function evoPickerHTML(taskId,kind){
+ return '<label class="chip photoBtn">📷<input type="file" accept="image/*" capture="environment" hidden onchange="addXpPhoto(\''+taskId+'\',\''+kind+'\',this)"></label><label class="chip photoBtn">🖼<input type="file" accept="image/*" hidden onchange="addXpPhoto(\''+taskId+'\',\''+kind+'\',this)"></label>';
+}
+function evoPanelHTML(t){
+ const i=evoInfo(t); if(!i.tracked) return '';
+ const e=t.entry||{}, cfg=evoCfg(), date=localDateKey();
+ if(e.evoExcused) return '<div class="evoPanel excused">🟦 A parent excused this card today. It does not count for or against participation.</div>';
+ const xpThumbs=(i.xp&&e.xp&&(e.xp.start||e.xp.end))?'<div class="xpRow">'+(e.xp.start?xpThumbHTML(date,t.id,'start','Start XP'):'')+(e.xp.end?xpThumbHTML(date,t.id,'end','End XP'):'')+'</div>':'';
+ if(e.evo){
+  const counted=e.evoOverride==='count'||!!e.evo.counted;
+  return '<div class="evoPanel '+(counted?'done':'missed')+'"><div class="evoResult">'+(counted?'✅ Counted toward your participation grade':'❌ Did not count toward participation')+'</div>'
+   +((!counted&&e.evo.reasons&&e.evo.reasons.length)?'<ul class="evoWhy">'+e.evo.reasons.map(r=>'<li>'+escapeHTML(r)+'</li>').join('')+'</ul>':'')+xpThumbs+'</div>';
+ }
+ const p=evoClockParts(i);
+ const total=Math.max(1,i.e-i.s), pct=Math.max(0,Math.min(100,(i.nf-i.s)/total*100)), z=Math.max(0,Math.min(100,(i.open-i.s)/total*100));
+ let h='<div class="evoPanel '+p.cls+'" data-tid="'+t.id+'">'
+  +'<div class="evoHead"><div class="evoIco">⏱</div><div><div class="evoBig">'+p.big+'</div><div class="evoCap">'+p.cap+'</div></div></div>'
+  +'<div class="evoTrack" style="--p:'+pct.toFixed(1)+'%;--z:'+z.toFixed(1)+'%"><i></i><b></b></div>'
+  +'<div class="tiny evoWin">Block '+clock12(minToHHMM(i.s))+' – '+clock12(minToHHMM(i.e))+' · submit between '+clock12(minToHHMM(i.open))+' and '+clock12(minToHHMM(i.closeAt))+'</div>';
+ if(i.xp){
+  const hasS=!!(e.xp&&e.xp.start), hasE=!!(e.xp&&e.xp.end);
+  const sg=String(e.startGrade==null?'':e.startGrade).trim(), ep=(e.score!=null&&e.score!=='');
+  h+='<div class="evoList">'
+   +evoRowHTML(hasS,'Starting XP picture',evoPickerHTML(t.id,'start'))
+   +evoRowHTML(!!sg,'Starting grade'+(sg?' — '+escapeHTML(sg):' (fill in below)'),'')
+   +evoRowHTML(hasE,'Ending XP picture',evoPickerHTML(t.id,'end'))
+   +evoRowHTML(ep,'Ending %'+(ep?' — '+escapeHTML(String(e.score))+'%':' (fill in below)'),'')
+   +'</div>'+xpThumbs
+   +'<p class="tiny">Take the start picture and save your starting grade when the block begins. Take the end picture and save your ending % at the end. Then submit in the last '+cfg.windowMin+' minutes. Anything missing means the card does not count.</p>';
+ } else {
+  h+='<p class="tiny">Finish the work, then submit in the last '+cfg.windowMin+' minutes of this block. Submitting any other time means the card does not count.</p>';
+ }
+ return h+'</div>';
+}
+
+/* ---------- small shared bits for the new screens ---------- */
+const GR_OPEN=new Set(), GR_INIT=new Set();
+function grToggle(k,o){ if(o) GR_OPEN.add(k); else GR_OPEN.delete(k); }
+function grBox(key,title,sub,inner,openDef){
+ if(!GR_INIT.has(key)){ GR_INIT.add(key); if(openDef) GR_OPEN.add(key); }
+ return '<details class="clean grBox" '+(GR_OPEN.has(key)?'open':'')+' ontoggle="grToggle(\''+key+'\',this.open)"><summary><span>'+title+(sub?'<small class="grSub">'+sub+'</small>':'')+'</span></summary><div class="detailBody">'+inner+'</div></details>';
+}
+function ltrChip(l){ return '<span class="ltr l'+(l||'x')+'">'+(l||'—')+'</span>'; }
+function starsText(n){ n=Math.max(0,Math.min(5,Math.round(n)||0)); return '★'.repeat(n)+'☆'.repeat(5-n); }
+function hrsText(m){ return m%60===0?(m/60)+' hr':(Math.floor(m/60)>0?Math.floor(m/60)+' hr ':'')+(m%60)+' min'; }
+function stateIcon(s){ return {counted:'✅',missed:'❌',active:'⏳',upcoming:'🕒',excused:'🟦'}[s]||'•'; }
+function partRowsHTML(st){
+ if(!st.rows.length) return '<p class="small">No tracked cards for this day.</p>';
+ return st.rows.map(r=>'<div class="checkItem"><span>'+stateIcon(r.state)+' '+escapeHTML(r.name)+'</span><span class="tiny">'+(r.s!=null?clock12(minToHHMM(r.s)):'')+'</span></div>'+((r.state==='missed'&&r.reasons&&r.reasons.length)?'<p class="tiny evoWhyLine">'+r.reasons.map(escapeHTML).join(' · ')+'</p>':'')).join('');
+}
+function grCategoryStats(){
+ const keys=evoMonthKeys();
+ return SG.gradeCategories.map(c=>{
+  let n=0,s=0,n7=0,s7=0;
+  keys.forEach((k,idx)=>{ const g=state.nightlyGrades[k]; if(!g) return; const v=Number(g.stars&&g.stars[c.id])||0; if(!v) return; n++; s+=v; if(idx>=keys.length-7){ n7++; s7+=v; } });
+  return {c,n,avg:n?s/n:null,n7,avg7:n7?s7/n7:null};
+ });
+}
+function grTrendHTML(){
+ const keys=evoMonthKeys();
+ const graded=keys.map(k=>state.nightlyGrades[k]).filter(Boolean);
+ if(!graded.length) return '<p class="small">No nights graded in the last 30 days yet. As nights get graded, the bars and habits show up here.</p>';
+ const bars=keys.map(k=>{ const g=state.nightlyGrades[k]; const h=g?Math.max(10,Math.round(g.avg/5*100)):5; return '<div class="trBar '+(g?'l'+g.letter:'none')+'" style="height:'+h+'%" title="'+dkLabel(k)+': '+(g?g.letter+' '+g.avg.toFixed(1)+'★':'not graded')+'"></div>'; }).join('');
+ const avg=graded.reduce((a,g)=>a+g.avg,0)/graded.length;
+ const missed=keys.filter(k=>!state.nightlyGrades[k]&&k<localDateKey()&&Object.keys(state.scheduleLogs[k]||{}).length>0).length;
+ const cats=grCategoryStats().filter(x=>x.n>=2);
+ let habits='';
+ if(cats.length){
+  const sorted=cats.slice().sort((a,b)=>a.avg-b.avg);
+  const low=sorted[0], high=sorted[sorted.length-1];
+  habits+='<div class="habit">🎯 <b>Work on:</b> '+low.c.icon+' '+low.c.name+' (30-day average '+low.avg.toFixed(1)+'★)</div>';
+  if(high!==low) habits+='<div class="habit">💪 <b>Strongest:</b> '+high.c.icon+' '+high.c.name+' ('+high.avg.toFixed(1)+'★)</div>';
+  habits+=cats.map(x=>{ const arrow=(x.avg7!=null&&x.n7>=2)?(x.avg7>x.avg+0.15?' ⬆️':x.avg7<x.avg-0.15?' ⬇️':' ➡️'):''; return '<div class="checkItem"><span>'+x.c.icon+' '+x.c.name+'</span><span class="tiny">'+x.avg.toFixed(1)+'★ (month)'+(x.avg7!=null?' · '+x.avg7.toFixed(1)+'★ (week)'+arrow:'')+'</span></div>'; }).join('');
+ }
+ return '<div class="trChart">'+bars+'</div><div class="trAxis"><span>'+dkLabel(keys[0])+'</span><span>'+dkLabel(keys[14])+'</span><span>Today</span></div>'
+  +'<p class="small" style="margin-top:8px">30-day average <b>'+avg.toFixed(2)+'★ ('+letterForAvg(avg)+')</b> over '+graded.length+' graded night'+(graded.length===1?'':'s')+(missed?' · '+missed+' night'+(missed===1?'':'s')+' not graded':'')+'.</p>'+habits;
+}
+function grCommentsHTML(){
+ const keys=evoMonthKeys().reverse(); const items=[];
+ keys.forEach(k=>{
+  const g=state.nightlyGrades[k]; const cs=state.parentComments[k]||[];
+  if(!(g&&(g.note||g.improve))&&!cs.length) return;
+  items.push('<div class="inner cmtItem"><div class="row" style="justify-content:space-between;align-items:center"><b>'+dkLabel(k)+'</b>'+(g?ltrChip(g.letter):'')+'</div>'
+   +(g&&g.note?'<p class="small">💬 '+escapeHTML(g.note)+'</p>':'')
+   +(g&&g.improve?'<p class="small improve">🎯 Work on: '+escapeHTML(g.improve)+'</p>':'')
+   +cs.map(c=>'<p class="small">💬 '+escapeHTML(c.text)+' <span class="tiny">— '+escapeHTML(c.by||'Parent')+'</span></p>').join('')+'</div>');
+ });
+ if(!items.length) return '<p class="small">No comments yet. When a parent leaves a note with a grade, or adds one in the Parent portal, it shows up here for the last 30 days.</p>';
+ const first=items.slice(0,7).join(''), rest=items.slice(7).join('');
+ return first+(rest?'<details class="clean"><summary>Earlier this month ('+(items.length-7)+')</summary><div class="detailBody">'+rest+'</div></details>':'');
+}
+function openSettingsFrom(w){ settingsFrom=w; showScreen('settings'); }
+let settingsFrom='';
+function settingsBackBtn(){ return '<button class="chip" style="margin-bottom:8px" onclick="settingsBack()">← Back to '+(settingsFrom==='parent'?'Parent Portal':'My Report Card')+'</button>'; }
+function settingsBack(){ const to=settingsFrom==='parent'?'parent':'grades'; settingsFrom=''; showScreen(to); }
+
+/* ---------- Jr's report card ---------- */
+function renderGrades(){
+ const sched=computeTodaySchedule();
+ const wkKeys=evoWeekKeys();
+ const ws=weekGradeSummary();
+ const ov=evoOverall(weekGradeKeys(),wkKeys);
+ const todayKey=localDateKey();
+ const today=evoDayStats(todayKey,sched);
+ const month=evoRangeStats(evoMonthKeys(),sched);
+ const wkPart=evoRangeStats(wkKeys,sched);
+ const ovPct=ov.overall;
+ const ovLetter=ovPct==null?'—':letterForAvg(ovPct/20);
+ const w=Math.round(ov.weight*100);
+ const hero='<div class="grHero"><div class="grBig">'+ltrChip(ovLetter)+'</div><div><div class="grPct">'+(ovPct==null?'—':Math.round(ovPct)+'%')+' <small>this week</small></div><div class="tiny">'+(ov.basis==='both'?'Nightly grades '+(100-w)+'% + participation '+w+'%':ov.basis==='nightly'?'Nightly grades only so far (no tracked cards yet)':ov.basis==='participation'?'Participation only so far (no nights graded yet)':'Nothing graded yet this week')+'</div></div></div>'
+  +'<div class="statCards three" style="margin-top:8px"><div class="stat"><b>'+(ws.avg==null?'—':ws.avg.toFixed(1)+'★')+'</b><span>Nightly avg (Mon–Fri)</span></div><div class="stat"><b>'+evoPctLabel(wkPart.pct)+'</b><span>Participation (week)</span></div><div class="stat"><b>'+(ws.minutes>0?hrsText(ws.minutes):'TV')+'</b><span>Weekend games</span></div></div>';
+ const g=state.nightlyGrades[todayKey];
+ const tonight=g?'<p class="small">Tonight: '+ltrChip(g.letter)+' '+g.avg.toFixed(1)+'★ — '+SG.gradeCategories.map(c=>c.icon+' '+starsText(g.stars[c.id])).join(' · ')+'</p>':'<p class="small">Tonight has not been graded yet.</p>';
+ const partTop='<div class="statCards three"><div class="stat"><b>'+evoPctLabel(today.pct)+'</b><span>Today</span></div><div class="stat"><b>'+evoPctLabel(wkPart.pct)+'</b><span>This week</span></div><div class="stat"><b>'+evoPctLabel(month.pct)+'</b><span>30 days</span></div></div>'
+  +'<p class="small" style="margin-top:8px">'+today.cnt+' of '+today.req+' cards counted so far today.</p>'
+  +'<div class="label">Today’s cards</div>'+partRowsHTML(today)
+  +'<div class="coachBubble" style="margin-top:10px"><strong>A card counts only when…</strong><ul class="sgList"><li>Starting XP picture + starting grade are saved (school blocks)</li><li>Ending XP picture + ending % are saved (school blocks)</li><li>It is submitted in the last '+evoCfg().windowMin+' minutes of its own block</li></ul><p class="tiny">Participation is '+w+'% of your overall grade. Cards that do not count pull it down; cards done right bring it up.</p></div>';
+ const html='<h2>My Report Card</h2><p class="small">Your grade, your average, what Mom and Dad said, and your habits over the last 30 days.</p>'
+  +'<div class="inner grHeroBox">'+hero+'</div>'
+  +grBox('gr_week','📅 This week',ws.nights+' of 5 nights graded',tonight+weekChartHTML(),true)
+  +grBox('gr_part','🎯 Participation','today '+evoPctLabel(today.pct)+' · week '+evoPctLabel(wkPart.pct),partTop,false)
+  +grBox('gr_cmt','💬 Comments from Mom & Dad','last 30 days',grCommentsHTML(),false)
+  +grBox('gr_trend','📈 Last 30 days','trends & habits',grTrendHTML(),false)
+  +grBox('gr_set','⚙️ App settings','color, position, training…','<p class="small">Everything else (app color, training environment, position, sync) lives in Settings.</p><button class="gold full" onclick="openSettingsFrom(\'grades\')">Open Settings</button>',false);
+ document.getElementById('screen_grades').innerHTML=html;
+}
+
+/* ---------- Parent portal ---------- */
+let parentBox=null, pgEdit=null, cardDate=null, parentCodeError=false;
+function submitParentPortalCode(){
+ const inp=document.getElementById('parentPortalCode'); const v=inp?inp.value.trim():'';
+ if(v===APPROVAL_CODE||v===PARENT_LOGS_CODE){ approvalsUnlocked=true; parentLogsUnlocked=true; parentCodeError=false; } else parentCodeError=true;
+ render();
+}
+function lockParentPortal(){ approvalsUnlocked=false; parentLogsUnlocked=false; approvalsCodeError=false; parentBox=null; pgEdit=null; render(); }
+function openParentBox(b){ parentBox=b; pgEdit=null; if(b==='cards'&&!cardDate) cardDate=localDateKey(); render(); window.scrollTo(0,0); }
+function parentHome(){ parentBox=null; pgEdit=null; render(); }
+function ungradedNights(days){ const out=[]; for(let i=1;i<days;i++){ const k=dkAgo(i); if(!state.nightlyGrades[k]) out.push(k); } return out; }
+
+/* Grades by day (view + backfill + fix) */
+function pgOpen(date){
+ const g=state.nightlyGrades[date];
+ pgEdit={date,stars:g?Object.assign({},g.stars):{},note:g?(g.note||''):'',improve:g?(g.improve||''):''};
+ render();
+}
+function pgSetStar(cat,n){ if(!pgEdit) return; pgEdit.stars[cat]=n; render(); }
+function pgCancel(){ pgEdit=null; render(); }
+function pgSave(){
+ if(!pgEdit||!approvalsUnlocked) return;
+ if(!SG.gradeCategories.every(c=>pgEdit.stars[c.id]>=1)){ alert('Give every category 1–5 stars first.'); return; }
+ const date=pgEdit.date, avg=starsAvg(pgEdit.stars);
+ const prev=state.nightlyGrades[date];
+ state.nightlyGrades[date]={stars:Object.assign({},pgEdit.stars),avg:Math.round(avg*100)/100,letter:letterForAvg(avg),note:pgEdit.note.trim(),improve:pgEdit.improve.trim(),at:Date.now(),late:(date!==localDateKey())||(prev&&prev.late)||false,gradedOn:Date.now()};
+ if(date===localDateKey()){ const e=scheduleEntry('nightlyGrade'); e.status='completed'; e.actualFinish=nowMinutes(); if(e.actualStart==null) e.actualStart=e.actualFinish; }
+ pgEdit=null; save(); evoQueue('day',date); render();
+}
+function pgDelete(date){
+ if(!confirm('Remove the grade for '+dkLong(date)+'?')) return;
+ delete state.nightlyGrades[date];
+ if(date===localDateKey()){ const e=scheduleEntry('nightlyGrade'); e.status='notStarted'; delete e.actualFinish; }
+ pgEdit=null; save(); evoQueue('day',date); render();
+}
+function pgEditorHTML(){
+ const d=pgEdit; const ready=SG.gradeCategories.every(c=>d.stars[c.id]>=1);
+ const rows=SG.gradeCategories.map(c=>{
+  const cur=d.stars[c.id]||0;
+  const btns=[1,2,3,4,5].map(n=>'<button class="starBtn '+(n<=cur?'on':'')+'" aria-label="'+c.name+' '+n+' stars" onclick="pgSetStar(\''+c.id+'\','+n+')">'+(n<=cur?'★':'☆')+'</button>').join('');
+  return '<div class="gradeRow"><div class="gradeName">'+c.icon+' <b>'+c.name+'</b></div><div class="starBtns">'+btns+'</div><details class="clean"><summary class="tiny">What the stars mean</summary><div class="detailBody"><p class="tiny"><b>'+c.ask+'</b></p><p class="tiny">5 ★ '+c.five+'</p><p class="tiny">3 ★ '+c.three+'</p><p class="tiny">1 ★ '+c.one+'</p></div></details></div>';
+ }).join('');
+ const isLate=d.date!==localDateKey();
+ return '<div class="inner pgEditor"><h3>'+(state.nightlyGrades[d.date]?'Fix':'Give')+' the grade for '+dkLong(d.date)+'</h3>'+(isLate?'<p class="tiny">This is a past day. It will be marked as a late entry, and the week and weekend game time update automatically.</p>':'')
+  +rows
+  +'<div class="label">Comment for him (what he did well)</div><textarea rows="2" oninput="pgEdit.note=this.value" placeholder="One thing he did well.">'+escapeHTML(d.note)+'</textarea>'
+  +'<div class="label">What he needs to improve</div><textarea rows="2" oninput="pgEdit.improve=this.value" placeholder="One thing to work on tomorrow.">'+escapeHTML(d.improve)+'</textarea>'
+  +'<button class="green full" style="margin-top:8px" '+(ready?'':'disabled')+' onclick="pgSave()">Save grade</button>'
+  +'<button class="chip full" style="margin-top:8px" onclick="pgCancel()">Cancel</button>'
+  +(state.nightlyGrades[d.date]?'<button class="orange full" style="margin-top:8px" onclick="pgDelete(\''+d.date+'\')">Remove this grade</button>':'')+'</div>';
+}
+function pgBoxHTML(){
+ if(pgEdit) return pgEditorHTML();
+ const rows=evoMonthKeys().reverse().map(k=>{
+  const g=state.nightlyGrades[k]; const isToday=(k===localDateKey());
+  return '<div class="pgRow"><div><b>'+dkLabel(k)+'</b>'+(isToday?' <span class="tiny">(today)</span>':'')+(g&&g.late?' <span class="tag">late entry</span>':'')+'<div class="tiny">'+(g?(g.avg.toFixed(1)+'★'+(g.note?' · '+escapeHTML(g.note.length>46?g.note.slice(0,46)+'…':g.note):'')):'Not graded')+'</div></div><div class="pgBtns">'+(g?ltrChip(g.letter):'<span class="ltr lx">—</span>')+'<button class="chip" onclick="pgOpen(\''+k+'\')">'+(g?'Edit':'Grade')+'</button></div></div>';
+ }).join('');
+ return '<p class="small">Tap Grade or Edit on any of the last 30 days. Missed a night? Give it now. Changed your mind? Fix it. The Monday–Friday average and weekend game time update on their own.</p>'+rows;
+}
+
+/* Card review */
+function openLogPhoto(date,id,i){ const e=(state.scheduleLogs[date]||{})[id]; if(e&&e.photos&&e.photos[i]) openPhotoViewer(e.photos[i]); }
+function evoToggle(date,id,field,val){
+ const e=scheduleEntry(id,keyToLocalDate(date));
+ if(field==='excuse'){ if(e.evoExcused) delete e.evoExcused; else e.evoExcused=true; }
+ else if(field==='count'){ if(e.evoOverride==='count') delete e.evoOverride; else e.evoOverride='count'; }
+ save(); evoQueue('card',date,id); evoQueue('day',date); render();
+}
+function cardDetailHTML(date,row){
+ const e=((state.scheduleLogs[date]||{})[row.id])||{};
+ const win=e.win; const cfg=evoCfg();
+ let h='';
+ if(win) h+='<p class="small">Block '+clock12(minToHHMM(win.s))+' – '+clock12(minToHHMM(win.e))+' · submit window '+clock12(minToHHMM(Math.max(win.s,win.e-cfg.windowMin)))+' – '+clock12(minToHHMM(win.e+cfg.graceMin))+'</p>';
+ h+='<p class="small">'+(e.evo&&e.evo.atMin!=null&&!e.evo.missed?'Submitted at <b>'+clock12(minToHHMM(e.evo.atMin))+'</b>':'<b>Not submitted</b>')+(e.evo&&e.evo.rejected?' · sent back for correction':'')+'</p>';
+ if(row.reasons&&row.reasons.length&&row.state!=='counted') h+='<ul class="evoWhy">'+row.reasons.map(r=>'<li>'+escapeHTML(r)+'</li>').join('')+'</ul>';
+ if(win&&win.xp){
+  h+='<div class="checkItem"><span>Starting grade</span><span class="tiny">'+(e.startGrade?escapeHTML(String(e.startGrade)):'— not saved')+'</span></div>'
+   +'<div class="checkItem"><span>Ending %</span><span class="tiny">'+(e.score!=null?escapeHTML(String(e.score))+'%':'— not saved')+'</span></div>'
+   +'<div class="xpRow">'+(e.xp&&e.xp.start?xpThumbHTML(date,row.id,'start','Start XP'+(e.xp.start.min!=null?' · '+clock12(minToHHMM(e.xp.start.min)):'')):'<span class="tiny">No starting XP picture</span>')+(e.xp&&e.xp.end?xpThumbHTML(date,row.id,'end','End XP'+(e.xp.end.min!=null?' · '+clock12(minToHHMM(e.xp.end.min)):'')):'<span class="tiny">No ending XP picture</span>')+'</div>';
+ }
+ if(e.photos&&e.photos.length) h+='<div class="label">Proof photos</div>'+photoThumbsHTML(e.photos,i=>"openLogPhoto('"+date+"','"+row.id+"',"+i+")",null);
+ if(e.correctionNeeded) h+='<div class="coachBubble" style="border-color:var(--orange)"><strong>Correction</strong><p class="small">'+escapeHTML(e.correctionNeeded)+'</p></div>';
+ h+='<div class="grid" style="margin-top:8px"><button class="chip" onclick="evoToggle(\''+date+'\',\''+row.id+'\',\'excuse\')">'+(e.evoExcused?'↩ Un-excuse':'🟦 Excuse this card')+'</button><button class="chip" onclick="evoToggle(\''+date+'\',\''+row.id+'\',\'count\')">'+(e.evoOverride==='count'?'↩ Remove “count it”':'✅ Count it anyway')+'</button></div>';
+ return h;
+}
+function cardsBoxHTML(){
+ const date=cardDate||localDateKey();
+ const sched=computeTodaySchedule();
+ const chips=[]; for(let i=0;i<14;i++){ const k=dkAgo(i); const st=evoDayStats(k,k===localDateKey()?sched:null); chips.push('<button class="chip dayChip '+(k===date?'on':'')+'" onclick="cardDate=\''+k+'\';render()">'+dkLabel(k).replace(/^(\w+), /,'$1<br>')+'<br><b>'+evoPctLabel(st.pct)+'</b></button>'); }
+ const st=evoDayStats(date,date===localDateKey()?sched:null);
+ const rows=st.rows.map(r=>'<details class="clean cardRow"><summary><span>'+stateIcon(r.state)+' '+escapeHTML(r.name)+'<small class="grSub">'+(r.s!=null?clock12(minToHHMM(r.s)):'')+' · '+({counted:'counted',missed:'did not count',active:'in progress',upcoming:'coming up',excused:'excused'}[r.state]||'')+'</small></span></summary><div class="detailBody">'+((r.state==='upcoming')?'<p class="small">Hasn’t started yet.</p>':cardDetailHTML(date,r))+'</div></details>').join('');
+ const logs=Object.keys(state.scheduleLogs[date]||{}).length||state.nightlyGrades[date]?parentLogDaySummaryHTML(date):'';
+ return '<div class="dayChips">'+chips.join('')+'</div>'
+  +'<p class="small"><b>'+dkLong(date)+'</b> — '+st.cnt+' of '+st.req+' cards counted ('+evoPctLabel(st.pct)+')'+(st.tracking?'':' · not tracked yet (tracking starts '+dkLabel(evoCfg().startDate)+')')+'</p>'
+  +(rows||'<p class="small">No tracked cards for this day.</p>')
+  +(logs?'<details class="clean"><summary>📝 Everything he wrote and saved this day</summary><div class="detailBody">'+logs+'</div></details>':'');
+}
+
+/* Participation + rules */
+function evoSaveSettings(){
+ const cfg=evoCfg();
+ const wm=Math.max(1,Math.min(15,Number((document.getElementById('evoWinMin')||{}).value)||cfg.windowMin));
+ const gm=Math.max(0,Math.min(5,Number((document.getElementById('evoGrace')||{}).value)||0));
+ const wp=Math.max(0,Math.min(60,Number((document.getElementById('evoWeight')||{}).value)));
+ cfg.windowMin=wm; cfg.graceMin=gm; if(!isNaN(wp)) cfg.weightPct=wp;
+ const sd=(document.getElementById('evoStart')||{}).value; if(/^\d{4}-\d{2}-\d{2}$/.test(sd||'')&&sd!==cfg.startDate){ cfg.startDate=sd; cfg.startMin=0; }
+ cfg.cats=Object.keys(EVO_CAT_LABELS).filter(c=>{ const b=document.getElementById('evoCat_'+c); return b&&b.checked; });
+ cfg.xpCats=Object.keys(EVO_CAT_LABELS).filter(c=>{ const b=document.getElementById('evoXp_'+c); return b&&b.checked; });
+ state.evoDone={}; // re-evaluate past days under the new rules
+ save(); evoDirty=true; alert('Participation rules saved.'); render();
+}
+function partBoxHTML(){
+ const sched=computeTodaySchedule(); const cfg=evoCfg();
+ const today=evoDayStats(localDateKey(),sched), wk=evoRangeStats(evoWeekKeys(),sched), mo=evoRangeStats(evoMonthKeys(),sched);
+ const days=[]; for(let i=0;i<14;i++){ const k=dkAgo(i); const s=evoDayStats(k,k===localDateKey()?sched:null); if(s.req||s.rows.length) days.push('<div class="checkItem"><span>'+dkLabel(k)+'</span><span class="tiny">'+s.cnt+' of '+s.req+' · '+evoPctLabel(s.pct)+'</span></div>'); }
+ const catBoxes=Object.keys(EVO_CAT_LABELS).map(c=>'<label class="checkItem"><span>'+EVO_CAT_LABELS[c]+'</span><span class="tiny"><label>tracked <input type="checkbox" id="evoCat_'+c+'" '+(cfg.cats.indexOf(c)!==-1?'checked':'')+' style="width:auto"></label> &nbsp; <label>XP+grades <input type="checkbox" id="evoXp_'+c+'" '+(cfg.xpCats.indexOf(c)!==-1?'checked':'')+' style="width:auto"></label></span></label>').join('');
+ return '<div class="statCards three"><div class="stat"><b>'+evoPctLabel(today.pct)+'</b><span>Today</span></div><div class="stat"><b>'+evoPctLabel(wk.pct)+'</b><span>This week</span></div><div class="stat"><b>'+evoPctLabel(mo.pct)+'</b><span>30 days</span></div></div>'
+  +'<div class="label">Day by day</div>'+(days.join('')||'<p class="small">Nothing tracked yet.</p>')
+  +grBox('pt_rules','⚙️ Rules for how a card counts','',
+   '<div class="label">Submit window (minutes at the end of each block)</div><input id="evoWinMin" type="number" min="1" max="15" value="'+cfg.windowMin+'">'
+   +'<div class="label">Grace after the block ends (minutes)</div><input id="evoGrace" type="number" min="0" max="5" value="'+cfg.graceMin+'">'
+   +'<div class="label">Participation share of his overall grade (%)</div><input id="evoWeight" type="number" min="0" max="60" value="'+cfg.weightPct+'">'
+   +'<div class="label">Start counting from</div><input id="evoStart" type="date" value="'+cfg.startDate+'">'
+   +'<div class="label">Which cards are tracked, and which need XP pictures + grades</div>'+catBoxes
+   +'<button class="gold full" style="margin-top:10px" onclick="evoSaveSettings()">Save rules</button><p class="tiny">Fixed events (wake-up, trainer, game, bedtime), Screen Time, the nightly grade and video-game time are never tracked. Sick, travel and special-event days are skipped.</p>',false);
+}
+
+/* Comments */
+function pcAdd(){
+ const d=(document.getElementById('pcDate')||{}).value, t=(document.getElementById('pcText')||{}).value, by=(document.getElementById('pcBy')||{}).value;
+ if(!addParentComment(d,t,by)){ alert('Type a comment first.'); return; }
+ render();
+}
+function commentsBoxHTML(){
+ const opts=evoMonthKeys().reverse().map(k=>'<option value="'+k+'">'+dkLabel(k)+'</option>').join('');
+ const all=[]; evoMonthKeys().reverse().forEach(k=>{ (state.parentComments[k]||[]).forEach(c=>all.push('<div class="inner cmtItem"><b>'+dkLabel(k)+'</b><p class="small">'+escapeHTML(c.text)+' <span class="tiny">— '+escapeHTML(c.by||'Parent')+'</span></p><button class="chip" onclick="delParentComment(\''+k+'\',\''+c.id+'\')">🗑 Delete</button></div>')); });
+ return '<p class="small">Leave Jr a comment for any day. He sees it in his Report Card, along with the notes you write when you grade.</p>'
+  +'<div class="label">Day</div><select id="pcDate">'+opts+'</select><div class="label">From</div><select id="pcBy"><option>Mom</option><option>Dad</option><option>Parent</option></select>'
+  +'<div class="label">Comment</div><textarea id="pcText" rows="3" placeholder="What he did well, or what he needs to fix."></textarea>'
+  +'<button class="gold full" style="margin-top:8px" onclick="pcAdd()">Add comment</button>'
+  +'<div class="label" style="margin-top:12px">Comments added in the Parent portal</div>'+(all.join('')||'<p class="small">None yet.</p>');
+}
+
+/* Check-ins waiting */
+function checkinsBoxHTML(){
+ const sched=computeTodaySchedule(); const pend=sched.tasks.filter(t=>t.entry&&t.entry.awaitingReview);
+ if(!pend.length) return '<p class="small">Nothing is waiting for a check right now.</p>';
+ return pend.map(t=>'<div class="checkItem"><span>🔍 '+escapeHTML(t.name)+'</span><button class="chip" onclick="evoGoToCard(\''+t.id+'\')">Open</button></div>').join('');
+}
+
+function renderParent(){
+ const el=document.getElementById('screen_parent');
+ if(!approvalsUnlocked){
+  el.innerHTML='<h2>Parent Portal</h2><p class="small">Grades, card review, participation, comments and settings. Enter the parent code to open it.</p><div class="inner"><input type="password" id="parentPortalCode" placeholder="Parent code" onkeydown="if(event.key===\'Enter\')submitParentPortalCode()">'+(parentCodeError?'<p class="tiny" style="color:var(--orange)">Incorrect code.</p>':'')+'<button class="gold full" style="margin-top:8px" onclick="submitParentPortalCode()">Unlock</button></div>';
+  return;
+ }
+ const sched=computeTodaySchedule();
+ const top='<div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Parent Portal</h2><button class="chip" onclick="lockParentPortal()">🔒 Lock</button></div>';
+ if(!parentBox){
+  const wk=evoRangeStats(evoWeekKeys(),sched), today=evoDayStats(localDateKey(),sched);
+  const miss=ungradedNights(7).length;
+  const pend=sched.tasks.filter(t=>t.entry&&t.entry.awaitingReview).length;
+  const cm=evoWeekKeys().reduce((a,k)=>a+(state.parentComments[k]||[]).length,0);
+  const tiles=[
+   ['grades','📊','Grades by day',miss?miss+' recent night'+(miss===1?'':'s')+' not graded':'all caught up'],
+   ['cards','🗂','Card review','today '+today.cnt+' of '+today.req+' counted'],
+   ['part','🎯','Participation','week '+evoPctLabel(wk.pct)],
+   ['comments','💬','Comments',cm+' this week'],
+   ['checkins','🔍','Check-ins waiting',pend?pend+' to check':'none waiting'],
+   ['sync','📲','Sync to phones',syncConnected()?'connected':'not connected'],
+   ['logs','📜','Strikes & saved logs','60 days'],
+   ['settings','⚙️','App settings','schedule, position…']
+  ];
+  el.innerHTML=top+'<p class="small">Pick a box. Everything is its own small section so nothing is overwhelming.</p><div class="parentTiles">'+tiles.map(t=>'<button class="pTile" onclick="openParentBox(\''+t[0]+'\')"><span class="pIcon">'+t[1]+'</span><b>'+t[2]+'</b><small>'+t[3]+'</small></button>').join('')+'</div>';
+  return;
+ }
+ const titles={grades:'📊 Grades by day',cards:'🗂 Card review',part:'🎯 Participation',comments:'💬 Comments',checkins:'🔍 Check-ins waiting',sync:'📲 Sync to phones',logs:'📜 Strikes & saved logs',settings:'⚙️ App settings'};
+ let body='';
+ if(parentBox==='grades') body=pgBoxHTML();
+ else if(parentBox==='cards') body=cardsBoxHTML();
+ else if(parentBox==='part') body=partBoxHTML();
+ else if(parentBox==='comments') body=commentsBoxHTML();
+ else if(parentBox==='checkins') body=checkinsBoxHTML();
+ else if(parentBox==='sync') body='<p class="small">Grades, comments, card results and the XP pictures are sent to every paired parent phone so you can review them when you are not home. If a phone was offline, they send as soon as it is back online.</p>'+syncPanelHTML()+'<button class="gold full" style="margin-top:8px" onclick="evoResendAll()">Re-send the last 30 days to the parents’ phones</button>'+(Object.keys((state.sync&&state.sync.dirty)||{}).length?'<p class="tiny">'+Object.keys(state.sync.dirty).length+' item(s) waiting to send.</p>':'');
+ else if(parentBox==='logs') body=parentLogsHTML();
+ else if(parentBox==='settings') body='<p class="small">Color, training environment, difficulty, weight, height, age, position, schedule admin, Film Study reset and more.</p><button class="gold full" onclick="openSettingsFrom(\'parent\')">Open App Settings</button>';
+ el.innerHTML=top+'<button class="chip" style="margin:8px 0" onclick="parentHome()">← All boxes</button><h3 style="margin:4px 0 8px">'+titles[parentBox]+'</h3>'+body;
+}
+
 boot();
 </script>
 
@@ -7308,7 +8197,7 @@ window.FIREBASE_VAPID_KEY = "REPLACE_WITH_YOUR_VAPID_KEY";
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {
-  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, onSnapshot
+  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, collection, onSnapshot, query, where
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getMessaging, getToken, isSupported } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
@@ -7384,6 +8273,13 @@ if(!looksConfigured){
       return ref.id;
     };
 
+    // v23: grade / card reports and XP pictures for the parents' phones. They live
+    // in the same approvals collection (status 'report' / 'photo') so no new
+    // Firestore rule is needed, and the approval listener above never sees them.
+    JrSync.putDoc = async function(householdId, docId, data){
+      await setDoc(doc(db, 'households', householdId, 'approvals', docId), data, { merge: true });
+    };
+
     JrSync.resolveApproval = async function(householdId, approvalId, role, status, note){
       await updateDoc(doc(db, 'households', householdId, 'approvals', approvalId), {
         status, resolvedBy: role, resolvedAt: Date.now(), rejectNote: note || ''
@@ -7393,7 +8289,7 @@ if(!looksConfigured){
     // One listener per household, shared across every caller -- fires
     // the callback once per approval doc change, newest activity last.
     JrSync.listen = function(householdId, onChange){
-      return onSnapshot(collection(db, 'households', householdId, 'approvals'), (snap) => {
+      return onSnapshot(query(collection(db, 'households', householdId, 'approvals'), where('status', 'in', ['pending','approved','rejected'])), (snap) => {
         snap.docChanges().forEach((change) => {
           if(change.type === 'removed') return;
           const data = change.doc.data();
