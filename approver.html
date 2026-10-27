@@ -207,6 +207,7 @@ function renderQueue(){
       <h3>${escapeHtml(d.taskName || d.taskId)}</h3>
       <p class="tiny">Submitted ${when}</p>
       ${(d.photos&&d.photos.length)?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${d.photos.map((src,i)=>`<img src="${src}" alt="Photo ${i+1}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid var(--line)" onclick="viewPhoto('${id}',${i})">`).join('')}</div>`:''}
+      ${(d.photosSplit&&d.photoCount)?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${Array.from({length:d.photoCount},(_,i)=>`<button style="background:#2f303b;color:#fff;max-width:140px" onclick="viewSplitPhoto('${id}',${i})">📷 Photo ${i+1}</button>`).join('')}</div>`:''}
       <div class="row">
         <button class="green" onclick="resolve('${id}','approved')">✅ Good</button>
         <button class="red" onclick="showDenyNote('${id}')">❌ Deny</button>
@@ -223,6 +224,16 @@ function viewPhoto(id,i){
   v.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px';
   v.innerHTML='<img src="'+d.photos[i]+'" style="max-width:100%;max-height:80vh;border-radius:12px"><button style="max-width:200px;margin-top:14px;background:#2f303b;color:#fff" onclick="this.parentNode.remove()">Close</button>';
   document.body.appendChild(v);
+}
+function viewSplitPhoto(id,i){
+  if(!window.JrSync||!myState.householdId||!window.JrSync.getPhoto) return;
+  window.JrSync.getPhoto(myState.householdId,'aph_'+id+'_'+i).then(src=>{
+    if(!src){ alert('That photo has not arrived yet — try again in a few seconds.'); return; }
+    const v=document.createElement('div');
+    v.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px';
+    v.innerHTML='<img src="'+src+'" style="max-width:100%;max-height:80vh;border-radius:12px"><button style="max-width:200px;margin-top:14px;background:#2f303b;color:#fff" onclick="this.parentNode.remove()">Close</button>';
+    document.body.appendChild(v);
+  }).catch(()=>alert('Could not load that photo.'));
 }
 function showDenyNote(id){
   document.getElementById('note_'+id).classList.remove('hidden');
@@ -275,8 +286,10 @@ function renderReports(){
   const summary='<div class="statrow"><div class="stat"><b>'+(avg7==null?'—':avg7.toFixed(1)+'★')+'</b><span class="tiny">7-day grade avg</span></div><div class="stat"><b>'+pctText(c7,r7)+'</b><span class="tiny">Participation (7d)</span></div><div class="stat"><b>'+pctText(c30,r30)+'</b><span class="tiny">Participation (30d)</span></div></div>';
   body.innerHTML=summary+keys.map(k=>{
     const e=days[k], d=e.day, g=d&&d.grade;
-    const head=dkLabelA(k)+' · '+(g?('<span class="ltr '+escapeHtml(g.letter)+'">'+escapeHtml(g.letter)+'</span>'+g.avg.toFixed(1)+'★'+(g.late?' (late entry)':'')):'not graded')+(d&&d.part&&d.part.req?' · cards '+d.part.cnt+'/'+d.part.req:'');
+    const head=dkLabelA(k)+' · '+(g?('<span class="ltr '+escapeHtml(g.letter)+'">'+escapeHtml(g.letter)+'</span>'+g.avg.toFixed(1)+'★'+(g.late?' (late entry)':'')):'not graded')+(d&&d.part&&d.part.req?' · cards '+d.part.cnt+'/'+d.part.req:'')+(d&&d.film&&d.film.pct!=null?' · film '+Math.round(d.film.pct)+'%':'')+(d&&d.nutri&&d.nutri.pct!=null?' · meals '+d.nutri.cnt+'/'+d.nutri.req:'')+(d&&d.hist&&d.hist.stage==='done'?' · history '+Math.max(d.hist.s1||0,d.hist.s2==null?0:d.hist.s2)+'/10':'')+(d&&d.values&&d.values.stage==='done'?' · character '+(d.values.score||0)+'/3':'')+(d&&typeof d.points==='number'&&d.points>0?' · '+d.points+' pts':'');
     let inner='';
+    if(d&&d.hist){ inner+='<p class="rule">🏛️ '+escapeHtml(d.hist.fig||'History')+(d.hist.focus?' ('+escapeHtml(d.hist.focus)+')':'')+': '+(d.hist.stage==='done'?'first try '+(d.hist.s1==null?0:d.hist.s1)+'/10'+(d.hist.s2!=null?', retake '+d.hist.s2+'/10':(d.hist.s1<10?', skipped the retake':'')):'in progress')+'</p>'; }
+    if(d&&d.values){ inner+='<p class="rule">🌟 Character lesson'+(d.values.value?' ('+escapeHtml(d.values.value)+')':'')+': '+(d.values.stage==='done'?(d.values.score||0)+' of 3':'in progress')+'</p>'; }
     if(g){
       inner+=Object.keys(g.stars||{}).map(id=>'<div class="crd" style="display:flex;justify-content:space-between"><span>'+escapeHtml(catName(id))+'</span><span>'+'★'.repeat(g.stars[id]||0)+'☆'.repeat(5-(g.stars[id]||0))+'</span></div>').join('');
       if(g.note) inner+='<p class="rule">💬 '+escapeHtml(g.note)+'</p>';

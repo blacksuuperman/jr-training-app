@@ -1,7 +1,7 @@
 // Jr Level 13 Athlete Hub — service worker
 // Bump CACHE_NAME any time index.html/approver.html or the icons change so
 // devices pick up the new version instead of serving a stale offline copy.
-const CACHE_NAME = 'jr-level13-shell-v23-cards-participation-parent-portal';
+const CACHE_NAME = 'jr-level13-shell-v26-lessons-points-weekends';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,9 @@ const CORE_ASSETS = [
   './football-data-positions.js',
   './football-formations.js',
   './schedule-guides.js',
+  './game-schedule.js',
+  './black-history.js',
+  './values-lessons.js',
   './football-demos.js',
   './football-demos-positions.js',
   './football-videos.js',
