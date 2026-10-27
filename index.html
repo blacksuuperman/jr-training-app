@@ -126,6 +126,7 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .lsFb{margin:8px 0 0;padding:8px 10px;border-radius:10px;font-weight:800;font-size:14px}.lsFb.ok{background:rgba(34,197,94,.16);color:#22c55e}.lsFb.bad{background:rgba(239,68,68,.16);color:#ef4444}
 .lsProg{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:800;color:var(--muted)}.lsProg i{display:block;height:6px;border-radius:4px;background:#2a2a36;overflow:hidden}.lsProg u{display:block;height:100%;background:var(--accent);text-decoration:none}
 .lsPara{display:flex;gap:10px;align-items:flex-start;margin:8px 0;padding:10px;border-radius:12px;background:#0d0d14;border:1px solid var(--line)}.lsPara p{margin:0;font-size:15px;line-height:1.5}.lsNum{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center}
+.lsNum.wide{width:auto;min-width:24px;padding:0 8px;border-radius:12px;font-size:11px}
 .lsRev{margin:10px 0;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0a0a10}
 .evoBanner.urgent{border-color:#ef4444;background:#2a1014}
 .evoBannerIcon{font-size:26px}.evoBannerTx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:12px}.evoBannerTx b{font-size:13px}.evoBannerGo{width:auto;min-height:36px;padding:0 14px;margin:0}.evoBannerX{width:34px;min-height:34px;padding:0;margin:0;background:#2f303b;color:#fff}
@@ -473,7 +474,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v26-lessons-points-weekends';
+const BUILD_VERSION='v27-daily-person-pass-rule';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -7941,7 +7942,7 @@ function evoDayDoc(date){
   part:{req:st.req,cnt:st.cnt,pct:st.pct},
   film:(function(){ const f=filmDayStats(date,null); return {pct:f.pct,right:f.right==null?null:f.right,den:f.den==null?null:f.den}; })(),
   nutri:(function(){ const n=nutriDayStats(date,null); return {pct:n.pct,cnt:n.cnt,req:n.req}; })(),
-  hist:(function(){ const h=state.histDays[date]; if(!h) return null; const p=histPlan(date); return {fig:p?p.fig.name:(h.fig||''),day:(h.di||0)+1,focus:p?p.day.focus:'',stage:h.stage||'',s1:(h.s1==null?null:h.s1),s2:(h.s2==null?null:h.s2)}; })(),
+  hist:(function(){ const h=state.histDays[date]; if(!h) return null; const p=histPlan(date); const ff=histFigures().find(function(f){return f.id===h.fig;}); return {fig:ff?ff.name:(h.fig||''),stage:h.stage||'',tries:h.tries||0,s1:(h.s1==null?null:h.s1),final:(h.stage==='done'?histFinal(h):null)}; })(),
   values:(function(){ const v=state.valDays[date]; if(!v) return null; const p=valPlan(date); return {value:p?p.lesson.value:'',title:p?p.lesson.title:'',stage:v.stage||'',score:(v.score==null?null:v.score)}; })(),
   points:(function(){ try{ return pointsDay(date,null).total; }catch(err){ return null; } })(),
   rows:st.rows.map(r=>({name:r.name,state:r.state,reasons:r.reasons||[]})),updatedAt:Date.now()};
@@ -8643,8 +8644,8 @@ function tutSteps(){
    +'<p><b>🍽️ Nutrition:</b> build and log all five meals in the Nutrition screen on the day you eat them: breakfast, lunch, dinner and both shakes. Every logged meal counts, every missed one pulls it down.</p>'
    +'<p><b>🏈 Game time:</b> when LSU, Ole Miss, the Saints or the Ravens play, that time is blocked off so you can watch.</p>'},
   {icon:'📚',title:'Two lessons every weekday',html:
-   '<p><b>🏛️ Black history:</b> every school day you learn about one important person. A new person every 5 days: who they were, what they did, when, why it mattered, and how they did it.</p>'
-   +'<ol class="tutList"><li>Read the lesson.</li><li>Tap <b>I read it</b> and confirm.</li><li>Answer 10 questions about what you just read.</li><li>Miss some? You get <b>one review</b> and <b>one retake</b>.</li></ol>'
+   '<p><b>🏛️ Black history:</b> every school day you learn about a <b>new person</b>: who they were, what they did, when, why it mattered, and how they did it.</p>'
+   +'<ol class="tutList"><li>Read the lesson.</li><li>Tap <b>I read it</b> and confirm.</li><li>Answer 10 multiple-choice questions about what you just read.</li><li>Miss <b>2 or fewer</b> and you pass. You see what you missed and the right answers. Miss <b>3 or more</b> and you review the lesson and retake the whole test.</li></ol>'
    +'<p><b>🌟 Character lesson (20 minutes):</b> a short read on respect, responsibility, accountability or consistency, then 3 questions to show you understood it.</p>'},
   {icon:'⭐',title:'Bonus points you can spend',html:
    '<p>You earn bonus points for staying on schedule and doing things right: cards submitted on time, Film Study, meals logged, your history and character scores, and Mom and Dad’s nightly grade.</p>'
@@ -8682,7 +8683,7 @@ function tutorialMaybeAuto(){
    bonus points + cash-in. Lesson text lives in black-history.js and
    values-lessons.js. Every result is saved by date so Mom and Dad can see it.
    ===================================================================== */
-const HIST_MIN_READ_SEC=45, VAL_MIN_READ_SEC=30, HIST_Q=10;
+const HIST_MIN_READ_SEC=45, VAL_MIN_READ_SEC=30, HIST_Q=10, HIST_REVIEW_SEC=20;
 function histFigures(){ return Array.isArray(window.BLACK_HISTORY)?window.BLACK_HISTORY:[]; }
 function valLessons(){ return Array.isArray(window.VALUES_LESSONS)?window.VALUES_LESSONS:[]; }
 function isWeekdayKey(key){ const w=keyToLocalDate(key).getDay(); return w>=1&&w<=5; }
@@ -8702,7 +8703,7 @@ function weekdayIndex(key){
 function histPlan(key){
  const figs=histFigures(); if(!figs.length||!isWeekdayKey(key)) return null;
  const n=weekdayIndex(key);
- const fi=((state.hist.startFig||0)+Math.floor(n/5))%figs.length, di=n%5;
+ const fi=((state.hist.startFig||0)+n)%figs.length, di=0; // v27: a new person every weekday
  const fig=figs[fi]; if(!fig||!fig.days||!fig.days[di]) return null;
  return {fi,di,n,fig,day:fig.days[di],key};
 }
@@ -8715,6 +8716,7 @@ function histRec(key){
  key=key||localDateKey(); const p=histPlan(key); if(!p) return null;
  let R=state.histDays[key];
  if(!R||typeof R!=='object'){ R=state.histDays[key]={}; }
+ if(R.fig!=null && R.fig!==p.fig.id && R.stage!=='done'){ R={}; state.histDays[key]=R; }
  if(R.fig==null){ R.fig=p.fig.id; R.fi=p.fi; R.di=p.di; R.stage='intro'; R.att=[]; R.pos=0; R.cur=0; }
  return R;
 }
@@ -8728,7 +8730,7 @@ function valRec(key){
 /* ---------- task blocks for the schedule ---------- */
 function histTasksFor(d){
  const p=histPlan(localDateKey(d)); if(!p) return [];
- return [task('history','Black History: '+p.fig.name+' ('+p.day.focus+')','Academic','6:00',30,{priority:2,completionType:'historyLesson',instructions:['Read today’s short lesson, tap “I read it”, then take the 10-question test.','Miss some? You get one review of the material and one retake.']})];
+ return [task('history','Black History: '+p.fig.name,'Academic','6:00',30,{priority:2,completionType:'historyLesson',instructions:['Read today’s short lesson, tap “I read it”, then take the 10-question test.','Miss 3 or more? Review the lesson and retake the whole test.']})];
 }
 function valuesTasksFor(d){
  const p=valPlan(localDateKey(d)); if(!p) return [];
@@ -8752,17 +8754,18 @@ function lsQuizHTML(c){
  const done=c.att.picks.filter(function(x){return x!=null;}).length;
  return '<div class="lsProg"><span>'+escapeHTML(c.label)+' · question '+(c.pos+1)+' of '+c.total+'</span><i><u style="width:'+Math.round(done/c.total*100)+'%"></u></i></div><h3 style="margin:8px 0">'+escapeHTML(q[0])+'</h3>'+opts+fb;
 }
-function lsParasHTML(paras){ return paras.map(function(p,i){ return '<div class="lsPara"><span class="lsNum">'+(i+1)+'</span><p>'+escapeHTML(p)+'</p></div>'; }).join(''); }
+function lsParasHTML(paras,labels){ return paras.map(function(p,i){ const lb=labels&&labels[i]; return '<div class="lsPara"><span class="lsNum'+(lb?' wide':'')+'">'+(lb||(i+1))+'</span><p>'+escapeHTML(p)+'</p></div>'; }).join(''); }
 function lsCountRight(att){ return att.picks.filter(function(x){return x===0;}).length; }
 
 /* ---------- HISTORY lesson ---------- */
+const HIST_MAX_MISS=2, HIST_LABELS=['WHO','WHAT','WHEN','WHY','HOW'];
 function histPoints(R){
  if(!R||R.stage!=='done') return 0;
- const s1=R.s1||0, s2=(R.s2==null?0:R.s2);
- return Math.round(Math.max(s1,s2/2)/2); // best first try, half credit for the retake, max 5
+ const fin=(R.sFinal!=null?R.sFinal:(R.s1||0)); const tries=R.tries||1;
+ return tries<=1?Math.round(fin/2):Math.round(fin/4); // up to 5 for a first-try pass, half that after retakes
 }
-function histFinal(R){ return Math.max(R.s1||0,R.s2==null?0:R.s2); }
-function histStart(){ const R=histRec(); if(!R||R.stage!=='intro') return; R.stage='read'; R.readStart=Date.now(); save(); render(); }
+function histFinal(R){ return (R.sFinal!=null?R.sFinal:(R.s1||0)); }
+function histStart(){ const R=histRec(); if(!R||R.stage!=='intro') return; R.stage='read'; R.readStart=Date.now(); save(); render(); lsFocus('.lsHead'); }
 function histReadDone(){
  const R=histRec(); if(!R||R.stage!=='read') return;
  const el=(Date.now()-(R.readStart||0))/1000;
@@ -8772,7 +8775,8 @@ function histReadDone(){
 function histBackToRead(){ const R=histRec(); if(!R||R.stage!=='verify') return; R.stage='read'; R.readStart=Date.now()-HIST_MIN_READ_SEC*1000; save(); render(); lsFocus('.lsHead'); }
 function histBeginAttempt(n){
  const R=histRec(); const key=localDateKey();
- const order=n===0?[0,1,2,3,4,5,6,7,8,9]:seededShuffle([0,1,2,3,4,5,6,7,8,9],hashKey(key)+977);
+ const nat=[0,1,2,3,4,5,6,7,8,9];
+ const order=n===0?nat:seededShuffle(nat,hashKey(key)+977*n);
  R.att[n]={picks:[null,null,null,null,null,null,null,null,null,null],order:order};
  R.cur=n; R.pos=0; R.stage='test';
 }
@@ -8787,73 +8791,75 @@ function histNext(){
  const att=R.att[R.cur]; if(att.picks[att.order[R.pos]]==null) return;
  R.pos++;
  if(R.pos>=HIST_Q){
-  const sc=lsCountRight(att);
-  if(R.cur===0){ R.s1=sc; R.stage=(sc>=HIST_Q)?'done':'results1'; }
-  else { R.s2=sc; R.stage='done'; }
-  if(R.stage==='done') R.doneAt=Date.now();
+  const sc=lsCountRight(att); R.tries=R.cur+1;
+  if(R.cur===0) R.s1=sc;
+  if(HIST_Q-sc<=HIST_MAX_MISS){ R.sFinal=sc; R.s2=(R.cur>0?sc:null); R.stage='done'; R.doneAt=Date.now(); }
+  else { R.lastScore=sc; R.stage='failed'; }
   evoPartCache={at:0,wk:null,ov:null}; evoQueue('day',localDateKey());
  }
  save(); render(); lsFocus('.lsHead');
 }
-function histGoReview(){ const R=histRec(); if(!R||R.stage!=='results1') return; R.stage='review'; save(); render(); lsFocus('.lsHead'); }
-function histRetake(){ const R=histRec(); if(!R||R.stage!=='review'||R.s2!=null) return; R.reviewed=Date.now(); histBeginAttempt(1); save(); render(); lsFocus('.lsHead'); }
-function histSkipRetake(){ const R=histRec(); if(!R||(R.stage!=='review'&&R.stage!=='results1')) return; if(!confirm('Skip the retake and finish with your first score?')) return; R.stage='done'; R.doneAt=Date.now(); save(); evoQueue('day',localDateKey()); render(); }
-function histMissed(R,p){
- const att=R.att[0]; const out=[]; if(!att) return out;
+// failed: go back over the lesson, then the whole test again (as many times as it takes)
+function histGoReview(){ const R=histRec(); if(!R||R.stage!=='failed') return; R.stage='review'; R.reviewStart=Date.now(); save(); render(); lsFocus('.lsHead'); }
+function histRetake(){
+ const R=histRec(); if(!R||R.stage!=='review') return;
+ const el=(Date.now()-(R.reviewStart||0))/1000;
+ if(el<HIST_REVIEW_SEC){ alert('Read the lesson again before you retake it. About '+Math.ceil(HIST_REVIEW_SEC-el)+' more seconds.'); return; }
+ R.reviewed=Date.now(); histBeginAttempt(R.cur+1); save(); render(); lsFocus('.lsHead');
+}
+function histMissed(R){
+ const att=R.att[R.cur]; const out=[]; if(!att) return out;
  att.order.forEach(function(qi){ if(att.picks[qi]!==0) out.push(qi); });
  return out;
 }
+function histMissListHTML(R,day){
+ const miss=histMissed(R); const att=R.att[R.cur];
+ if(!miss.length) return '';
+ return '<div class="label" style="margin-top:10px">What you missed</div>'+miss.map(function(qi){
+  const q=day.quiz[qi]; const picked=att.picks[qi];
+  return '<div class="lsRev"><div class="small"><b>'+escapeHTML(q[0])+'</b></div><div class="tiny" style="color:#ef4444">You picked: '+(picked==null?'no answer':escapeHTML(q[1+picked]))+'</div><div class="tiny" style="color:#22c55e">Right answer: '+escapeHTML(q[1])+'</div></div>';
+ }).join('');
+}
 function histSummaryHTML(R,p){
- const miss=histMissed(R,p);
- let h='<div class="coachBubble"><strong>Score: '+histFinal(R)+' of '+HIST_Q+'</strong><p class="tiny">First try '+(R.s1||0)+'/'+HIST_Q+(R.s2!=null?' · retake '+R.s2+'/'+HIST_Q:'')+' · '+histPoints(R)+' bonus point'+(histPoints(R)===1?'':'s')+'</p></div>';
+ const tries=R.tries||1;
+ let h='<div class="coachBubble"><strong>Score: '+histFinal(R)+' of '+HIST_Q+'</strong><p class="tiny">'+(tries<=1?'Passed on the first try':'Passed on try '+tries+' (first try '+(R.s1||0)+'/'+HIST_Q+')')+' · '+histPoints(R)+' bonus point'+(histPoints(R)===1?'':'s')+'</p></div>';
  h+='<div class="coachBubble" style="margin-top:8px"><strong>Remember</strong><p class="small">'+escapeHTML(p.day.remember||'')+'</p></div>';
- if(miss.length&&R.s2==null&&R.stage==='done') h+='<p class="tiny">You skipped the retake.</p>';
  return h;
 }
 function histTaskHTML(t){
  const key=localDateKey(), p=histPlan(key);
  if(!p) return '<div class="inner"><h3>No history lesson today</h3><p class="small">History lessons happen Monday to Friday.</p></div>';
  const R=histRec(key), day=p.day, fig=p.fig;
- const head='<div class="inner lsHead"><div class="tiny">Lesson '+(p.di+1)+' of 5 · <b>'+escapeHTML(day.focus)+'</b> · '+(fig.era==='current'?'living today':'from history')+'</div><h3 style="margin:2px 0">🏛️ '+escapeHTML(fig.name)+'</h3><div class="tiny">'+escapeHTML(fig.years)+' · '+escapeHTML(fig.tagline)+'</div></div>';
- if(t.status==='completed') return head+histSummaryHTML(R,p)+'<div class="coachBubble" style="margin-top:8px"><strong>History lesson submitted ✅</strong></div>';
- const bonusNote='<p class="tiny">Your test score earns bonus points. Counts as a card only when you submit in the last '+evoCfg().windowMin+' minutes of this block.</p>';
+ const head='<div class="inner lsHead"><div class="tiny">Today’s person · '+(fig.era==='current'?'living today':'from history')+' · #'+(p.n+1)+'</div><h3 style="margin:2px 0">🏛️ '+escapeHTML(fig.name)+'</h3><div class="tiny">'+escapeHTML(fig.years)+' · '+escapeHTML(fig.tagline)+'</div></div>';
+ if(t.status==='completed') return head+histSummaryHTML(R,p)+histMissListHTML(R,day)+'<div class="coachBubble" style="margin-top:8px"><strong>History lesson submitted ✅</strong></div>';
  if(R.stage==='intro'){
-  return head+'<div class="inner"><h3>Today: '+escapeHTML(day.title)+'</h3><p class="small">You will read a short lesson on '+escapeHTML(fig.name)+' (who, what, when, why and how across five days), confirm you read it, then answer 10 questions about what you just read.</p>'
-   +bulletsHTML(['Read all 5 paragraphs.','Tap “I read it” and confirm.','10 questions, one at a time.','Miss some? You get one review and one retake.'])+'<button class="gold full" onclick="histStart()">📖 Start today’s lesson</button>'+bonusNote+'</div>';
+  return head+'<div class="inner"><h3>Today: '+escapeHTML(day.title)+'</h3><p class="small">A new person every day. You will read a short lesson on '+escapeHTML(fig.name)+' (who they were, what they did, when, why it mattered and how), confirm you read it, then answer 10 multiple-choice questions about what you just read.</p>'
+   +bulletsHTML(['Read all 5 paragraphs.','Tap “I read it” and confirm.','10 questions, 4 choices each, one at a time.','Miss 2 or fewer and you pass. Miss 3 or more and you review the lesson and retake the whole test.'])+'<button class="gold full" onclick="histStart()">📖 Start today’s lesson</button><p class="tiny">Your score earns bonus points. It counts as a card only when you submit in the last '+evoCfg().windowMin+' minutes of this block.</p></div>';
  }
  if(R.stage==='read'){
-  return head+'<div class="inner"><h3>'+escapeHTML(day.title)+'</h3>'+lsParasHTML(day.paras)+'<div class="coachBubble"><strong>Remember</strong><p class="small">'+escapeHTML(day.remember||'')+'</p></div>'
+  return head+'<div class="inner"><h3>'+escapeHTML(day.title)+'</h3>'+lsParasHTML(day.paras,HIST_LABELS)+'<div class="coachBubble"><strong>Remember</strong><p class="small">'+escapeHTML(day.remember||'')+'</p></div>'
    +'<button class="green full" style="margin-top:10px" onclick="histReadDone()">✅ I read it</button><p class="tiny">The test comes next. You will not see this page during the test.</p></div>';
  }
  if(R.stage==='verify'){
-  return head+'<div class="inner"><h3>✋ One more check</h3><p class="small">The test has <b>10 questions</b> about “'+escapeHTML(day.title)+'”. The lesson is hidden while you test. If you miss some you get a review after.</p><p class="small"><b>Did you really read every paragraph?</b></p>'
+  return head+'<div class="inner"><h3>✋ One more check</h3><p class="small">The test has <b>10 multiple-choice questions</b> about “'+escapeHTML(day.title)+'”. The lesson is hidden while you test. You can miss <b>2</b> and still pass. Miss 3 or more and you retake the whole test.</p><p class="small"><b>Did you really read every paragraph?</b></p>'
    +'<button class="green full" onclick="histStartTest()">Yes, I read it all. Start the test</button><button class="orange full" style="margin-top:8px" onclick="histBackToRead()">Not yet. Back to the lesson</button></div>';
  }
  if(R.stage==='test'){
   const att=R.att[R.cur];
-  return head+'<div class="inner">'+lsQuizHTML({key:key,quiz:day.quiz,att:att,pos:R.pos,total:HIST_Q,attNo:R.cur,label:(R.cur===0?'Test':'Retake'),onPick:'histPick',onNext:'histNext',reveal:false})+'</div>';
+  return head+'<div class="inner">'+lsQuizHTML({key:key,quiz:day.quiz,att:att,pos:R.pos,total:HIST_Q,attNo:R.cur,label:(R.cur===0?'Test':'Retake '+R.cur),onPick:'histPick',onNext:'histNext',reveal:false})+'</div>';
  }
- if(R.stage==='results1'){
-  const miss=histMissed(R,p).length;
-  return head+'<div class="inner"><h3>You got '+R.s1+' of '+HIST_Q+'</h3><p class="small">You missed '+miss+'. Here is how this works: go through a quick <b>review</b> of the parts you missed, then you can take the test <b>one more time</b>.</p>'
-   +'<button class="gold full" onclick="histGoReview()">📖 Review what I missed</button><button class="orange full" style="margin-top:8px" onclick="histSkipRetake()">Skip it and finish</button></div>';
+ if(R.stage==='failed'){
+  const miss=histMissed(R).length;
+  return head+'<div class="inner"><h3>You got '+R.lastScore+' of '+HIST_Q+'</h3><p class="small">You missed '+miss+'. You can miss 2 and still pass, so this one needs another go. Read the lesson again, then take the <b>whole test</b> again. The questions come in a new order.</p>'
+   +'<button class="gold full" onclick="histGoReview()">📖 Review the lesson</button></div>';
  }
  if(R.stage==='review'){
-  const miss=histMissed(R,p);
-  const items=miss.map(function(qi){
-   const q=day.quiz[qi]; const picked=R.att[0].picks[qi];
-   return '<div class="lsRev"><div class="small"><b>'+escapeHTML(q[0])+'</b></div><div class="tiny" style="color:#ef4444">You picked: '+(picked==null?'no answer':escapeHTML(q[1+picked]))+'</div><div class="tiny" style="color:#22c55e">Right answer: '+escapeHTML(q[1])+'</div><div class="lsPara" style="margin-top:6px"><span class="lsNum">'+(q[5]+1)+'</span><p>'+escapeHTML(day.paras[q[5]]||'')+'</p></div></div>';
-  }).join('');
-  return head+'<div class="inner"><h3>📖 Review: what you missed</h3><p class="small">Read each question, the right answer and the paragraph it came from. You get one retake after this.</p>'+items
-   +'<button class="gold full" style="margin-top:10px" onclick="histRetake()">🔁 I reviewed it. Retake the test</button><button class="orange full" style="margin-top:8px" onclick="histSkipRetake()">No retake. Finish</button></div>';
+  return head+'<div class="inner"><h3>📖 Review: '+escapeHTML(day.title)+'</h3><p class="small">Read it again slowly. Then retake the whole test.</p>'+lsParasHTML(day.paras,HIST_LABELS)+'<div class="coachBubble"><strong>Remember</strong><p class="small">'+escapeHTML(day.remember||'')+'</p></div>'
+   +'<button class="gold full" style="margin-top:10px" onclick="histRetake()">🔁 Retake the whole test</button></div>';
  }
- // done
- const missed=histMissed(R,p);
- const missList=(R.stage==='done'&&(R.s2!=null||missed.length))?'':'';
- void missList;
- let submit;
- submit='<button class="green full" style="margin-top:10px" onclick="quickComplete(\'history\')">Submit this lesson</button><p class="tiny">Submit is open in the last '+evoCfg().windowMin+' minutes of the block.</p>';
- return head+'<div class="inner"><h3>'+(histFinal(R)>=HIST_Q?'🏆 Perfect score':'✅ Lesson finished')+'</h3>'+histSummaryHTML(R,p)+'</div>'+submit;
+ // done: passed. Show what was missed (if anything) with the right answers, then submit.
+ const submit='<button class="green full" style="margin-top:10px" onclick="quickComplete(\'history\')">Submit this lesson</button><p class="tiny">Submit is open in the last '+evoCfg().windowMin+' minutes of the block.</p>';
+ return head+'<div class="inner"><h3>'+(histFinal(R)>=HIST_Q?'🏆 Perfect score':'✅ You passed')+'</h3>'+histSummaryHTML(R,p)+histMissListHTML(R,day)+'</div>'+submit;
 }
 
 /* ---------- CHARACTER (values) lesson ---------- */
@@ -8982,14 +8988,14 @@ function ptsBoxHTML(){
 function lessonsBoxHTML(){
  const figs=histFigures(); const key=localDateKey(); const p=histPlan(key);
  const opts=figs.map(function(f,i){ return '<option value="'+i+'"'+(i===(state.hist.startFig||0)?' selected':'')+'>'+escapeHTML(f.name)+'</option>'; }).join('');
- let h='<p class="small">Weekdays only. A new figure every 5 weekdays: who, what, when, why and how. Each day has a 10-question test with one review and one retake. A 20-minute character lesson with 3 questions comes after.</p>';
- h+='<div class="inner"><b>Today:</b> '+(p?escapeHTML(p.fig.name)+' · lesson '+(p.di+1)+' of 5 ('+escapeHTML(p.day.focus)+')':'weekend, no lesson')+'</div>';
- h+='<div class="label" style="margin-top:8px">First figure in the rotation</div><select onchange="lessonSetStartFig(this.value)">'+opts+'</select><p class="tiny">Changing this moves the whole rotation. Rotation: '+figs.map(function(f){return escapeHTML(f.name);}).join(' → ')+'.</p>';
+ let h='<p class="small">Weekdays only. A new person every weekday ('+figs.length+' people in the rotation: the first 12 are the basics). 5-paragraph lesson (who, what, when, why, how), then a 10-question multiple-choice test. He can miss 2 and pass; miss 3 or more and he reviews and retakes the whole test. A 20-minute character lesson with 3 questions comes after.</p>';
+ h+='<div class="inner"><b>Today:</b> '+(p?escapeHTML(p.fig.name)+' (#'+(p.n+1)+' in the rotation)':'weekend, no lesson')+'</div>';
+ h+='<div class="label" style="margin-top:8px">Person the rotation starts with</div><select onchange="lessonSetStartFig(this.value)">'+opts+'</select><p class="tiny">Changing this moves the whole rotation. Coming up: '+(function(){ const up=[]; for(let i=1;up.length<5&&i<12;i++){ const d=new Date(); d.setDate(d.getDate()+i); const k=localDateKey(d); const pl=histPlan(k); if(pl) up.push(escapeHTML(pl.fig.name)); } return up.join(' → '); })()+'.</p>';
  const rows=[]; for(let i=0;i<14&&rows.length<10;i++){
   const k=dkAgo(i); if(!isWeekdayKey(k)) continue;
   const hr=state.histDays[k], vr=state.valDays[k]; if(!hr&&!vr) continue;
   const hp=histPlan(k);
-  rows.push('<div class="inner" style="margin-top:6px"><b>'+dkLabel(k)+'</b><div class="small">'+(hr?'🏛️ '+escapeHTML(hp?hp.fig.name:(hr.fig||''))+' (day '+((hr.di||0)+1)+'): '+(hr.stage==='done'?'first try '+(hr.s1||0)+'/10'+(hr.s2!=null?', retake '+hr.s2+'/10':'')+(hr.s2==null&&(hr.s1||0)<10?', no retake':''):'in progress ('+escapeHTML(hr.stage)+')'):'🏛️ not started')+'</div><div class="small">'+(vr?'🌟 '+(vr.stage==='done'?(vr.score||0)+' of 3':'in progress'):'🌟 not started')+'</div></div>');
+  rows.push('<div class="inner" style="margin-top:6px"><b>'+dkLabel(k)+'</b><div class="small">'+(hr?'🏛️ '+escapeHTML((histFigures().find(function(f){return f.id===hr.fig;})||{name:hr.fig||''}).name)+': '+(hr.stage==='done'?(hr.tries>1?'passed on try '+hr.tries+' (first try '+(hr.s1||0)+'/10, final '+histFinal(hr)+'/10)':'passed first try '+(hr.s1||0)+'/10'):'in progress ('+escapeHTML(hr.stage)+(hr.tries?', try '+(hr.tries+(hr.stage==='failed'||hr.stage==='review'||hr.stage==='test'&&hr.cur>=hr.tries?1:0)):'')+')'):'🏛️ not started')+'</div><div class="small">'+(vr?'🌟 '+(vr.stage==='done'?(vr.score||0)+' of 3':'in progress'):'🌟 not started')+'</div></div>');
  }
  h+='<div class="label" style="margin-top:10px">Recent results</div>'+(rows.join('')||'<p class="small">No lessons started yet.</p>');
  return h;
