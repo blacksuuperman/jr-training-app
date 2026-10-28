@@ -1,7 +1,7 @@
 // Jr Level 13 Athlete Hub — service worker
 // Bump CACHE_NAME any time index.html/approver.html or the icons change so
 // devices pick up the new version instead of serving a stale offline copy.
-const CACHE_NAME = 'jr-level13-shell-v29-meal-log-food-search';
+const CACHE_NAME = 'jr-level13-shell-v31-game-day-mode';
 const CORE_ASSETS = [
   './',
   './index.html',

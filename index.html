@@ -121,6 +121,16 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .evoShrunk{margin:8px 0;padding:8px 10px;border-radius:10px;border:1px dashed var(--accent);font-size:12px;font-weight:700}
 .evoBanner{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:990;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#14141d;border:2px solid var(--accent);box-shadow:0 8px 30px rgba(0,0,0,.6);color:#fff}
 .lsWrap{margin-top:8px}
+.hypeGate .hypeBig,.hypeCard .hypeBig{font-size:54px;margin:6px 0}.hypeLine{color:#fff;font-size:26px;font-weight:900;line-height:1.3;margin:6px 0;text-align:center}
+.hypeTag{font-weight:900;letter-spacing:.12em;font-size:13px;color:var(--gold)}
+.hypeOv{position:fixed;inset:0;z-index:9500;background:linear-gradient(180deg,#0a0a12,#12060a);overflow-y:auto;-webkit-overflow-scrolling:touch}.hypeIn{max-width:520px;margin:0 auto;padding:16px 16px 60px}
+.hypeTop{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.hypeCard{border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:22px 14px;margin:8px 0 12px;text-align:center;background:rgba(255,255,255,.04)}
+.hypeWord{font-size:28px;font-weight:900;color:var(--gold)}
+.hypeBreath{font-size:30px;font-weight:900;margin:10px 0}
+.hypeLinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.hypeLinkBtn{display:inline-block;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-weight:800;font-size:14px}.hypeLinks.small .hypeLinkBtn{font-size:12px;padding:8px 10px;font-weight:700}
+.hypeBanner{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border-radius:14px;border:1px solid var(--gold);background:rgba(255,200,0,.08);color:inherit;font:inherit}.hypeBanner.hot{background:rgba(239,68,68,.18);border-color:#ef4444}.hypeBannerT{font-weight:900}
+.vitRow{border:1px solid var(--line);border-radius:14px;margin:8px 0;background:#0d0d14;overflow:hidden}.vitRow>summary{list-style:none;cursor:pointer;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}.vitRow>summary::-webkit-details-marker{display:none}.vitBody{padding:0 12px 12px}
 .mlItem{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 .mlList{display:flex;flex-direction:column;gap:6px;margin-top:6px}
 .mlPick{text-align:left;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:inherit;font:inherit}
@@ -479,7 +489,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v29-meal-log-food-search';
+const BUILD_VERSION='v31-game-day-mode';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -788,6 +798,12 @@ state.musicQuery = state.musicQuery || '';
 state.nutriUnit = state.nutriUnit==='g' ? 'g' : 'oz';
 state.nutriPicks = state.nutriPicks || {carb:'',protein:'',veggie:'',fat:''};
 state.mealDraft = (state.mealDraft&&typeof state.mealDraft==='object') ? state.mealDraft : {};
+state.hype = (state.hype&&typeof state.hype==='object') ? state.hype : {};
+if(state.hype.on==null) state.hype.on=true;
+state.hype.leadMin = Math.max(10,Math.min(120,Number(state.hype.leadMin)||45));
+if(!Array.isArray(state.hype.links)) state.hype.links=[];
+if(!Array.isArray(state.hype.lines)) state.hype.lines=[];
+state.hypeDays = (state.hypeDays&&typeof state.hypeDays==='object') ? state.hypeDays : {};
 state.foodRecent = Array.isArray(state.foodRecent) ? state.foodRecent : [];
 state.usdaKey = state.usdaKey || '';
 state.skipped = state.skipped || {};
@@ -824,11 +840,14 @@ state.evo = (state.evo && typeof state.evo==='object') ? state.evo : {};
  if(!/^\d{4}-\d{2}-\d{2}$/.test(E.startDate||'')) E.startDate=localDateKey();
  if(typeof E.startMin!=='number') E.startMin=(E.startDate===localDateKey())?(new Date().getHours()*60+new Date().getMinutes()):0;
  // v25: the grade has four parts. Parents' nightly grade is the majority; participation, film study and nutrition make up the rest.
- if(!E.weights || typeof E.weights!=='object'){ const part=Math.max(0,Math.min(40,Number(E.weightPct)||20)); E.weights={parent:100-part-20,part:part,film:10,nutri:10}; }
+ if(!E.weights || typeof E.weights!=='object'){ const part=Math.max(0,Math.min(40,Number(E.weightPct)||20)); E.weights={parent:100-part-25,part:part,film:10,nutri:10,train:5}; }
+ // v30: a fifth part, 5% for finishing Speed, Agility & Footwork training. Parents drop from 60 to 55; a customized split gives the 5 from parents (down to 51), then participation.
+ if(typeof E.weights.train!=='number'){ const W=E.weights; W.train=5; if(W.parent===60&&W.part===20&&W.film===10&&W.nutri===10){ W.parent=55; } else { let need=5; const take=Math.min(need,Math.max(0,W.parent-51)); W.parent-=take; need-=take; if(need>0) W.part=Math.max(0,W.part-need); } }
  if(!/^\d{4}-\d{2}-\d{2}$/.test(E.scoreStart||'')){ E.scoreStart=localDateKey(); E.scoreStartMin=new Date().getHours()*60+new Date().getMinutes(); }
 })();
 state.filmDays = (state.filmDays&&typeof state.filmDays==='object') ? state.filmDays : {};
 state.nutriDays = (state.nutriDays&&typeof state.nutriDays==='object') ? state.nutriDays : {};
+state.trainDays = (state.trainDays&&typeof state.trainDays==='object') ? state.trainDays : {};
 state.tutorialSeen = !!state.tutorialSeen;
 state.tutorialVer = Number(state.tutorialVer)||(state.tutorialSeen?25:0);
 // v28: vitamin and supplement reminder cards
@@ -1742,7 +1761,7 @@ function hideGate(){
 }
 function boot(){
  if(!state.onboarded){ showGate(); renderOnboarding(); return; }
- if(!quoteShown){ quoteShown=true; showGate(); renderQuoteGate(); return; }
+ if(!quoteShown){ quoteShown=true; if(hypeActive()&&hypePhase()!=='after'){ hypeSplashShow(); return; } showGate(); renderQuoteGate(); return; }
  if(!appEntered){ showGate(); renderLauncher(); return; }
  hideGate(); render();
  ensureGlobalTaskAlarmTimer();
@@ -1876,6 +1895,7 @@ function enterApp(screen){
  appEntered=true;
  navStack=['today'];
  save();
+ if(hypeOpenAfterEntry){ hypeOpenAfterEntry=false; setTimeout(function(){ try{ hypeOpen(); }catch(e){} },400); }
  if(screen==='home' && trainingGateNeeded()){ openTrainingGate(false); return; }
  if(screen==='nutrition' && nutritionGateNeeded()){ openNutritionGate(false); return; }
  state.screen=screen;
@@ -2152,6 +2172,7 @@ function saveSection(name){
  if(name==='Morning work'){
   const day=state.portionDay.morning;
   portionLogFor('morning').morningComplete=true;
+  state.trainDays[localDateKey()]=Date.now(); evoPartCache={at:0,wk:null,ov:null};
   save(); render();
   alert('Speed & Agility saved and complete for Day '+day+'. This session moves forward on its own — tap "Start Day '+Math.min(day+1,DAYS_TOTAL)+'" below whenever you are ready, no need to wait on Workout or Touches.');
   return;
@@ -2416,38 +2437,38 @@ function driUL(k,age){ const r=DRI[k]; return r.ul ? `${Number(r.ul[driBand(age)
 function ageStage(age){ const a=Number(age)||13; return a<=8?'young':a<=13?'preteen':a<=17?'teen':'adult'; }
 function sleepHoursFor(age){ const a=Number(age)||13; return a<=5?'10–13':a<=12?'9–12':a<=18?'8–10':'7–9'; }
 function vitCard(title,target,why,foods,stance,cls){
- return `<div class="inner"><div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px"><h3 style="margin:0">${title}</h3><span class="badge ${cls}" style="white-space:normal;text-align:center">${stance}</span></div>
-  <p class="small" style="margin-top:6px"><b>${target}</b></p><p class="small">${why}</p><p class="tiny">Food: ${foods}</p></div>`;
+ return `<details class="vitRow"><summary><span><b>${title}</b><br><span class="tiny">${target}</span></span><span class="badge ${cls}" style="white-space:normal;text-align:center">${stance}</span></summary>
+  <div class="vitBody"><p class="small">${why}</p><p class="tiny">Food: ${foods}</p></div></details>`;
 }
-function vitaminsHTML(){
+function vitaminsListHTML(){
  const A=state.age, band=DRI_BANDS[driBand(A)], stage=ageStage(A);
  const stageNote = stage==='young'
   ? 'At this age food does all of the work. Do not give vitamin or mineral pills unless the pediatrician prescribes them — a children’s multivitamin is the most that is ever commonly used, and only if the doctor agrees.'
   : stage==='adult'
   ? 'At 19 and up the adult NIH numbers apply. Real food still covers almost all of it; supplements fill specific gaps, ideally guided by a blood test.'
   : 'Real food covers almost all of it, and a supplement is a backup, not the plan.';
- return `<details class="clean"><summary>Vitamins &amp; Minerals — the full list</summary><div class="detailBody">
+ return `<div class="vitList">
   <div class="coachBubble"><strong>Why a twice-a-day athlete cares</strong><p>Two practices a day means more sweat, more muscle repair and more fuel burned, so the body goes through minerals and vitamins faster. The numbers below are the NIH daily targets for ages <b>${band}</b> (they change automatically with the Athlete Age in Settings, currently ${A||'not saved yet'}; where males and females differ, both are shown). ${stageNote}</p></div>
-  <h3 style="margin-top:12px">Bones &amp; muscles</h3>
+  <div class="label" style="margin-top:12px">Bones &amp; muscles</div>
   ${vitCard('Vitamin D',`${driText('vitD',A)} a day (upper limit ${driUL('vitD',A)} from supplements)`,'Helps the body absorb calcium and keeps bones, muscles and the immune system working. Many young people run low, especially with little sun or lots of indoor training.','fatty fish, egg yolks, fortified milk and cereal, sunshine.','Ask the doctor — a blood test beats guessing','warn')}
   ${vitCard('Calcium',`${driText('calcium',A)} a day (upper limit ${driUL('calcium',A)})`,'Bones are still building through the late teens, and the need peaks at ages 9–18. Sweat loses a little too.','a cup of milk ≈ 300 mg, 8 oz yogurt ≈ 400 mg, fortified orange juice or soymilk, cheese, canned salmon with bones, tofu.','Food first (3-4 dairy servings a day)','good')}
   ${vitCard('Magnesium',`${driText('magnesium',A)} a day (supplements: no more than ${driUL('magnesium',A)})`,'Used for muscle contraction and relaxation, energy, and sleep. Sweat and hard training use it up.','pumpkin seeds, almonds, cashews, peanuts, beans, spinach, whole grains, milk, yogurt.','Food first; too much from pills causes diarrhea','good')}
   ${vitCard('Vitamin K',`${driText('vitK',A)} a day`,'Helps bones use calcium and helps blood clot after bumps and scrapes.','spinach, kale, broccoli, Brussels sprouts, greens.','Food covers it','good')}
-  <h3 style="margin-top:12px">Blood, oxygen &amp; energy</h3>
+  <div class="label" style="margin-top:12px">Blood, oxygen &amp; energy</div>
   ${vitCard('Iron',`${driText('iron',A)} a day (upper limit ${driUL('iron',A)})`,'Carries oxygen to the muscles. Low iron shows up as tired legs, trouble catching a breath and slow recovery. Hard training and fast growth raise the need, and teen and young adult females need the most.','beef, chicken thigh, turkey, beans, lentils, spinach, fortified cereal. Eat it with a vitamin C food (orange, strawberries, peppers) to absorb more.','Do NOT guess or give a pill unless a doctor finds low iron — too much is dangerous','bad')}
   ${vitCard('Vitamin B12 &amp; Folate',`B12: ${driText('b12',A)} a day · Folate: ${driText('folate',A)} a day`,'Help build red blood cells and turn food into energy. B12 comes only from animal foods and fortified foods, so a vegetarian or vegan athlete should ask the doctor about it.','B12: meat, fish, eggs, milk, fortified cereal. Folate: leafy greens, beans, oranges, enriched bread, pasta, rice and cereal.','Food covers it (ask the doctor if vegetarian)','good')}
   ${vitCard('Other B-vitamins (thiamin, riboflavin, niacin, B6)','Covered by a normal diet with grains, meat, eggs and dairy','They turn food into usable energy, so they matter more when training burns a lot of fuel. There is no performance gain from taking extra.','whole grains, oats, rice, meat, eggs, milk, bananas.','Food covers it','good')}
-  <h3 style="margin-top:12px">Immune system &amp; recovery</h3>
+  <div class="label" style="margin-top:12px">Immune system &amp; recovery</div>
   ${vitCard('Vitamin C',`${driText('vitC',A)} a day (upper limit ${driUL('vitC',A)})`,'Helps heal tissue, fights illness and helps absorb iron. Training hard in a team setting means a lot of colds going around.','oranges and juice, strawberries, kiwi, bell peppers, broccoli.','Food covers it','good')}
   ${vitCard('Vitamin A',`${driText('vitA',A)} a day (preformed vitamin A upper limit ${driUL('vitA',A)})`,'Vision, skin and the immune system. Too much preformed vitamin A from pills is harmful, so no extra “immune” or mega-dose products.','sweet potatoes, carrots, spinach, eggs, milk.','Food covers it — skip extra pills','good')}
   ${vitCard('Vitamin E',`${driText('vitE',A)} a day (supplement upper limit ${driUL('vitE',A)})`,'Protects muscle cells during hard training.','sunflower seeds, almonds, peanut butter, spinach, vegetable oils.','Food covers it','good')}
   ${vitCard('Zinc',`${driText('zinc',A)} a day (upper limit ${driUL('zinc',A)})`,'Immune function, growth and healing. Lost in sweat. A lot more than the limit for weeks (about 50 mg or more) can cause copper deficiency.','beef, chicken, pork, beans, nuts, yogurt, fortified cereal, oysters.','Food first; only add a pill if the doctor says','warn')}
   ${vitCard('Omega-3 (EPA/DHA)',`Fish 1–2 times a week · plant omega-3 (ALA): ${driText('ala',A)} a day`,'Helps control inflammation and supports the brain and joints. There is no official daily number for EPA/DHA and no set upper limit, but very large doses can thin the blood. Keep it to the label dose.','salmon, tuna, sardines, trout; walnuts, chia and flax for ALA.','Fish first; an omega-3 capsule is optional','good')}
-  <h3 style="margin-top:12px">Sweat &amp; cramps</h3>
+  <div class="label" style="margin-top:12px">Sweat &amp; cramps</div>
   ${vitCard('Sodium (electrolytes)','Replace what sweat takes out — salty foods plus a sports drink in hot or long sessions','Sodium is the main mineral in sweat. With two practices in a day, losses add up and plain water alone does not fully replace them. The signs you are behind: headaches, cramps, heavy white salt streaks on clothes. Younger children in one short session usually do not need an electrolyte drink if they eat normally.','a lightly salted snack, broth or soup, pretzels, pickles, milk, sports drink with sodium.','Food and drink first','good')}
   ${vitCard('Potassium',`${driText('potassium',A)} a day`,'Works with sodium for muscle contraction and nerve signals, and helps prevent cramps.','a banana (≈ 420 mg), baked potato (≈ 610 mg), orange juice (≈ 500 mg per cup), yogurt, beans.','Food covers it','good')}
   <div class="coachBubble" style="margin-top:12px"><strong>Check with the doctor first</strong><p>These are general targets from the NIH, not a prescription. A multivitamin made for the athlete’s age can fill gaps, but do not stack several “immune” or “athlete” products — their vitamin and mineral doses add up past the upper limits. Ask the doctor about a vitamin D and iron blood test rather than guessing. Anyone under 18 is still growing.</p></div>
- </div></details>`;
+ </div>`;
 }
 
 /* ---------------------------------------------------------------
@@ -2558,10 +2579,8 @@ function renderNutrition(){
  ${nutriProfileHTML()}
  ${nutriMealBuilderHTML()}
  ${waterHTML(l,nt)}
+ ${nutriShopHTML()}
  ${twoADayPlanHTML()}
- ${suppChecklistHTML()}
- ${vitaminsHTML()}
- ${supplementStackHTML()}
  <details class="clean"><summary>Anything else today?</summary><div class="detailBody">
   <div class="label">Added sugar or treats (grams, optional)</div><input type="number" data-log="addedSugar" value="${l.addedSugar||''}" oninput="stageInput(this)" placeholder="0 if none">
   <div class="label" style="margin-top:8px">Notes</div><textarea data-log="mealNotes" oninput="stageInput(this)" placeholder="Anything worth remembering about today's eating?">${l.mealNotes||''}</textarea>
@@ -5684,6 +5703,7 @@ function renderToday(){
   </div>
  </div>
  ${dayTypePickerHTML(sched.dayType)}
+ ${hypeBannerHTML()}
  <div class="feedDots">${sched.tasks.map((t,i)=>`<span class="feedDot ${i===todayCardIndex?'on':''} ${t.status==='completed'?'done':''}" onclick="todayGoTo(${i})"></span>`).join('')}</div>
  <div class="todayFeed" id="todayFeed" onscroll="onTodayFeedScroll(this)">
   ${sched.tasks.map((t,i)=>feedCardHTML(t,i,total,sched.tasks)).join('')}
@@ -7903,29 +7923,48 @@ function nutriDayStats(key,sched){
 function evoMeanPct(list){ const v=list.filter(x=>x!=null); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null; }
 function evoFilmRange(keys,sched){ const d=keys.map(k=>filmDayStats(k,k===localDateKey()?sched:null)); return {pct:evoMeanPct(d.map(x=>x.pct)),days:d}; }
 function evoNutriRange(keys,sched){ const d=keys.map(k=>nutriDayStats(k,k===localDateKey()?sched:null)); return {pct:evoMeanPct(d.map(x=>x.pct)),days:d}; }
-function evoWeights(){
- const w=evoCfg().weights||{parent:60,part:20,film:10,nutri:10};
- const t=(w.parent+w.part+w.film+w.nutri)||100;
- return {parent:w.parent/t,part:w.part/t,film:w.film/t,nutri:w.nutri/t,raw:w};
+/* v30: Speed, Agility & Footwork training (the morning session) is worth its own slice of the grade. A day is 100 when it was finished
+   (the Speed & Agility section saved as complete, or its schedule card completed) and 0 once the card is past due. Days with no such session are left out. */
+function trainDayStats(key,sched){
+ const cfg=evoCfg(); const isToday=(key===localDateKey()); const nf=nowF();
+ const lg=(state.scheduleLogs[key]||{}).movement;
+ if(state.trainDays[key]||(lg&&lg.status==='completed')) return {key,pct:100,required:true,done:true};
+ if(!evoScoreActive(key,sched)) return {key,pct:null,required:false};
+ let t=null;
+ if(isToday&&sched) t=sched.tasks.find(x=>x.id==='movement'&&x.trainingFocus==='morning'&&x.status!=='skipped');
+ else { try{ const d=keyToLocalDate(key); t=tasksForDayType(resolvedDayType(d),d).find(x=>x.id==='movement'&&x.trainingFocus==='morning'); }catch(e){ t=null; } }
+ if(!t) return {key,pct:null,required:false};
+ if(isToday){
+  if(key===cfg.scoreStart && t.schedStart!=null && t.schedStart<(cfg.scoreStartMin||0)) return {key,pct:null,required:false};
+  if(t.schedEnd==null||nf<=t.schedEnd+30) return {key,pct:null,required:true,pending:true};
+ }
+ return {key,pct:0,required:true,done:false};
 }
-const EVO_COMP_LABEL={parent:'Mom & Dad’s nightly grade',part:'Participation (on-time cards)',film:'Film Study score',nutri:'Nutrition logging'};
-const EVO_COMP_ICON={parent:'⭐',part:'🎯',film:'🎬',nutri:'🍽️'};
+function evoTrainRange(keys,sched){ const d=keys.map(k=>trainDayStats(k,k===localDateKey()?sched:null)); return {pct:evoMeanPct(d.map(x=>x.pct)),days:d}; }
+function evoWeights(){
+ const w=evoCfg().weights||{parent:55,part:20,film:10,nutri:10,train:5};
+ const tr=Number(w.train)||0;
+ const t=(w.parent+w.part+w.film+w.nutri+tr)||100;
+ return {parent:w.parent/t,part:w.part/t,film:w.film/t,nutri:w.nutri/t,train:tr/t,raw:Object.assign({train:tr},w)};
+}
+const EVO_COMP_LABEL={parent:'Mom & Dad’s nightly grade',part:'Participation (on-time cards)',film:'Film Study score',nutri:'Nutrition logging',train:'Speed, Agility & Footwork training'};
+const EVO_COMP_ICON={parent:'⭐',part:'🎯',film:'🎬',nutri:'🍽️',train:'⚡'};
 function evoOverall(keys,partKeys){ // week-style overall: parents' nightly grade + participation + film study + nutrition
  const nights=keys.map(k=>state.nightlyGrades[k]).filter(Boolean);
  const nAvg=nights.length?nights.reduce((a,g)=>a+g.avg,0)/nights.length:null;
  const nPct=nAvg==null?null:nAvg*20;
  const pk=partKeys||keys, sched=null;
  const part=evoRangeStats(pk);
- const film=evoFilmRange(pk,evoSched), nutri=evoNutriRange(pk,evoSched);
+ const film=evoFilmRange(pk,evoSched), nutri=evoNutriRange(pk,evoSched), train=evoTrainRange(pk,evoSched);
  const W=evoWeights();
  const comps=[
-  {k:'parent',pct:nPct,w:W.parent},{k:'part',pct:part.pct,w:W.part},{k:'film',pct:film.pct,w:W.film},{k:'nutri',pct:nutri.pct,w:W.nutri}
+  {k:'parent',pct:nPct,w:W.parent},{k:'part',pct:part.pct,w:W.part},{k:'film',pct:film.pct,w:W.film},{k:'nutri',pct:nutri.pct,w:W.nutri},{k:'train',pct:train.pct,w:W.train}
  ];
  const avail=comps.filter(c=>c.pct!=null&&c.w>0);
  const sumW=avail.reduce((a,c)=>a+c.w,0);
  const overall=sumW>0?avail.reduce((a,c)=>a+c.pct*c.w,0)/sumW:null;
  comps.forEach(c=>{ c.share=(c.pct!=null&&sumW>0)?c.w/sumW:null; });
- return {nights:nights.length,nAvg,nPct,part,film,nutri,comps,overall,basis:avail.map(c=>c.k).join('+'),weight:W.part,weights:W};
+ return {nights:nights.length,nAvg,nPct,part,film,nutri,train,comps,overall,basis:avail.map(c=>c.k).join('+'),weight:W.part,weights:W};
 }
 
 /* ---------- XP pictures (kept in the phone's own storage, 45 days) ---------- */
@@ -8008,6 +8047,7 @@ function evoDayDoc(date){
   part:{req:st.req,cnt:st.cnt,pct:st.pct},
   film:(function(){ const f=filmDayStats(date,null); return {pct:f.pct,right:f.right==null?null:f.right,den:f.den==null?null:f.den}; })(),
   nutri:(function(){ const n=nutriDayStats(date,null); return {pct:n.pct,cnt:n.cnt,req:n.req}; })(),
+  train:(function(){ const t=trainDayStats(date,null); return {pct:t.pct,done:!!t.done}; })(),
   hist:(function(){ const h=state.histDays[date]; if(!h) return null; const p=histPlan(date); const ff=histFigures().find(function(f){return f.id===h.fig;}); return {fig:ff?ff.name:(h.fig||''),stage:h.stage||'',tries:h.tries||0,s1:(h.s1==null?null:h.s1),final:(h.stage==='done'?histFinal(h):null)}; })(),
   values:(function(){ const v=state.valDays[date]; if(!v) return null; const p=valPlan(date); return {value:p?p.lesson.value:'',title:p?p.lesson.title:'',stage:v.stage||'',score:(v.score==null?null:v.score)}; })(),
   points:(function(){ try{ return pointsDay(date,null).total; }catch(err){ return null; } })(),
@@ -8379,6 +8419,7 @@ function renderGrades(){
   +grBox('gr_pts','⭐ My Bonus Points',pointsBalance(sched)+' points · cash in',ptsBoxHTML(),false)
   +grBox('gr_film','🎬 Film Study score','today '+evoPctLabel(filmDayStats(todayKey,sched).pct)+' · week '+evoPctLabel(ov.film.pct),filmBoxHTML(ov,sched),false)
   +grBox('gr_nut','🍽️ Nutrition logging','today '+evoPctLabel(nutriDayStats(todayKey,sched).pct)+' · week '+evoPctLabel(ov.nutri.pct),nutriBoxHTML(ov,sched),false)
+  +grBox('gr_train','⚡ Speed, Agility & Footwork','today '+(function(){ const t=trainDayStats(todayKey,sched); return t.done?'done ✅':(t.pending?'waiting':(t.required?'missed':'no session')); })()+' · week '+evoPctLabel(ov.train.pct),trainBoxHTML(ov,sched),false)
   +grBox('gr_part','🎯 Participation','today '+evoPctLabel(today.pct)+' · week '+evoPctLabel(wkPart.pct),partTop,false)
   +grBox('gr_cmt','💬 Comments from Mom & Dad','last 30 days',grCommentsHTML(),false)
   +grBox('gr_trend','📈 Last 30 days','trends & habits',grTrendHTML(),false)
@@ -8389,13 +8430,20 @@ function renderGrades(){
 function gradeBuildHTML(ov){
  const rows=ov.comps.map(c=>{
   const raw=ov.weights.raw[c.k]; const pct=c.pct;
-  const tips={parent:'Mom and Dad grade you each night on participation, attitude, behavior, schoolwork and effort. This is the biggest part, so every day counts.',part:'Submit each card in the last '+evoCfg().windowMin+' minutes of its block with everything filled in (school blocks also need the XP pictures and grades).',film:'Finish the Film Room session. Your score is right answers out of the questions in the session. Unanswered questions count as misses.',nutri:'Build and log every meal in Nutrition on the day: breakfast, lunch, dinner and both shakes.'}[c.k];
+  const tips={parent:'Mom and Dad grade you each night on participation, attitude, behavior, schoolwork and effort. This is the biggest part, so every day counts.',part:'Submit each card in the last '+evoCfg().windowMin+' minutes of its block with everything filled in (school blocks also need the XP pictures and grades).',film:'Finish the Film Room session. Your score is right answers out of the questions in the session. Unanswered questions count as misses.',nutri:'Log every meal on its meal card (or in Nutrition) the day you eat it: breakfast, lunch, dinner and both shakes.',train:'Finish your Speed, Agility & Footwork training on the days it is scheduled. Done is 100%, missed is 0%.'}[c.k];
   return '<div class="gbRow"><div class="gbHead"><b>'+EVO_COMP_ICON[c.k]+' '+EVO_COMP_LABEL[c.k]+'</b><span>worth '+raw+'%</span></div>'
    +'<div class="gbBar"><i style="width:'+(pct==null?0:Math.max(2,Math.min(100,pct)))+'%"></i></div>'
    +'<div class="tiny">'+(pct==null?'No score yet this week — it does not count until it has one.':'Your score: <b>'+Math.round(pct)+'%</b> '+pctToLetter(pct)+(c.share!=null?' · counts '+Math.round(c.share*100)+'% of your grade right now':''))+'</div><div class="tiny" style="opacity:.85">'+tips+'</div></div>';
  }).join('');
- return '<p class="small">Your overall grade is made from four parts. Mom and Dad’s grade is the biggest. The other three are things you control every day just by doing the work on time.</p>'+rows
+ return '<p class="small">Your overall grade is made from five parts. Mom and Dad’s grade is the biggest. The other four are things you control every day just by doing the work on time.</p>'+rows
   +'<p class="tiny">A part with no score yet is left out until it has one, so the grade shown is always fair. Your grade moves up and down all day as you submit on time, answer Film Room questions and log meals.</p>';
+}
+function trainBoxHTML(ov,sched){
+ const t=trainDayStats(localDateKey(),sched);
+ const days=ov.train.days.filter(d=>d.pct!=null&&d.key!==localDateKey()).map(d=>'<div class="checkItem"><span>'+dkLabel(d.key)+'</span><span class="tiny">'+(d.done?'done ✅':'missed')+'</span></div>').join('');
+ return '<p class="small">'+(t.done?'Today: <b>done ✅</b>':(t.pending?'Today’s Speed, Agility &amp; Footwork training is waiting for you.':(t.required?'Today’s session was missed.':'No Speed &amp; Agility session scheduled today.')))+'</p>'
+  +(days||'<p class="small">No sessions counted yet this week.</p>')
+  +'<p class="tiny">It counts '+evoWeights().raw.train+'% of your grade. Finishing the session is all it takes.</p><button class="gold full" onclick="showScreen(\'morning\')">Open Speed &amp; Agility</button>';
 }
 function filmBoxHTML(ov,sched){
  const today=filmDayStats(localDateKey(),sched);
@@ -8515,11 +8563,11 @@ function evoSaveSettings(){
  const wm=Math.max(1,Math.min(15,Number((document.getElementById('evoWinMin')||{}).value)||cfg.windowMin));
  const gm=Math.max(0,Math.min(5,Number((document.getElementById('evoGrace')||{}).value)||0));
  const gv=id=>Math.max(0,Math.min(100,Math.round(Number((document.getElementById(id)||{}).value)||0)));
- let W={parent:gv('evoWParent'),part:gv('evoWPart'),film:gv('evoWFilm'),nutri:gv('evoWNutri')};
+ let W={parent:gv('evoWParent'),part:gv('evoWPart'),film:gv('evoWFilm'),nutri:gv('evoWNutri'),train:gv('evoWTrain')};
  if(W.parent<51){ W.parent=51; alert('Mom and Dad’s grade is kept as the majority (at least 51%). The other parts were adjusted to fit.'); }
- const rest=100-W.parent, others=W.part+W.film+W.nutri;
- if(others<=0){ W.part=rest; W.film=0; W.nutri=0; }
- else { const f=rest/others; W.part=Math.round(W.part*f); W.film=Math.round(W.film*f); W.nutri=rest-W.part-W.film; if(W.nutri<0){ W.nutri=0; W.film=rest-W.part; } }
+ const rest=100-W.parent, others=W.part+W.film+W.nutri+W.train;
+ if(others<=0){ W.part=rest; W.film=0; W.nutri=0; W.train=0; }
+ else { const f=rest/others; W.part=Math.round(W.part*f); W.film=Math.round(W.film*f); W.train=Math.round(W.train*f); W.nutri=rest-W.part-W.film-W.train; if(W.nutri<0){ W.nutri=0; W.film=Math.max(0,rest-W.part-W.train); } }
  cfg.windowMin=wm; cfg.graceMin=gm; cfg.weights=W; cfg.weightPct=W.part;
  const sd=(document.getElementById('evoStart')||{}).value; if(/^\d{4}-\d{2}-\d{2}$/.test(sd||'')&&sd!==cfg.startDate){ cfg.startDate=sd; cfg.startMin=0; }
  cfg.cats=Object.keys(EVO_CAT_LABELS).filter(c=>{ const b=document.getElementById('evoCat_'+c); return b&&b.checked; });
@@ -8542,6 +8590,7 @@ function partBoxHTML(){
    +'<div class="label">🎯 Participation — on-time cards (%)</div><input id="evoWPart" type="number" min="0" max="49" value="'+cfg.weights.part+'">'
    +'<div class="label">🎬 Film Study score (%)</div><input id="evoWFilm" type="number" min="0" max="49" value="'+cfg.weights.film+'">'
    +'<div class="label">🍽️ Nutrition logging (%)</div><input id="evoWNutri" type="number" min="0" max="49" value="'+cfg.weights.nutri+'">'
+   +'<div class="label">⚡ Speed, Agility &amp; Footwork training (%)</div><input id="evoWTrain" type="number" min="0" max="49" value="'+(cfg.weights.train||0)+'">'
    +'<div class="label">Start counting from</div><input id="evoStart" type="date" value="'+cfg.startDate+'">'
    +'<div class="label">Which cards are tracked, and which need XP pictures + grades</div>'+catBoxes
    +'<button class="gold full" style="margin-top:10px" onclick="evoSaveSettings()">Save rules</button><p class="tiny">Fixed events (wake-up, trainer, game, bedtime), Screen Time, the nightly grade and video-game time are never tracked. Sick, travel and special-event days are skipped.</p>',false);
@@ -8648,6 +8697,7 @@ function renderParent(){
    ['sync','📲','Sync to phones',syncConnected()?'connected':'not connected'],
    ['lessons','📚','Daily lessons',(function(){ const p=histPlan(localDateKey()); return p?p.fig.name+' · day '+(p.di+1)+' of 5':'weekend, no lessons'; })()],
    ['points','⭐','Bonus points',pointsBalance(sched)+' points'],
+   ['hype','🔥','Game Day Mode',(state.hype.on?'on':'off')+' · hype, drive, highlights'],
    ['supp','💊','Vitamins & supplements',state.supp.enabled?suppItems().filter(function(i){return i.on;}).length+' items on his schedule':'off'],
    ['games','🏈','Games to watch',activeWatchGames().filter(g=>g.date>=localDateKey()).length+' on his schedule'],
    ['logs','📜','Strikes & saved logs','60 days'],
@@ -8656,9 +8706,10 @@ function renderParent(){
   el.innerHTML=top+'<p class="small">Pick a box. Everything is its own small section so nothing is overwhelming.</p><div class="parentTiles">'+tiles.map(t=>'<button class="pTile" onclick="openParentBox(\''+t[0]+'\')"><span class="pIcon">'+t[1]+'</span><b>'+t[2]+'</b><small>'+t[3]+'</small></button>').join('')+'</div>';
   return;
  }
- const titles={supp:'💊 Vitamins & supplements',lessons:'📚 Daily lessons',points:'⭐ Bonus points',games:'🏈 Games to watch',grades:'📊 Grades by day',cards:'🗂 Card review',part:'🎯 Participation',comments:'💬 Comments',checkins:'🔍 Check-ins waiting',sync:'📲 Sync to phones',logs:'📜 Strikes & saved logs',settings:'⚙️ App settings'};
+ const titles={hype:'🔥 Game Day Mode',supp:'💊 Vitamins & supplements',lessons:'📚 Daily lessons',points:'⭐ Bonus points',games:'🏈 Games to watch',grades:'📊 Grades by day',cards:'🗂 Card review',part:'🎯 Participation',comments:'💬 Comments',checkins:'🔍 Check-ins waiting',sync:'📲 Sync to phones',logs:'📜 Strikes & saved logs',settings:'⚙️ App settings'};
  let body='';
- if(parentBox==='supp') body=suppBoxHTML();
+ if(parentBox==='hype') body=hypeBoxHTML();
+ else if(parentBox==='supp') body=suppBoxHTML();
  else if(parentBox==='lessons') body=lessonsBoxHTML();
  else if(parentBox==='points') body=pointsBoxHTML();
  else if(parentBox==='games') body=gamesBoxHTML();
@@ -8680,8 +8731,8 @@ function renderParent(){
    ===================================================================== */
 let tutIdx=-1;
 function tutExample(){
- const W=evoWeights(); const sc={parent:90,part:80,film:70,nutri:100};
- const tot=W.parent*sc.parent+W.part*sc.part+W.film*sc.film+W.nutri*sc.nutri;
+ const W=evoWeights(); const sc={parent:90,part:80,film:70,nutri:100,train:100};
+ const tot=W.parent*sc.parent+W.part*sc.part+W.film*sc.film+W.nutri*sc.nutri+W.train*sc.train;
  return {W,sc,tot:Math.round(tot)};
 }
 function tutSteps(){
@@ -8703,12 +8754,13 @@ function tutSteps(){
    '<p>If you wake up late or finish something late, the rest of the day moves back. School blocks get a little shorter (Fast Math, Math and Science shrink last and least). Meals, chores and training keep their full time.</p>'
    +'<p>Bedtime can move from 9:30 up to 10:00 so the day fits. It is the same standard on a tighter clock, not a free pass.</p>'},
   {icon:'🧮',title:'How your grade is built',html:
-   '<p>Your overall grade has four parts:</p>'
+   '<p>Your overall grade has five parts:</p>'
    +'<div class="tutGrid"><div>⭐ <b>Mom &amp; Dad’s nightly grade</b></div><div class="tutW">'+R.parent+'%</div>'
    +'<div>🎯 <b>Participation</b> (on-time cards)</div><div class="tutW">'+R.part+'%</div>'
    +'<div>🎬 <b>Film Study</b> score</div><div class="tutW">'+R.film+'%</div>'
-   +'<div>🍽️ <b>Nutrition</b> logging</div><div class="tutW">'+R.nutri+'%</div></div>'
-   +'<p class="tiny">Example: parents 90, participation 80, film 70, nutrition 100 gives <b>'+ex.tot+'%</b>. A part with no score yet is left out until it has one.</p>'
+   +'<div>🍽️ <b>Nutrition</b> logging</div><div class="tutW">'+R.nutri+'%</div>'
+   +'<div>⚡ <b>Speed, Agility &amp; Footwork</b> training</div><div class="tutW">'+(R.train||0)+'%</div></div>'
+   +'<p class="tiny">Example: parents 90, participation 80, film 70, nutrition 100, training 100 gives <b>'+ex.tot+'%</b>. A part with no score yet is left out until it has one.</p>'
    +'<p>It moves up and down all day as you do the work. Open the <b>Grades</b> tab to see every part.</p>'},
   {icon:'🎬',title:'Points for Film Study and meals',html:
    '<p><b>🎬 Film Study:</b> finish the Film Room session. Your score is right answers out of the questions in the session. Questions you skip count as misses.</p>'
@@ -8728,7 +8780,10 @@ function tutSteps(){
    +'<p><b>⏱ Your day follows you.</b> Tap <b>Start</b> when a block begins and its clock starts then. The next block begins when you finish. Tap Start within <b>10 minutes</b> of a block being ready to keep it on time. Training, practice, games and lights-out stay fixed.</p>'},
   {icon:'🌤️',title:'Weekends are lighter on school',html:
    '<p>Saturday and Sunday have <b>no new lessons</b>. You still do a little <b>Fast Math, Math, Reading and Film Study</b>.</p>'
-   +'<p>The weekend is a bit more relaxed on school, but not on <b>responsibility and accountability</b>. Stay on schedule and finish your cards: <b>everything you earn on Saturday and Sunday counts double</b> in bonus points.</p>'}
+   +'<p>The weekend is a bit more relaxed on school, but not on <b>responsibility and accountability</b>. Stay on schedule and finish your cards: <b>everything you earn on Saturday and Sunday counts double</b> in bonus points.</p>'},
+  {icon:'🏈',title:'Game day mode',html:
+   '<p>On game days you get a fresh <b>hype line every time you open the app</b>. Tap <b>Game Day Mode</b> on the Today screen for four things: <b>🔥 Hype</b> lines, <b>🚗 Drive</b> mode with breathing, <b>🎬 Highlights</b> (truck sticks, hit sticks, jukes, running backs, linebackers and edge rushers) and your <b>🧠 Mindset</b> plan.</p>'
+   +'<p class="tiny">The highlight buttons open YouTube searches. Fill in the Mindset tab before you get out of the car: three things you control, one focus word, and what you do after a mistake.</p>'}
  ];
 }
 function tutorialOpen(i){ tutIdx=Math.max(0,Math.min(tutSteps().length-1,i||0)); tutorialRender(); }
@@ -8743,7 +8798,7 @@ function tutorialRender(){
   +'<div class="tutBtns">'+(tutIdx>0?'<button class="tutBack" onclick="tutorialOpen('+(tutIdx-1)+')">Back</button>':'<span></span>')
   +(tutIdx<n-1?'<button class="gold" onclick="tutorialOpen('+(tutIdx+1)+')">Next</button>':'<button class="green" onclick="tutorialClose()">Got it</button>')+'</div></div></div>';
 }
-const TUT_VER=29, TUT_NEW_FROM=10; // v26 added steps 7+, v28 added the vitamin/flexible-day step
+const TUT_VER=31, TUT_NEW_FROM=10; // v26 added steps 7+, v28 added the vitamin/flexible-day step
 function tutorialClose(){ tutIdx=-1; tutorialRender(); if(!state.tutorialSeen||state.tutorialVer<TUT_VER){ state.tutorialSeen=true; state.tutorialVer=TUT_VER; save(); } }
 function tutorialMaybeAuto(){
  if(tutIdx>=0||!appEntered||!state.onboarded) return;
@@ -9497,6 +9552,268 @@ function nutriMealBuilderHTML(){
   +'<div class="scrollPicker">'+chips+'</div>'+body
   +'<p class="tiny" style="margin-top:10px"><b>Logged today:</b> '+mealTotalLine(tot)+'</p></div>';
 }
+
+
+/* ---------- v30: the supplement timing already lives on his meal cards, so Nutrition only keeps a tidy shopping list ---------- */
+function suppSlotName(id){ const sl=SUPP_SLOTS.find(function(x){return x.id===suppNormSlot(id);}); return sl?sl.name:id; }
+function nutriShopHTML(){
+ const d=supplementDoses(state.age);
+ const A=Number(state.age)||13;
+ const w=(function(){ try{ return athleteWeight(); }catch(e){ return 0; } })();
+ let sup='';
+ if(d.age<=8){
+  sup='<p class="small"><b>Ages 4–8: food and water only.</b> No supplement stack at this age. A children’s multivitamin is only used if the pediatrician says so.</p>';
+ } else {
+  const rows=suppItems().filter(function(i){ return i.id!=='h2oAM'&&i.id!=='h2oPre'; });
+  sup=rows.map(function(i){
+   return '<details class="vitRow"><summary><span><b>'+escapeHTML(i.name)+'</b><br><span class="tiny">'+escapeHTML(i.dose)+'</span></span><span class="badge '+(i.on?'good':'warn')+'">'+(i.on?escapeHTML(suppSlotName(i.slot)):'off')+'</span></summary><div class="vitBody"><p class="small">🥛 '+escapeHTML(i.withWhat)+'</p><p class="tiny">Why: '+escapeHTML(i.why)+'</p></div></details>';
+  }).join('')
+  +'<p class="tiny" style="margin-top:8px">Timing is already on his meal cards. A parent can turn items on or off or change amounts in Parent → Vitamins &amp; supplements. Stimulant pre-workouts, energy drinks, fat burners and “testosterone boosters” are not for athletes this age. Food, sleep and consistency beat every supplement; confirm anything new with the doctor.</p>';
+ }
+ return '<details class="clean"><summary>🛒 What to buy: supplements &amp; vitamins</summary><div class="detailBody">'
+  +'<p class="small">The timing is built into his meal cards, so this is just the list. Amounts fit age '+A+(w?' and about '+w+' lb':'')+' for a twice-a-day athlete.</p>'
+  +'<details class="vitRow"><summary><span><b>💊 Supplement stack</b><br><span class="tiny">what to buy, how much, with which meal</span></span><span class="tiny">open</span></summary><div class="vitBody">'+sup+'</div></details>'
+  +'<details class="vitRow"><summary><span><b>🥦 Vitamins &amp; minerals</b><br><span class="tiny">daily targets and the foods that cover them</span></span><span class="tiny">open</span></summary><div class="vitBody">'+vitaminsListHTML()+'</div></details>'
+  +'</div></details>';
+}
+
+/* =====================================================================
+   v31 — Game Day Mode.
+   * Every time the app is opened on a game day (and when the phone wakes it again) a fresh hype line shows first.
+   * A Game Day Mode screen with four tabs: Hype, Drive, Highlights, Mindset.
+   * Highlights are YouTube SEARCH links (nothing is hosted or copied, no video ids are guessed), so they are always current.
+   * All hype lines are original wording, not quotes from real people.
+   ===================================================================== */
+const HYPE_LINES=[
+ ['fire','Today you hit first.'],['fire','Run angry. Run smart. Run through.'],['fire','Every carry is a statement. Make it loud.'],
+ ['fire','Be the hardest hitter on the field and the cleanest tackler.'],['fire','Play through the whistle. Every. Single. Play.'],
+ ['fire','Violent hands. Calm mind.'],['fire','Set the edge. Own the edge.'],['fire','They can’t tackle what they can’t catch.'],
+ ['fire','Lower the pads. Win the leverage. Finish the play.'],['fire','Make the other side tired of seeing your number.'],
+ ['fire','Fast feet. Eyes up. Nothing wasted.'],['fire','Tackle like it’s the last play of the season.'],
+ ['fire','Don’t go around contact. Be the contact.'],['fire','Bring the energy before anyone asks for it.'],
+ ['fire','Play fast, play physical, play free.'],['fire','Make the first hit. Then make the second one count.'],
+ ['fire','Cut once, trust it, and go.'],['fire','Get to the ball. Then get there again.'],
+ ['focus','Next play. That is the only play.'],['focus','You already did the work. Now go show it.'],
+ ['focus','Breathe. Read. React.'],['focus','Calm is a weapon. Use it.'],['focus','Do your job, then do a little more.'],
+ ['focus','Eyes on your keys. Feet on the plan.'],['focus','You have prepared for this moment all week.'],
+ ['focus','Slow is smooth. Smooth is fast.'],['focus','Trust your training. Let your instincts talk.'],
+ ['focus','See it. Say it. Do it.'],['focus','Confidence is built in practice and carried onto the field.'],
+ ['focus','One play at a time. One job at a time.'],['focus','Tune out the noise. Tune in to your assignment.'],
+ ['focus','Be where your feet are.'],['focus','Great players stay locked in when it gets loud.'],
+ ['faith','Say thank you for the chance, then go earn it.'],['faith','Play for the people in the stands and the ones who couldn’t come.'],
+ ['faith','Your family sacrificed for this. Play like you know it.'],['faith','Represent your name and everyone who carries it.'],
+ ['faith','Gratitude and grit. You get to do this.'],['faith','Pray, breathe, and play with a free mind.'],
+ ['faith','You are not alone out there. Your team has your back, and you have theirs.'],
+ ['faith','Carry yourself like a young man people can count on.'],['faith','Leave it all on the field and give the glory back.'],
+ ['reset','Missed one? Flush it. Next play.'],['reset','Short memory. Long game.'],
+ ['reset','A mistake is one play. Your response is the next ten.'],['reset','Get up faster than you went down.'],
+ ['reset','Reset with one breath, then attack the next snap.'],['reset','Fix it in your head, then fix it on the field.'],
+ ['team','Be the teammate who lifts the huddle.'],['team','Tell a teammate you’ve got him. Mean it.'],
+ ['team','Win your one-on-one, and the team wins.'],['team','Hustle is contagious. Start it.'],
+ ['fire','The crowd will remember effort. So will you.'],['fire','Hungry gets there first.'],
+ ['focus','Early, ready, and locked in. That is how champions arrive.'],['focus','Be the calm in the middle of the storm.'],
+ ['fire','Earn it on every snap and let the scoreboard catch up.'],['fire','This is the part you trained for.'],
+ ['fire','Make every tackle a handshake you don’t forget.'],['fire','Break the first tackle. Break the second. Keep going.']
+];
+const HYPE_TONES={fire:'🔥',focus:'🎯',faith:'🙏',reset:'🔄',team:'🤝'};
+let hypeSeen=[];            // lines shown since this page opened, so none repeat until the list is used up
+let hypeCur=null;           // the line on screen right now
+let hypeSplashOn=false;
+let hypeTab=null, hypeRootOn=false, hypeTimer=null, hypeBreath=0;
+function hypeCfg(){ return state.hype; }
+function hypeAllLines(){
+ const mine=(state.hype.lines||[]).filter(function(x){return x&&x.trim();}).map(function(x){return ['team',x.trim()];});
+ return HYPE_LINES.concat(mine);
+}
+function hypeNext(kind){
+ const all=hypeAllLines().filter(function(l){ return !kind||l[0]===kind; });
+ let pool=all.filter(function(l){ return hypeSeen.indexOf(l[1])===-1; });
+ if(!pool.length){ hypeSeen=hypeCur?[hypeCur[1]]:[]; pool=all.filter(function(l){ return hypeSeen.indexOf(l[1])===-1; }); }
+ const pick=pool[Math.floor(Math.random()*pool.length)]||all[0];
+ hypeCur=pick; hypeSeen.push(pick[1]);
+ return pick;
+}
+/* ---------- is today a game day, and where are we in it ---------- */
+function hypeActive(){
+ try{ return !!(state.onboarded&&state.hype.on&&resolvedDayType()==='gameDay'); }catch(e){ return false; }
+}
+function hypeTimes(){
+ const gi=state.gameInfo||{}; const ko=parseClock(gi.kickoff||'17:30');
+ let leaveS=null, leaveE=null;
+ try{ const s=computeTodaySchedule(); const lg=s.tasks.find(function(t){return t.id==='leaveGame';}); if(lg){ leaveS=lg.schedStart; leaveE=lg.schedEnd; } }catch(e){}
+ return {kickoff:ko,lead:Number(state.hype.leadMin)||45,leaveS:leaveS,leaveE:leaveE,arrive:parseClock(gi.teamArrival||'16:30')};
+}
+function hypePhase(){
+ const t=hypeTimes(), n=nowMinutes();
+ if(n>=t.kickoff+150) return 'after';
+ if(n>=t.kickoff) return 'game';
+ if(n>=t.kickoff-t.lead) return 'prime';
+ if(t.leaveS!=null&&n>=t.leaveS&&n<(t.leaveE||t.arrive)) return 'drive';
+ if(t.leaveS!=null&&n>=t.leaveS-30&&n<t.leaveS) return 'soon';
+ return 'early';
+}
+function hypeCountdown(){
+ const t=hypeTimes(); const nf=nowF(); const left=t.kickoff-nf;
+ if(left<=0) return 'Game time';
+ const m=Math.ceil(left); const h=Math.floor(m/60), r=m%60;
+ return 'Kickoff in '+(h?h+' hr ':'')+r+' min';
+}
+function hypeOpponent(){ const o=(state.gameInfo&&state.gameInfo.opponent)||''; return o?('vs '+o):''; }
+/* ---------- the splash that shows on every open (and when the phone wakes the app) ---------- */
+function hypeSplashHTML(){
+ const l=hypeCur||hypeNext();
+ return '<div class="quoteGateWrap hypeGate"><div class="hypeTag">🏈 GAME DAY '+escapeHTML(hypeOpponent())+'</div>'
+  +'<div class="hypeBig">'+HYPE_TONES[l[0]]+'</div><p class="quoteText hypeLine">'+escapeHTML(l[1])+'</p>'
+  +'<p class="tiny" style="margin-top:14px;opacity:.8">'+escapeHTML(hypeCountdown())+'</p>'
+  +'<button class="gateBtn" style="margin-top:20px" onclick="hypeSplashClose()">Let’s go</button>'
+  +'<button class="chip" style="margin-top:12px" onclick="hypeSplashAgain()">Another one</button>'
+  +'<button class="chip" style="margin-top:8px" onclick="hypeSplashClose(true)">Open Game Day Mode</button></div>';
+}
+function hypeSplashShow(){
+ hypeNext(); hypeSplashOn=true; showGate();
+ const el=document.getElementById('gateInner'); if(el) el.innerHTML=hypeSplashHTML();
+}
+function hypeSplashAgain(){ hypeNext(); const el=document.getElementById('gateInner'); if(el) el.innerHTML=hypeSplashHTML(); }
+function hypeSplashClose(openRoom){
+ hypeSplashOn=false;
+ if(!appEntered){ boot(); if(openRoom) hypeOpenAfterEntry=true; return; }
+ hideGate(); render();
+ if(openRoom) hypeOpen();
+}
+let hypeOpenAfterEntry=false;
+/* ---------- Game Day Mode screen ---------- */
+const HYPE_SEARCHES=[
+ ['💥 Truck sticks','truck stick running back highlights'],
+ ['🔨 Hit sticks','hit stick football highlights'],
+ ['🌀 Jukes & spin moves','running back juke spin move highlights'],
+ ['🏃 Running back highlights','best running back highlights'],
+ ['🛡️ Linebacker hits','linebacker big hits highlights'],
+ ['⚡ Edge rusher sacks','edge rusher sack highlights'],
+ ['🧱 Big tackles','best tackles football highlights'],
+ ['🏈 High school RB highlights','high school running back highlights'],
+ ['🏈 High school LB & edge highlights','high school linebacker edge rusher highlights']
+];
+const HYPE_RB=['Barry Sanders','Walter Payton','Emmitt Smith','Adrian Peterson','Marshawn Lynch','Derrick Henry','Saquon Barkley','Christian McCaffrey','Bo Jackson','Eric Dickerson'];
+const HYPE_LB=['Ray Lewis','Lawrence Taylor','Brian Urlacher','Von Miller','Khalil Mack','Micah Parsons','T.J. Watt','Myles Garrett','Reggie White','Luke Kuechly'];
+function ytSearchURL(q){ return 'https://www.youtube.com/results?search_query='+encodeURIComponent(q); }
+function hypeLink(label,q){ return '<a class="hypeLinkBtn" href="'+ytSearchURL(q)+'" target="_blank" rel="noopener">'+escapeHTML(label)+'</a>'; }
+function hypeDay(){ const k=localDateKey(); state.hypeDays=state.hypeDays||{}; state.hypeDays[k]=state.hypeDays[k]||{}; return state.hypeDays[k]; }
+function hypeTabs(){ return [['hype','🔥 Hype'],['drive','🚗 Drive'],['hl','🎬 Highlights'],['mind','🧠 Mindset']]; }
+function hypeDefaultTab(){ const p=hypePhase(); return p==='drive'?'drive':(p==='prime'||p==='soon')?'hl':'hype'; }
+function hypeBodyHTML(){
+ const tab=hypeTab||hypeDefaultTab(); const d=hypeDay();
+ const phase=hypePhase();
+ const phaseNote={early:'Game day. Stay loose, eat, hydrate.',soon:'Almost time to roll. Get your head right.',drive:'On the road. Passenger mode.',prime:'🔥 Prime time. Lock in.',game:'It’s game time. Go play.',after:'Game over. Thank your team, eat and recover.'}[phase];
+ let h='<div class="hypeTop"><div><div class="hypeTag">🏈 GAME DAY '+escapeHTML(hypeOpponent())+'</div><div class="tiny">'+escapeHTML(phaseNote)+' · '+escapeHTML(hypeCountdown())+'</div></div><button class="chip" onclick="hypeClose()">✕ Close</button></div>';
+ h+='<div class="scrollPicker" style="margin:8px 0">'+hypeTabs().map(function(t){ return '<button class="scrollChip '+(tab===t[0]?'active':'')+'" onclick="hypeSetTab(\''+t[0]+'\')">'+t[1]+'</button>'; }).join('')+'</div>';
+ if(tab==='hype'){
+  const l=hypeCur||hypeNext();
+  h+='<div class="hypeCard"><div class="hypeBig">'+HYPE_TONES[l[0]]+'</div><p class="hypeLine" id="hypeLineBig">'+escapeHTML(l[1])+'</p></div>'
+   +'<button class="gold full" onclick="hypeAnother()">Next one</button>'
+   +'<div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">'+['fire','focus','faith','reset','team'].map(function(k){ return '<button class="chip" onclick="hypeAnother(\''+k+'\')">'+HYPE_TONES[k]+' '+k+'</button>'; }).join('')+'</div>'
+   +(d.word?'<div class="inner" style="margin-top:12px"><div class="tiny">Your focus word</div><div class="hypeWord">'+escapeHTML(d.word)+'</div></div>':'');
+ } else if(tab==='drive'){
+  const ph=['Breathe in','Hold','Breathe out','Hold'][hypeBreath%4];
+  const l=hypeCur||hypeNext();
+  h+='<div class="hypeCard"><div class="tiny">Passenger mode. Eyes up, phone down when the car stops.</div><p class="hypeLine" id="hypeLineBig">'+escapeHTML(l[1])+'</p></div>'
+   +'<button class="gold full" onclick="hypeAnother()">Next line</button>'
+   +'<div class="inner" style="margin-top:12px;text-align:center"><div class="tiny">Box breathing · 4 seconds each</div><div class="hypeBreath" id="hypeBreath">'+ph+'</div><button class="chip" onclick="hypeBreathToggle()">'+(hypeTimer?'Stop':'Start 4 rounds')+'</button></div>'
+   +hypeJobHTML(d);
+ } else if(tab==='hl'){
+  const custom=(state.hype.links||[]).filter(function(x){return x&&x.label&&x.q;});
+  h+='<p class="small">Tap a button to open the YouTube search. Pick a few, watch with your headphones in, and get your head right.</p>'
+   +'<div class="hypeLinks">'+HYPE_SEARCHES.map(function(x){ return hypeLink(x[0],x[1]); }).join('')+custom.map(function(x){ return hypeLink('⭐ '+x.label,x.q); }).join('')+'</div>'
+   +'<div class="label" style="margin-top:12px">Famous running backs</div><div class="hypeLinks small">'+HYPE_RB.map(function(n){ return hypeLink(n,n+' highlights'); }).join('')+'</div>'
+   +'<div class="label" style="margin-top:12px">Famous linebackers &amp; edge rushers</div><div class="hypeLinks small">'+HYPE_LB.map(function(n){ return hypeLink(n,n+' highlights'); }).join('')+'</div>'
+   +'<p class="tiny" style="margin-top:10px">These open YouTube searches, so the videos are always current. A parent can add or remove searches in Parent → Game Day Mode.</p>';
+ } else {
+  h+='<div class="inner"><p class="small">Fill this in before you get out of the car. Short and honest.</p>'
+   +'<div class="label">3 things I control today</div>'
+   +['c1','c2','c3'].map(function(k,i){ return '<input type="text" value="'+escapeHTML(d[k]||'')+'" placeholder="'+['My effort','My attitude','My assignment'][i]+'" onchange="hypeSave(\''+k+'\',this.value)" style="margin-top:6px">'; }).join('')
+   +'<div class="label" style="margin-top:10px">My one focus word</div><input type="text" value="'+escapeHTML(d.word||'')+'" placeholder="Example: Violent, Calm, Finish" onchange="hypeSave(\'word\',this.value)">'
+   +'<div class="label" style="margin-top:10px">When I make a mistake I will…</div><input type="text" value="'+escapeHTML(d.reset||'')+'" placeholder="Example: Breathe, flush it, next play" onchange="hypeSave(\'reset\',this.value)">'
+   +'<button class="green full" style="margin-top:10px" onclick="hypeLockIn()">'+(d.locked?'✅ Locked in. Update it':'Lock it in')+'</button></div>'
+   +hypeJobHTML(d);
+ }
+ return h;
+}
+function hypeJobHTML(d){
+ if(!(d.c1||d.c2||d.c3||d.word||d.reset)) return '<p class="tiny" style="margin-top:10px">Fill in the Mindset tab and your plan shows up here.</p>';
+ return '<div class="inner" style="margin-top:12px"><div class="label" style="margin-top:0">My job today</div>'
+  +['c1','c2','c3'].filter(function(k){return d[k];}).map(function(k){ return '<div class="small">✔ '+escapeHTML(d[k])+'</div>'; }).join('')
+  +(d.word?'<div class="small" style="margin-top:6px">Focus word: <b>'+escapeHTML(d.word)+'</b></div>':'')
+  +(d.reset?'<div class="small">After a mistake: <b>'+escapeHTML(d.reset)+'</b></div>':'')+'</div>';
+}
+function hypeSave(k,v){ hypeDay()[k]=String(v||'').trim().slice(0,80); save(); }
+function hypeLockIn(){ hypeDay().locked=Date.now(); save(); hypeRender(); }
+function hypeAnother(kind){ hypeNext(kind); hypeRender(); }
+function hypeSetTab(t){ hypeTab=t; if(t!=='drive') hypeBreathStop(); hypeRender(); }
+function hypeBreathToggle(){
+ if(hypeTimer){ hypeBreathStop(); hypeRender(); return; }
+ hypeBreath=0; let ticks=0;
+ hypeTimer=setInterval(function(){
+  ticks++; hypeBreath=ticks;
+  const el=document.getElementById('hypeBreath'); if(el) el.textContent=['Breathe in','Hold','Breathe out','Hold'][hypeBreath%4];
+  if(ticks>=16){ hypeBreathStop(); hypeRender(); }
+ },4000);
+ hypeRender();
+}
+function hypeBreathStop(){ if(hypeTimer){ clearInterval(hypeTimer); hypeTimer=null; } }
+function hypeRender(){
+ const root=document.getElementById('hypeRoot'); if(!root) return;
+ root.innerHTML='<div class="hypeOv"><div class="hypeIn">'+hypeBodyHTML()+'</div></div>';
+}
+function hypeOpen(tab){
+ let root=document.getElementById('hypeRoot');
+ if(!root){ root=document.createElement('div'); root.id='hypeRoot'; document.body.appendChild(root); }
+ hypeTab=tab||null; hypeRootOn=true; if(!hypeCur) hypeNext(); hypeRender();
+}
+function hypeClose(){ hypeBreathStop(); hypeRootOn=false; const root=document.getElementById('hypeRoot'); if(root) root.innerHTML=''; }
+/* ---------- Today banner ---------- */
+function hypeBannerHTML(){
+ if(!hypeActive()) return '';
+ const p=hypePhase(); if(p==='after') return '';
+ const hot=(p==='prime'||p==='drive');
+ const msg={early:'Game day. Tap for hype, highlights and your mindset plan.',soon:'Almost time to roll. Get locked in.',drive:'🚗 On the road. Open drive mode.',prime:'🔥 Prime time. Highlights are ready.',game:'Go play. Leave it all on the field.'}[p];
+ return '<button class="hypeBanner'+(hot?' hot':'')+'" onclick="hypeOpen(\''+(p==='drive'?'drive':(p==='prime'||p==='soon')?'hl':'hype')+'\')"><span class="hypeBannerT">🏈 Game Day Mode</span><span class="tiny">'+escapeHTML(msg)+' · '+escapeHTML(hypeCountdown())+'</span></button>';
+}
+/* ---------- phone woke the app again on a game day: show a fresh line ---------- */
+let hypeHiddenAt=0;
+document.addEventListener('visibilitychange',function(){
+ if(document.hidden){ hypeHiddenAt=Date.now(); return; }
+ if(!hypeHiddenAt||Date.now()-hypeHiddenAt<3*60000) return;
+ hypeHiddenAt=0;
+ if(appEntered&&hypeActive()&&hypePhase()!=='after'&&!hypeSplashOn&&tutIdx<0) hypeSplashShow();
+});
+/* ---------- parent box ---------- */
+function hypeBoxHTML(){
+ const c=state.hype;
+ let h='<p class="small">On game days he sees a fresh hype line every time the app opens, plus a Game Day Mode screen (hype, drive mode, highlights, mindset). Highlights are YouTube searches: nothing is stored in the app. Game info (kickoff, arrival, opponent) comes from the Game settings.</p>';
+ h+='<div class="checkItem"><span><b>Game Day Mode on game days</b></span><button class="chip" onclick="hypeToggle()">'+(c.on?'On':'Off')+'</button></div>';
+ h+='<div class="label">Highlights window opens this many minutes before kickoff</div><input type="number" min="10" max="120" id="hypeLead" value="'+(Number(c.leadMin)||45)+'" onchange="hypeSetLead()">';
+ h+='<div class="label" style="margin-top:12px">Your own highlight searches</div>';
+ h+=(c.links||[]).map(function(x,i){ return '<div class="inner" style="margin-top:6px"><div class="small"><b>'+escapeHTML(x.label)+'</b></div><div class="tiny">Search: '+escapeHTML(x.q)+'</div><button class="chip" style="margin-top:6px" onclick="hypeRemoveLink('+i+')">Remove</button></div>'; }).join('')||'<p class="tiny">None yet. The built-in list is already there.</p>';
+ h+='<div class="inner" style="margin-top:8px"><input type="text" id="hypeLinkLabel" placeholder="Button name (for example Ravens defense)"><input type="text" id="hypeLinkQ" placeholder="What to search on YouTube" style="margin-top:6px"><button class="gold full" style="margin-top:8px" onclick="hypeAddLink()">Add search</button></div>';
+ h+='<div class="label" style="margin-top:12px">Your own hype lines</div>';
+ h+=(c.lines||[]).map(function(x,i){ return '<div class="checkItem"><span class="small">'+escapeHTML(x)+'</span><button class="chip" onclick="hypeRemoveLine('+i+')">✕</button></div>'; }).join('')||'<p class="tiny">None yet.</p>';
+ h+='<div class="inner" style="margin-top:8px"><input type="text" id="hypeLineNew" placeholder="Write a line he will hear on game day"><button class="gold full" style="margin-top:8px" onclick="hypeAddLine()">Add line</button></div>';
+ h+='<button class="chip" style="margin-top:12px" onclick="hypeOpen()">Preview Game Day Mode</button>';
+ return h;
+}
+function hypeToggle(){ state.hype.on=!state.hype.on; save(); render(); }
+function hypeSetLead(){ const e=document.getElementById('hypeLead'); const v=Math.max(10,Math.min(120,Math.round(Number(e&&e.value)||45))); state.hype.leadMin=v; save(); }
+function hypeAddLink(){
+ const l=(document.getElementById('hypeLinkLabel')||{}).value||'', q=(document.getElementById('hypeLinkQ')||{}).value||'';
+ if(!l.trim()||!q.trim()){ alert('Type a button name and what to search.'); return; }
+ state.hype.links.push({label:l.trim().slice(0,40),q:q.trim().slice(0,100)}); save(); render();
+}
+function hypeRemoveLink(i){ state.hype.links.splice(i,1); save(); render(); }
+function hypeAddLine(){
+ const v=((document.getElementById('hypeLineNew')||{}).value||'').trim();
+ if(!v){ alert('Type a line first.'); return; }
+ state.hype.lines.push(v.slice(0,120)); save(); render();
+}
+function hypeRemoveLine(i){ state.hype.lines.splice(i,1); save(); render(); }
 
 boot();
 </script>
