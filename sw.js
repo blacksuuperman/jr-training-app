@@ -1,7 +1,7 @@
 // Jr Level 13 Athlete Hub — service worker
 // Bump CACHE_NAME any time index.html/approver.html or the icons change so
 // devices pick up the new version instead of serving a stale offline copy.
-const CACHE_NAME = 'jr-level13-shell-v27-daily-person-pass-rule';
+const CACHE_NAME = 'jr-level13-shell-v28-floating-day-vitamin-cards';
 const CORE_ASSETS = [
   './',
   './index.html',

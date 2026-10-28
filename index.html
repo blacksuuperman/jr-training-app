@@ -121,6 +121,7 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .evoShrunk{margin:8px 0;padding:8px 10px;border-radius:10px;border:1px dashed var(--accent);font-size:12px;font-weight:700}
 .evoBanner{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:990;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#14141d;border:2px solid var(--accent);box-shadow:0 8px 30px rgba(0,0,0,.6);color:#fff}
 .lsWrap{margin-top:8px}
+.suppRow{display:flex;gap:10px;align-items:flex-start;padding:10px;margin:6px 0;border-radius:12px;border:1px solid var(--line);background:#0d0d14;cursor:pointer}.suppRow.on{border-color:#22c55e;background:rgba(34,197,94,.10)}.suppBox{font-size:20px;line-height:1.2}
 .lsOpt{display:block;width:100%;text-align:left;margin:6px 0;padding:12px;border-radius:12px;background:#12121b;border:2px solid var(--line);color:var(--text);font-size:15px;font-weight:700;min-height:48px;line-height:1.3}
 .lsOpt.ok{border-color:#22c55e;background:rgba(34,197,94,.16)}.lsOpt.bad{border-color:#ef4444;background:rgba(239,68,68,.16)}.lsOpt:disabled{opacity:1}
 .lsFb{margin:8px 0 0;padding:8px 10px;border-radius:10px;font-weight:800;font-size:14px}.lsFb.ok{background:rgba(34,197,94,.16);color:#22c55e}.lsFb.bad{background:rgba(239,68,68,.16);color:#ef4444}
@@ -474,7 +475,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v27-daily-person-pass-rule';
+const BUILD_VERSION='v28-floating-day-vitamin-cards';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -806,6 +807,12 @@ state.filmDays = (state.filmDays&&typeof state.filmDays==='object') ? state.film
 state.nutriDays = (state.nutriDays&&typeof state.nutriDays==='object') ? state.nutriDays : {};
 state.tutorialSeen = !!state.tutorialSeen;
 state.tutorialVer = Number(state.tutorialVer)||(state.tutorialSeen?25:0);
+// v28: vitamin and supplement reminder cards
+state.supp = (state.supp&&typeof state.supp==='object') ? state.supp : {};
+if(typeof state.supp.enabled!=='boolean') state.supp.enabled=true;
+if(!state.supp.over||typeof state.supp.over!=='object') state.supp.over={};
+if(!Array.isArray(state.supp.custom)) state.supp.custom=[];
+state.suppDays = (state.suppDays&&typeof state.suppDays==='object') ? state.suppDays : {};
 // v26: daily lessons, character lessons, bonus points. Defaults only; nothing existing is touched.
 state.hist = (state.hist&&typeof state.hist==='object') ? state.hist : {};
 if(!/^\d{4}-\d{2}-\d{2}$/.test(state.hist.startDate||'')) state.hist.startDate=localDateKey();
@@ -3020,7 +3027,7 @@ function cleanKitchenTask(){
  return task('cleanKitchen','Clean Kitchen','Responsibility','6:00',e.escalated?45:30,{priority:2,completionType:'kitchen',guide:'cleanKitchen',deep:!!e.escalated,instructions:['Dishes → pots and pans → counters → stove → floors last.']});
 }
 function houseInspectionTask(){
- return task('houseInspection','House Inspection Walk-Through','Responsibility','6:00',35,{priority:2,completionType:'inspection',instructions:['Walk every room, fix what you find, feed the dog, and take him for a walk.']});
+ return task('houseInspection','House Inspection Walk-Through','Responsibility','6:00',30,{priority:2,completionType:'inspection',instructions:['Walk every room, fix what you find, feed the dog, and take him for a walk.']});
 }
 
 /* ----- Responsibility block (four tappable areas) ----- */
@@ -3147,11 +3154,13 @@ function normalHomeDayTasks(d,dev){
  d=asDate(d);
  return flow([
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
+  ...suppTasksFor('am'),
   task('movement','Speed, Agility & Footwork Training','Training','6:00',45,{priority:1,completionType:'training',trainingFocus:'morning',instructions:[dev?'No trainer this week — Speed & Agility still happens every weekday morning. Footwork, lateral quickness, and quick feet, with the ladder and cones.':'Every weekday morning (not Saturday or Sunday) starts with Speed & Agility — footwork, lateral quickness, and quick feet, with the ladder and cones.','Opens the Speed, Agility & Plyos module.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
+  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
+  ...suppTasksFor('morning'),
   washDishesTask('washDishesBreakfast'),
-  task('schoolPrep','School Preparation','Hygiene','6:00',15,{instructions:SCHOOL_PREP_CHECKLIST}),
+  task('schoolPrep','School Preparation','Hygiene','6:00',10,{instructions:SCHOOL_PREP_CHECKLIST}),
   task('fastMath','Fast Math','Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Addition, subtraction, and multiplication facts — division when ready.','This builds automaticity, not new instruction.','Short and focused on purpose — fluency drills work best in quick, frequent bursts, not a long stretch.']}),
   task('math','Mathematics','Academic','6:00',dev?70:60,{priority:1,completionType:'academic',sub:'math',instructions:[dev?'Extra time this week since the trainer is suspended — use it on the skill ladder.':'Work the current step on the skill ladder (place value through pre-algebra).','If mastery is shown, move forward. If confused, move back to find the missing foundation.','Target: 85 to 90 percent consistent accuracy before advancing.']}),
   task('break1','Break','Recovery','6:00',10,{priority:3,instructions:['Bathroom, water, stretch, or a quick snack — no electronics.']}),
@@ -3165,8 +3174,10 @@ function normalHomeDayTasks(d,dev){
   ...histTasksFor(d),
   filmStudyTask(30),
   prepTask('snackPrep','home',20),
+  ...suppTasksFor('pre'),
   task('training','Workout & Football Touches','Training','6:00',80,{priority:1,completionType:'training',trainingFocus:'afternoon',instructions:['Speed & Agility already happened this morning — this block is Workout (strength) and Football Touches.']}),
   showerAfterTask('Shower After Training'),
+  ...suppTasksFor('post'),
   task('dinner','Dinner','Meal','6:00',40,{instructions:['Family dinner']}),
   responsibilityBlock(dev?'Responsibility Project':'Responsibility Block'),
   houseInspectionTask(),
@@ -3175,7 +3186,7 @@ function normalHomeDayTasks(d,dev){
   ...valuesTasksFor(d),
   ...weakSubjectRepeatTasks('6:00',!!dev),
   indepReadingTask(25),
-  task('tomorrowPrep','Tomorrow Preparation','Hygiene','6:00',15,{instructions:TOMORROW_PREP_CHECKLIST}),
+  task('tomorrowPrep','Tomorrow Preparation','Hygiene','6:00',10,{instructions:TOMORROW_PREP_CHECKLIST}),
   task('nightRoutine','Night Routine','Hygiene','6:00',15,{instructions:NIGHT_CHECKLIST}),
   nightlyGradeTask(),
   task('screenTime','Screen Time (TV Only)','Recovery','6:00',30,{priority:2,instructions:['Earned Screen Time — TV only, nothing else.','Every chore and academic block approved clean today adds minutes, and finishing early adds a bonus.','This is a privilege, not a right — it locks automatically if anything from today is still waiting on a correction.']}),
@@ -3195,18 +3206,21 @@ function trainerDayTasks(d){
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   task('movement','Mobility And Recovery','Training','6:00',20,{completionType:'timer',instructions:['Light mobility and recovery work only — save legs for the trainer.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
+  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
+  ...suppTasksFor('morning'),
   washDishesTask('washDishesBreakfast'),
   task('fastMath',tsa('Fast Math'),'Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
   task('math',tsa('Math'),'Academic','6:00',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
   task('break1','Break','Recovery','6:00',10,{priority:3,instructions:['Short reset.']}),
   writingTaskDef('6:00',40,d),
   task('science',tsa('Science'),'Academic','6:00',35,{completionType:'academic',sub:'science',instructions:['Short science block — finishes after training if needed.']}),
+  ...suppTasksFor('pre'),
   prepTask('trainPrep','training',prepMin,'Snack And Training Preparation'),
   task('leaveHome','Leave House For Trainer','Travel',minToHHMM(leaveMin),0,{priority:1,fixed:true,instructions:['Be there at '+clock12(ti.start)+'. Drive is about '+ti.driveMinutes+' minutes.','Do not be late — this does not move.']}),
   task('trainer','Trainer Session','Training',ti.start,ti.durationMin,{priority:1,fixed:true,completionType:'training',instructions:['Follow the assigned trainer session.']}),
   task('travelHome','Travel Home','Travel',minToHHMM(endMin),ti.driveMinutes,{priority:1,fixed:true,instructions:['Ride home, hydrate, cool down. Have your post-workout snack in the car.']}),
   showerAfterTask('Shower After Training'),
+  ...suppTasksFor('post'),
   task('lunch','Lunch And Recovery','Meal','6:00',40,{instructions:['Eat a real lunch with protein and carbs','Hydrate','Light stretch or rest']}),
   cleanKitchenTask(),
   task('reading',tsa('Reading And Comprehension'),'Academic','6:00',30,{completionType:'academic',sub:'reading',instructions:['Challenging material. Log the start and end chapter and page, write the synopsis, and answer the comprehension questions.']}),
@@ -3242,7 +3256,8 @@ function practiceDayTasks(d){
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   task('movement','Mobility And Activation','Training','6:00',20,{completionType:'timer',instructions:['Practice is tonight — light mobility and activation only. Save your legs.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
+  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
+  ...suppTasksFor('morning'),
   washDishesTask('washDishesBreakfast'),
   task('schoolPrep','School Preparation','Hygiene','6:00',15,{instructions:SCHOOL_PREP_CHECKLIST}),
   task('fastMath',tsa('Fast Math'),'Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
@@ -3265,11 +3280,13 @@ function practiceDayTasks(d){
   indepReadingTask(20),
   task('tomorrowPrep','Tomorrow Preparation','Hygiene','6:00',10,{instructions:TOMORROW_PREP_CHECKLIST}),
   task('screenTime','Screen Time (TV Only)','Recovery','6:00',15,{priority:2,instructions:['Practice nights run late, so Screen Time happens BEFORE you leave, from everything you have already earned today.','TV only, nothing else. It is a privilege, not a right — it locks if anything from today is waiting on a correction.']}),
+  ...suppTasksFor('pre'),
   Object.assign(prepTask('snackPrep','practice',prepMin),{startAt:minToHHMM(leaveMin-prepMin)}),
   task('leaveHome','Leave House For Practice','Travel',minToHHMM(leaveMin),0,{priority:1,fixed:true,instructions:['Be there at '+clock12(pi.start)+'. Drive is about '+pi.driveMinutes+' minutes.','Do not be late — this does not move.']}),
   task('practice','Team Practice','Training',pi.start,pi.durationMin,{priority:1,fixed:true,instructions:['Team practice. Be coachable, give full effort, and sip water every 15–20 minutes.']}),
   task('travelHome','Travel Home','Travel',minToHHMM(endMin),pi.driveMinutes,{priority:1,fixed:true,instructions:['Ride home. Eat your post-practice snack and drink water.']}),
   task('postSnack','Post-Practice Recovery Snack','Meal','6:00',15,{priority:2,instructions:SG.prep.post}),
+  ...suppTasksFor('post'),
   showerAfterTask('Shower After Practice'),
   task('nightRoutine','Night Routine','Hygiene','6:00',15,{instructions:NIGHT_CHECKLIST}),
   nightlyGradeTask(),
@@ -3288,7 +3305,8 @@ function gameDayTasks(d){
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   task('movement','Mobility Only','Training','6:00',20,{completionType:'timer',instructions:['No hard conditioning today — mobility only, protect the legs for tonight.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
+  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
+  ...suppTasksFor('morning'),
   washDishesTask('washDishesBreakfast'),
   task('fastMath',tsa('Fast Math'),'Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
   task('math',tsa('Math'),'Academic','6:00',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
@@ -3319,7 +3337,8 @@ function saturdayTasks(d){
   task('wake','Wake Up','Hygiene','7:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   ...morningShowerTasks(d),
   task('hygieneRoom','Hygiene And Room','Hygiene','6:00',15,{instructions:['Get ready for the day','Quick room tidy']}),
-  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
+  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
+  ...suppTasksFor('morning'),
   washDishesTask('washDishesBreakfast'),
   task('deepClean','Deep Clean And Laundry','Responsibility','6:00',60,{priority:1,completionType:'responsibility'}),
   task('fastMath','Fast Math','Academic','6:00',20,{completionType:'academic',sub:'fastMath',instructions:['Weekend pace: facts and fluency, short and sharp.']}),
@@ -3348,6 +3367,7 @@ function sundayTasks(d){
   task('wake','Wake Up','Hygiene','7:30',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   ...morningShowerTasks(d),
   task('hygieneBreakfast','Hygiene And Breakfast','Meal','6:00',40,{instructions:BREAKFAST_CHECKLIST}),
+  ...suppTasksFor('morning'),
   washDishesTask('washDishesBreakfast'),
   task('familyChurch','Family, Church, Or Recovery','Family','6:00',205,{instructions:['Church or youth activities, family time, and recovery.']}),
   task('lunch','Lunch','Meal','6:00',40,{instructions:['Eat']}),
@@ -3473,6 +3493,7 @@ function peekScheduleEntry(taskId,d=new Date()){
 // SHORTER (never below a floor) before anything else gives, and the normal
 // 9:30 bedtime may slide up to 10:00. Meals, hygiene, chores, training and
 // anything fixed keep their full length.
+const FLOAT_GRACE=10; // minutes he has to tap Start after a block becomes ready before it counts as a late start
 const SHRINK_NEVER=['videoGames','screenTime','bedtime','nightlyGrade','weeklyPlanning'];
 function shrinkFloor(t){
  const d=t.duration||0;
@@ -3498,6 +3519,12 @@ function computeTodaySchedule(baseDate=new Date()){
  let buffer=[]; // pending flexible tasks waiting to be fit into the current window
  const effDur={}; // v24: shortened lengths for today only
  const durOf=t=>(effDur[t.id]!=null?effDur[t.id]:t.duration);
+ // v28 floating chain: on the real today, a block that is still running past its planned end keeps running (the rest
+ // of the day follows it), and the next block that has not been started floats to "now" once he is more than the
+ // grace period past the moment it became ready. Fixed anchors still hold.
+ const floatOn=(key===localDateKey()) && EVO_SKIP_DAYTYPES.indexOf(dt)===-1;
+ const floatable=t=>!t.fixed && EVO_EXCLUDE_IDS.indexOf(t.id)===-1 && evoCfg().cats.indexOf(t.category)!==-1 && ((log[t.id]||{}).status!=='skipped');
+ let segLimit=null;
 
  function lockedTiming(t,entry){
   if(entry.status==='completed'){
@@ -3506,16 +3533,19 @@ function computeTodaySchedule(baseDate=new Date()){
    return {schedStart,finish};
   }
   const schedStart=entry.actualStart;
-  return {schedStart,finish:schedStart+(entry.dur||t.duration)};
+  const planned=schedStart+(entry.dur||t.duration);
+  return {schedStart,finish:(floatOn&&!t.fixed&&now>planned)?now:planned};
  }
 
  function attemptFit(list,zeroTransition){
   let c=cursor;
   const out=[];
-  list.forEach(t=>{
+  list.forEach((t,i)=>{
    const nominalStart=parseClock(t.start);
-   const schedStart=c===null?nominalStart:Math.max(nominalStart,c);
-   out.push({t,schedStart});
+   let schedStart=c===null?nominalStart:Math.max(nominalStart,c);
+   const ready=schedStart;
+   if(i===0 && floatOn && floatable(t) && now>ready+FLOAT_GRACE && (segLimit==null||now<segLimit)) schedStart=now;
+   out.push({t,schedStart,ready});
    c=schedStart+durOf(t)+(zeroTransition?0:transitionForCategory(t.category));
   });
   return {out,endCursor:c};
@@ -3537,6 +3567,7 @@ function computeTodaySchedule(baseDate=new Date()){
   slideMax=slideMax||0;
   if(buffer.length===0) return;
   const items=buffer; buffer=[];
+  segLimit=hardLimit;
   let active=items.slice();
   let res=attemptFit(active,false);
   const dropped=[];
@@ -3572,10 +3603,10 @@ function computeTodaySchedule(baseDate=new Date()){
    // remaining (essential) tasks run past the window and flag them —
    // never silently drop a meal, hygiene block, or core routine.
   }
-  res.out.forEach(({t,schedStart})=>{
+  res.out.forEach(({t,schedStart,ready})=>{
    const entry=log[t.id]||{status:'notStarted'};
    const overshoot=finalLimit!=null && (schedStart+durOf(t))>finalLimit;
-   results.push({t,entry,schedStart,dur:durOf(t),pushedPast:overshoot?'the next fixed event':null,skipped:false});
+   results.push({t,entry,schedStart,ready,dur:durOf(t),pushedPast:overshoot?'the next fixed event':null,skipped:false});
   });
   dropped.forEach(t=>{
    const entry=log[t.id]||{status:'notStarted'};
@@ -3619,7 +3650,7 @@ function computeTodaySchedule(baseDate=new Date()){
  // Lights Out.
  const sortKey=r=>r.schedStart!=null?r.schedStart:parseClock(r.t.start);
  results.sort((a,b)=>sortKey(a)-sortKey(b));
- const out=results.map(({t,entry,schedStart,dur,pushedPast,skipped})=>{
+ const out=results.map(({t,entry,schedStart,ready,dur,pushedPast,skipped})=>{
   if(skipped){
    return Object.assign({},t,{schedStart:null,schedEnd:null,tightWarning:null,status:'skipped',entry});
   }
@@ -3627,7 +3658,7 @@ function computeTodaySchedule(baseDate=new Date()){
   const schedEnd=schedStart+d;
   let status=entry.status||'notStarted';
   if(status==='notStarted' && now>=schedStart) status='ready';
-  return Object.assign({},t,{duration:d,nominalDuration:t.duration,shrunk:d<t.duration,schedStart,schedEnd,tightWarning:pushedPast,status,entry});
+  return Object.assign({},t,{duration:d,nominalDuration:t.duration,shrunk:d<t.duration,schedStart,schedEnd,readyAt:(ready!=null?ready:schedStart),tightWarning:pushedPast,status,entry});
  });
  return {dayType:dt,tasks:out};
 }
@@ -3652,6 +3683,15 @@ function startScheduleTask(taskId){
  e.status='inProgress';
  e.actualStart=nowMinutes();
  if(tt&&tt.duration) e.dur=tt.duration;
+ // v28: the block's clock (and its last-10-minutes submit window) runs from the moment he taps Start
+ try{
+  if(tt && evoTrackedTask(tt)){
+   if(!e.win) e.win={name:tt.name,cat:tt.category,xp:evoNeedsXP(tt),ready:tt.readyAt};
+   if(e.win.ready==null) e.win.ready=tt.readyAt;
+   e.win.s=e.actualStart; e.win.e=e.actualStart+(e.dur||tt.duration);
+   evoPartCache={at:0,wk:null,ov:null};
+  }
+ }catch(err){ console.error('startpin',err); }
  save(); render();
 }
 function submitTaskCompletion(help){
@@ -5207,6 +5247,7 @@ function taskDetailHTML(t){
  if(t.completionType==='inspection') return flipBtn+inspectionTaskHTML(t);
  if(t.completionType==='prep') return prepTaskHTML(t);
  if(t.completionType==='film') return filmTaskHTML(t);
+ if(t.completionType==='suppReminder') return suppTaskHTML(t);
  if(t.completionType==='historyLesson') return '<div class="lsWrap">'+histTaskHTML(t)+'</div>';
  if(t.completionType==='valuesLesson') return '<div class="lsWrap">'+valTaskHTML(t)+'</div>';
  if(t.completionType==='readinglog') return readingLogTaskHTML(t);
@@ -5251,7 +5292,7 @@ const TASK_ICONS={
  travel:'🚗',weakest:'🎯',weeklyPlanning:'📝',
  washDishesBreakfast:'🧽',washDishesLunch:'🧽',washDishesDinner:'🧽',
  cleanKitchen:'🧽',houseInspection:'🔍',filmStudy:'🎬',nightlyGrade:'⭐',videoGames:'🎮',
- postSnack:'🥛',practice:'🏈',weakReview:'📘',values:'🌟'
+ postSnack:'🥛',practice:'🏈',weakReview:'📘',values:'🌟',supp_am:'💧',supp_morning:'💊',supp_pre:'⚡',supp_post:'🥤'
 };
 function taskHeroIcon(t){ if(String(t.id).indexOf('watch_')===0) return '🏈'; return TASK_ICONS[t.id]||categoryIcon(t.category); }
 
@@ -7638,15 +7679,16 @@ function evoFreezeWindows(sched){
   const pe=peekScheduleEntry(t.id);
   // v24: the schedule adapts (a late wake or late submit pushes later blocks back), so a block he has not
   // started yet keeps following its real slot instead of staying pinned to the old clock time.
-  if(pe.win && !pe.evo && pe.actualStart==null && t.schedStart!=null && t.schedEnd!=null && (t.schedStart>pe.win.s || t.schedEnd!==pe.win.e)){
-   const en=scheduleEntry(t.id); en.win.s=Math.max(en.win.s,t.schedStart); en.win.e=Math.max(en.win.s+5,t.schedEnd); changed=true; return;
+  const rs=(t.readyAt!=null?t.readyAt:t.schedStart), re=(rs==null?null:rs+t.duration);
+  if(pe.win && !pe.evo && pe.actualStart==null && rs!=null && re!=null && (rs>pe.win.s || re!==pe.win.e)){
+   const en=scheduleEntry(t.id); en.win.s=Math.max(en.win.s,rs); en.win.e=Math.max(en.win.s+5,re); changed=true; return;
   }
   if(pe.win||pe.evo) return;
   if(t.schedStart==null||t.schedEnd==null) return;
-  if(localDateKey()===evoCfg().startDate && t.schedStart<(evoCfg().startMin||0)) return; // blocks that began before he installed this version are not held against him
-  if(nf>=t.schedStart){
+  if(localDateKey()===evoCfg().startDate && rs<(evoCfg().startMin||0)) return; // blocks that began before he installed this version are not held against him
+  if(nf>=rs){
    const en=scheduleEntry(t.id);
-   en.win={s:t.schedStart,e:t.schedEnd,name:t.name,cat:t.category,xp:evoNeedsXP(t)};
+   en.win={s:rs,e:re,name:t.name,cat:t.category,xp:evoNeedsXP(t),ready:rs};
    changed=true;
   }
  });
@@ -7661,7 +7703,7 @@ function evoPre(taskId,opts){
  const pe=peekScheduleEntry(taskId);
  if(pe.evoExcused) return {tracked:false};
  if(!pe.win && t.schedStart!=null && t.status!=='completed'){
-  const en=scheduleEntry(taskId); en.win={s:t.schedStart,e:t.schedEnd,name:t.name,cat:t.category,xp:evoNeedsXP(t)};
+  const en=scheduleEntry(taskId); const rs0=(t.readyAt!=null?t.readyAt:t.schedStart); en.win={s:rs0,e:rs0+t.duration,name:t.name,cat:t.category,xp:evoNeedsXP(t),ready:rs0};
  }
  const t2=evoTaskObj(taskId)||t;
  const i=evoInfo(t2);
@@ -7673,22 +7715,27 @@ function evoPre(taskId,opts){
  if(opts.soft) return {tracked:true,soft:true};
  const miss=i.xp?evoMissing(t2):[];
  const late=(i.phase==='late');
- if(miss.length||late){
+ const pw=peekScheduleEntry(taskId).win; let lateStartMin=0;
+ if(pw && pw.ready!=null){ const st=(peekScheduleEntry(taskId).actualStart!=null)?peekScheduleEntry(taskId).actualStart:pw.s; lateStartMin=Math.round(st-pw.ready); }
+ const lateStart=lateStartMin>FLOAT_GRACE;
+ if(miss.length||late||lateStart){
   const lines=[];
   if(miss.length) lines.push('Still missing: '+miss.join(', ')+'.');
   if(late) lines.push('The submit window for this block already closed.');
+  if(lateStart) lines.push('You started this block '+lateStartMin+' minutes after it was ready (more than '+FLOAT_GRACE+').');
   if(!confirm(lines.join('\n')+'\n\nIf you submit it now it will NOT count toward your participation grade. Submit anyway?')) return false;
  }
  const reasons=[];
  if(late) reasons.push('Submitted after the last-'+evoCfg().windowMin+'-minute window closed');
+ if(lateStart) reasons.push('Started '+lateStartMin+' minutes after it was ready (limit '+FLOAT_GRACE+')');
  miss.forEach(m=>reasons.push('Missing: '+m));
- return {tracked:true,counted:(!late&&!miss.length),inWindow:!late,xpOK:!(miss.indexOf('Starting XP picture')!==-1||miss.indexOf('Ending XP picture')!==-1),gradesOK:!(miss.indexOf('Starting grade')!==-1||miss.indexOf('Ending %')!==-1),reasons,atMs:Date.now(),atMin:nowMinutes(),phase:i.phase,rejected:false};
+ return {tracked:true,counted:(!late&&!miss.length&&!lateStart),lateStart:lateStart,inWindow:!late,xpOK:!(miss.indexOf('Starting XP picture')!==-1||miss.indexOf('Ending XP picture')!==-1),gradesOK:!(miss.indexOf('Starting grade')!==-1||miss.indexOf('Ending %')!==-1),reasons,atMs:Date.now(),atMin:nowMinutes(),phase:i.phase,rejected:false};
 }
 function evoPost(taskId,snap){
  if(!snap||!snap.tracked||snap.soft) return;
  const e=scheduleEntry(taskId);
  evoPartCache={at:0,wk:null,ov:null};
- e.evo={counted:snap.counted,inWindow:snap.inWindow,xpOK:snap.xpOK,gradesOK:snap.gradesOK,reasons:snap.reasons,atMs:snap.atMs,atMin:snap.atMin,rejected:false};
+ e.evo={counted:snap.counted,inWindow:snap.inWindow,xpOK:snap.xpOK,gradesOK:snap.gradesOK,reasons:snap.reasons,lateStart:!!snap.lateStart,atMs:snap.atMs,atMin:snap.atMin,rejected:false};
  save();
  evoQueue('card',localDateKey(),taskId); evoQueue('day',localDateKey());
 }
@@ -8216,6 +8263,11 @@ function evoPanelHTML(t){
  } else {
   h+='<p class="tiny">Finish the work, then submit in the last '+cfg.windowMin+' minutes of this block. Submitting any other time means the card does not count.</p>';
  }
+ // v28: the clock runs from when you tap Start
+ if(e.actualStart==null && t.status!=='completed' && t.readyAt!=null){
+  const lim=t.readyAt+FLOAT_GRACE;
+  h+=(i.nf>lim)?'<p class="tiny" style="color:#ef4444">⚠ It has been more than '+FLOAT_GRACE+' minutes since this block was ready. If you start now it will show as a late start and will not count.</p>':'<p class="tiny">⏱ Ready at '+clock12(minToHHMM(t.readyAt))+'. Tap <b>Start</b> by '+clock12(minToHHMM(lim))+' to keep it on time. Your block clock begins when you tap Start.</p>';
+ }
  return h+'</div>';
 }
 
@@ -8579,6 +8631,7 @@ function renderParent(){
    ['sync','📲','Sync to phones',syncConnected()?'connected':'not connected'],
    ['lessons','📚','Daily lessons',(function(){ const p=histPlan(localDateKey()); return p?p.fig.name+' · day '+(p.di+1)+' of 5':'weekend, no lessons'; })()],
    ['points','⭐','Bonus points',pointsBalance(sched)+' points'],
+   ['supp','💊','Vitamins & supplements',state.supp.enabled?suppItems().filter(function(i){return i.on;}).length+' items on his schedule':'off'],
    ['games','🏈','Games to watch',activeWatchGames().filter(g=>g.date>=localDateKey()).length+' on his schedule'],
    ['logs','📜','Strikes & saved logs','60 days'],
    ['settings','⚙️','App settings','schedule, position…']
@@ -8586,9 +8639,10 @@ function renderParent(){
   el.innerHTML=top+'<p class="small">Pick a box. Everything is its own small section so nothing is overwhelming.</p><div class="parentTiles">'+tiles.map(t=>'<button class="pTile" onclick="openParentBox(\''+t[0]+'\')"><span class="pIcon">'+t[1]+'</span><b>'+t[2]+'</b><small>'+t[3]+'</small></button>').join('')+'</div>';
   return;
  }
- const titles={lessons:'📚 Daily lessons',points:'⭐ Bonus points',games:'🏈 Games to watch',grades:'📊 Grades by day',cards:'🗂 Card review',part:'🎯 Participation',comments:'💬 Comments',checkins:'🔍 Check-ins waiting',sync:'📲 Sync to phones',logs:'📜 Strikes & saved logs',settings:'⚙️ App settings'};
+ const titles={supp:'💊 Vitamins & supplements',lessons:'📚 Daily lessons',points:'⭐ Bonus points',games:'🏈 Games to watch',grades:'📊 Grades by day',cards:'🗂 Card review',part:'🎯 Participation',comments:'💬 Comments',checkins:'🔍 Check-ins waiting',sync:'📲 Sync to phones',logs:'📜 Strikes & saved logs',settings:'⚙️ App settings'};
  let body='';
- if(parentBox==='lessons') body=lessonsBoxHTML();
+ if(parentBox==='supp') body=suppBoxHTML();
+ else if(parentBox==='lessons') body=lessonsBoxHTML();
  else if(parentBox==='points') body=pointsBoxHTML();
  else if(parentBox==='games') body=gamesBoxHTML();
  else if(parentBox==='grades') body=pgBoxHTML();
@@ -8651,6 +8705,9 @@ function tutSteps(){
    '<p>You earn bonus points for staying on schedule and doing things right: cards submitted on time, Film Study, meals logged, your history and character scores, and Mom and Dad’s nightly grade.</p>'
    +'<p><b>Cash them in</b> for <b>phone call time</b> or <b>extra video game time</b>. Open <b>Grades → My Bonus Points</b>, pick what you want, and Mom or Dad types the parent code. Prices: '+state.points.rate.call+' points for 10 minutes of phone, '+state.points.rate.game+' points for 10 minutes of games.</p>'
    +'<p class="tiny">Responsibility and accountability are what earn the points: be on time, fill in everything, and finish the whole day.</p>'},
+  {icon:'💊',title:'Vitamin cards and a flexible day',html:
+   '<p><b>💊 Vitamin and supplement cards</b> show up on your schedule at the right times: <b>water</b> when you wake up, <b>vitamins with breakfast</b>, <b>training fuel</b> before your afternoon session, and <b>recovery fuel</b> after it. Each card tells you what to take, how much, and with what. Tick each one, then submit.</p>'
+   +'<p><b>⏱ Your day follows you.</b> Tap <b>Start</b> when a block begins and its clock starts then. The next block begins when you finish. If breakfast runs long, the rest of the day moves with you. Tap Start within <b>10 minutes</b> of a block being ready to keep it on time. Training, practice, games and lights-out stay fixed.</p>'},
   {icon:'🌤️',title:'Weekends are lighter on school',html:
    '<p>Saturday and Sunday have <b>no new lessons</b>. You still do a little <b>Fast Math, Math, Reading and Film Study</b>.</p>'
    +'<p>The weekend is a bit more relaxed on school, but not on <b>responsibility and accountability</b>. Stay on schedule and finish your cards: <b>everything you earn on Saturday and Sunday counts double</b> in bonus points.</p>'}
@@ -8668,7 +8725,7 @@ function tutorialRender(){
   +'<div class="tutBtns">'+(tutIdx>0?'<button class="tutBack" onclick="tutorialOpen('+(tutIdx-1)+')">Back</button>':'<span></span>')
   +(tutIdx<n-1?'<button class="gold" onclick="tutorialOpen('+(tutIdx+1)+')">Next</button>':'<button class="green" onclick="tutorialClose()">Got it</button>')+'</div></div></div>';
 }
-const TUT_VER=26, TUT_NEW_FROM=7; // steps from index 7 on were added in v26
+const TUT_VER=28, TUT_NEW_FROM=10; // v26 added steps 7+, v28 added the vitamin/flexible-day step
 function tutorialClose(){ tutIdx=-1; tutorialRender(); if(!state.tutorialSeen||state.tutorialVer<TUT_VER){ state.tutorialSeen=true; state.tutorialVer=TUT_VER; save(); } }
 function tutorialMaybeAuto(){
  if(tutIdx>=0||!appEntered||!state.onboarded) return;
@@ -9024,6 +9081,125 @@ function ptsAdjust(sign){
  state.points.adj.push({id:'a'+Date.now(),at:Date.now(),pts:sign*Math.abs(n),note:note}); save(); render();
 }
 function ptsVoucherSet(id,status){ const v=state.points.vouchers.find(function(x){return x.id===id;}); if(!v) return; v.status=status; save(); evoDirty=true; render(); }
+
+/* =====================================================================
+   v28 — vitamin & supplement reminder cards on the schedule.
+   Four small cards a day around a two-a-day athlete's training:
+     am       Wake-up water       (before the morning Speed & Agility session)
+     morning  Morning vitamins    (with breakfast)
+     pre      Training fuel       (before the afternoon session)
+     post     Recovery fuel       (after the afternoon session)
+   Doses follow the athlete's age (NIH daily targets, age-scaled aminos and collagen) and body
+   weight (shake protein, water). A parent can turn any item off, change its dose or "with what",
+   and add their own items. Nothing here replaces the pediatrician's advice.
+   ===================================================================== */
+const SUPP_SLOTS=[
+ {id:'am',icon:'💧',name:'Wake-Up Water',short:'Before Speed & Agility',when:'Right now, before your morning session'},
+ {id:'morning',icon:'💊',name:'Morning Vitamins',short:'With breakfast',when:'With breakfast'},
+ {id:'pre',icon:'⚡',name:'Training Fuel',short:'Before the afternoon session',when:'30 to 45 minutes before training'},
+ {id:'post',icon:'🥤',name:'Recovery Fuel',short:'After the afternoon session',when:'Within an hour after training'}
+];
+function suppSlot(id){ return SUPP_SLOTS.find(function(s){return s.id===id;})||SUPP_SLOTS[1]; }
+function suppDefaults(){
+ const age=Number(state.age)||13, A=age, d=supplementDoses(age), w=(function(){ try{ return athleteWeight(); }catch(e){ return null; } })();
+ const shakeG=w?Math.max(15,Math.min(30,Math.round(w*0.136/5)*5)):20; // about 0.3 g of protein per kg after training
+ const preOz=w?Math.max(8,Math.min(20,Math.round(w*0.11))):16;
+ const amOz=w?Math.max(6,Math.min(16,Math.round(w*0.07))):10;
+ const items=[
+  {id:'h2oAM',slot:'am',name:'Water',dose:'about '+amOz+' oz (a big glass)',withWhat:'plain water, before you move',why:'You wake up a little dry. Starting hydrated keeps your legs and focus sharp for the first session.',on:true},
+  {id:'vitD',slot:'morning',name:'Vitamin D',dose:driText('vitD',A)+' a day total, from food and any supplement together',withWhat:'with breakfast, with some fat (eggs, milk, peanut butter) so it absorbs',why:'Bones, muscles and the immune system. Many young athletes run low, especially when they train indoors.',on:true},
+  {id:'mvi',slot:'morning',name:'Multivitamin',dose:'1 serving made for the athlete’s age, exactly as the label says (no mega-doses)',withWhat:'with breakfast and a full glass of water',why:'Fills small gaps on a two-a-day training load. Food still does the heavy lifting.',on:true},
+  {id:'omega',slot:'morning',name:'Omega-3 (fish oil or fish)',dose:'1 serving per the label, or a fish meal (salmon, tuna) a couple of times this week',withWhat:'with a meal so it sits well',why:'Helps recovery and joint comfort after hard training days.',on:true},
+  {id:'h2oPre',slot:'pre',name:'Water',dose:'about '+preOz+' oz',withWhat:'sip it, do not chug, then keep a bottle with you',why:'Being well hydrated before training is easier than catching up during it.',on:true},
+  {id:'eaa',slot:'pre',name:'EAA / aminos (optional)',dose:d.eaa+' g, mixed in water',withWhat:'in your water bottle, sip during training',why:'Convenience for recovery. Only useful if you are not already getting enough protein from food.',on:true},
+  {id:'shake',slot:'post',name:'Protein shake',dose:'about '+shakeG+' g of protein',withWhat:'with water or milk, plus a carb (banana, toast or cereal)',why:'Protein repairs muscle and the carb refills the tank. The sooner after training, the better.',on:true},
+  {id:'collagen',slot:'post',name:'Collagen (optional)',dose:d.collagen+' g',withWhat:'stirred into the shake',why:'Joint and tendon support during heavy training blocks.',on:true},
+  {id:'creatine',slot:'post',name:'Creatine (only if the pediatrician approves)',dose:d.creatine+' g a day',withWhat:'with a meal, no loading',why:'The American Academy of Pediatrics recommends against creatine for adolescents, so this stays off unless the doctor says yes.',on:false}
+ ];
+ return items;
+}
+function suppItems(){
+ const over=state.supp.over||{};
+ const base=suppDefaults().map(function(it){
+  const o=over[it.id]||{};
+  return {id:it.id,slot:it.slot,name:(o.name||it.name),dose:(o.dose||it.dose),withWhat:(o.withWhat||it.withWhat),why:it.why,on:(o.on==null?it.on:!!o.on),custom:false};
+ });
+ const cust=(state.supp.custom||[]).map(function(c){ return {id:c.id,slot:c.slot,name:c.name,dose:c.dose||'',withWhat:c.withWhat||'',why:c.why||'Added by a parent.',on:c.on!==false,custom:true}; });
+ return base.concat(cust);
+}
+function suppItemsForSlot(slot){ return suppItems().filter(function(i){return i.slot===slot&&i.on;}); }
+// schedule tasks (empty when nothing is switched on for that slot, or the whole feature is off)
+function suppTasksFor(slot){
+ if(!state.supp.enabled) return [];
+ if(!suppItemsForSlot(slot).length) return [];
+ const s=suppSlot(slot);
+ return [task('supp_'+slot,s.icon+' '+s.name+' ('+s.short+')','Meal','6:00',(slot==='pre'||slot==='post')?3:5,{priority:2,completionType:'suppReminder',slot:slot,instructions:['Take what the card lists, with what it says, then tick each one.']})];
+}
+function suppDay(key){ key=key||localDateKey(); state.suppDays[key]=state.suppDays[key]||{}; return state.suppDays[key]; }
+function suppTick(id){
+ const d=suppDay(); if(d[id]) delete d[id]; else d[id]=Date.now();
+ save(); render();
+}
+function suppSlotDone(slot){
+ const d=suppDay(); return suppItemsForSlot(slot).every(function(i){return !!d[i.id];});
+}
+function suppTaskHTML(t){
+ const slot=t.slot||String(t.id).replace('supp_',''); const s=suppSlot(slot);
+ const items=suppItemsForSlot(slot); const d=suppDay();
+ if(!items.length) return '<div class="lsWrap"><div class="inner"><p class="small">Nothing is switched on for this card. A parent can change that in Parent → Vitamins &amp; supplements.</p></div></div>';
+ const rows=items.map(function(i){
+  const on=!!d[i.id];
+  return '<div class="suppRow'+(on?' on':'')+'"'+(t.status==='completed'?'':' onclick="suppTick(\''+i.id+'\')"')+'><span class="suppBox">'+(on?'✅':'⬜')+'</span><div><div class="small"><b>'+escapeHTML(i.name)+'</b> · '+escapeHTML(i.dose)+'</div><div class="tiny">🥛 '+escapeHTML(i.withWhat)+'</div><div class="tiny" style="opacity:.8">Why: '+escapeHTML(i.why)+'</div></div></div>';
+ }).join('');
+ const all=items.every(function(i){return !!d[i.id];});
+ let ctl;
+ if(t.status==='completed') ctl='<div class="coachBubble" style="margin-top:8px"><strong>Done ✅</strong></div>';
+ else if(all) ctl='<button class="green full" style="margin-top:8px" onclick="quickComplete(\''+t.id+'\')">Done. Submit this card</button><p class="tiny">Submit is open in the last '+evoCfg().windowMin+' minutes of the block.</p>';
+ else ctl='<p class="tiny" style="margin-top:8px">Tap each one as you take it. The submit button shows up when every item is ticked.</p>';
+ return '<div class="lsWrap"><div class="inner lsHead"><div class="tiny">'+escapeHTML(s.when)+'</div><h3 style="margin:2px 0">'+s.icon+' '+escapeHTML(s.name)+'</h3><div class="tiny">Based on your age'+((function(){ try{ return athleteWeight(); }catch(e){ return null; } })()?' and weight':'')+' for a twice-a-day athlete. Check anything new with the doctor.</div></div><div class="inner">'+rows+'</div>'+ctl+'</div>';
+}
+// parent editor
+function suppBoxHTML(){
+ const items=suppItems();
+ let h='<p class="small">These cards show up on his schedule around his two training sessions a day and tell him what to take, how much, and with what. Doses are scaled to his age and weight from the Settings screen. Always confirm vitamins and supplements with the pediatrician. Creatine stays off for adolescents unless the doctor approves it.</p>';
+ h+='<div class="checkItem"><span><b>Show these cards on his schedule</b></span><button class="chip" onclick="suppToggleAll()">'+(state.supp.enabled?'On':'Off')+'</button></div>';
+ SUPP_SLOTS.forEach(function(s){
+  const list=items.filter(function(i){return i.slot===s.id;});
+  h+='<div class="label" style="margin-top:12px">'+s.icon+' '+escapeHTML(s.name)+' — '+escapeHTML(s.short)+'</div>';
+  h+=list.map(function(i){
+   return '<div class="inner" style="margin-top:6px"><div class="row" style="justify-content:space-between;align-items:center"><b>'+escapeHTML(i.name)+'</b><button class="chip" onclick="suppToggleItem(\''+i.id+'\')">'+(i.on?'On':'Off')+'</button></div>'
+    +'<div class="tiny" style="margin-top:6px">Dose</div><input type="text" value="'+escapeHTML(i.dose)+'" onchange="suppEdit(\''+i.id+'\',\'dose\',this.value)">'
+    +'<div class="tiny" style="margin-top:6px">With what</div><input type="text" value="'+escapeHTML(i.withWhat)+'" onchange="suppEdit(\''+i.id+'\',\'withWhat\',this.value)">'
+    +(i.custom?'<button class="orange full" style="margin-top:8px" onclick="suppRemove(\''+i.id+'\')">Remove</button>':'<button class="chip" style="margin-top:6px" onclick="suppReset(\''+i.id+'\')">Reset to the app’s suggestion</button>')+'</div>';
+  }).join('');
+ });
+ h+='<div class="label" style="margin-top:14px">Add your own</div><div class="inner"><select id="suppNewSlot">'+SUPP_SLOTS.map(function(s){return '<option value="'+s.id+'">'+escapeHTML(s.name)+' ('+escapeHTML(s.short)+')</option>';}).join('')+'</select>'
+  +'<input type="text" id="suppNewName" placeholder="Name (for example Magnesium)" style="margin-top:6px"><input type="text" id="suppNewDose" placeholder="Dose" style="margin-top:6px"><input type="text" id="suppNewWith" placeholder="With what (food, water, time)" style="margin-top:6px">'
+  +'<button class="gold full" style="margin-top:8px" onclick="suppAdd()">Add to his schedule</button></div>';
+ return h;
+}
+function suppToggleAll(){ state.supp.enabled=!state.supp.enabled; save(); evoDirty=true; render(); }
+function suppToggleItem(id){
+ const it=suppItems().find(function(i){return i.id===id;}); if(!it) return;
+ if(it.custom){ const c=state.supp.custom.find(function(x){return x.id===id;}); if(c) c.on=!(c.on!==false); }
+ else { state.supp.over[id]=state.supp.over[id]||{}; state.supp.over[id].on=!it.on; }
+ save(); evoDirty=true; render();
+}
+function suppEdit(id,field,v){
+ v=String(v||'').trim();
+ const c=(state.supp.custom||[]).find(function(x){return x.id===id;});
+ if(c){ c[field]=v; }
+ else { state.supp.over[id]=state.supp.over[id]||{}; state.supp.over[id][field]=v; }
+ save(); evoDirty=true;
+}
+function suppReset(id){ delete state.supp.over[id]; save(); evoDirty=true; render(); }
+function suppRemove(id){ state.supp.custom=state.supp.custom.filter(function(x){return x.id!==id;}); save(); evoDirty=true; render(); }
+function suppAdd(){
+ const g=function(i){ const e=document.getElementById(i); return e?String(e.value||'').trim():''; };
+ const name=g('suppNewName'); if(!name){ alert('Type a name first.'); return; }
+ state.supp.custom.push({id:'c'+Date.now(),slot:g('suppNewSlot')||'morning',name:name,dose:g('suppNewDose'),withWhat:g('suppNewWith'),on:true});
+ save(); evoDirty=true; render();
+}
 
 boot();
 </script>
