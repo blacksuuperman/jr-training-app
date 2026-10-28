@@ -121,6 +121,9 @@ button.active,a.active,.gold{background:var(--accent);color:var(--buttonText)}
 .evoShrunk{margin:8px 0;padding:8px 10px;border-radius:10px;border:1px dashed var(--accent);font-size:12px;font-weight:700}
 .evoBanner{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:990;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#14141d;border:2px solid var(--accent);box-shadow:0 8px 30px rgba(0,0,0,.6);color:#fff}
 .lsWrap{margin-top:8px}
+.mlItem{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.mlList{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.mlPick{text-align:left;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:inherit;font:inherit}
 .suppRow{display:flex;gap:10px;align-items:flex-start;padding:10px;margin:6px 0;border-radius:12px;border:1px solid var(--line);background:#0d0d14;cursor:pointer}.suppRow.on{border-color:#22c55e;background:rgba(34,197,94,.10)}.suppBox{font-size:20px;line-height:1.2}
 .lsOpt{display:block;width:100%;text-align:left;margin:6px 0;padding:12px;border-radius:12px;background:#12121b;border:2px solid var(--line);color:var(--text);font-size:15px;font-weight:700;min-height:48px;line-height:1.3}
 .lsOpt.ok{border-color:#22c55e;background:rgba(34,197,94,.16)}.lsOpt.bad{border-color:#ef4444;background:rgba(239,68,68,.16)}.lsOpt:disabled{opacity:1}
@@ -463,6 +466,7 @@ a.frLink{text-decoration:none;color:#fff;display:inline-flex;align-items:center;
 <script src="football-demos.js"></script>
 <script src="football-demos-positions.js"></script>
 <script src="football-videos.js"></script>
+<script src="food-db.js"></script>
 <script>
 const STORE='jr_level13_earned_day_v3';
 const OLD_STORES=['jr_level13_earned_day_v2','jr_level13_earned_day_v1','jr_level13_day_cycle_v1','jr_level13_simplified_v1','jr_level13_ai_v1','jr_level9_state'];
@@ -475,7 +479,7 @@ const DAYS_TOTAL=30;
 // must survive every future update instead of getting wiped. Any new state
 // field a future round adds gets backfilled by an explicit migration line
 // below (state.x = state.x || ...) instead of relying on a full reset.
-const BUILD_VERSION='v28-floating-day-vitamin-cards';
+const BUILD_VERSION='v29-meal-log-food-search';
 const FORCE_RESET_ON_UPDATE=false;
 const baseWeight=0;
 
@@ -743,6 +747,23 @@ function restoreBackupBeforeFreshStart(){
  }catch(e){ alert('Could not restore the backup.'); }
 }
 let state=migrateOld();
+/* v29: before a NEW build touches saved data, keep a copy of exactly what was there (once per version).
+   Nothing is ever reset by an update; this is only a safety net the parent can restore from. */
+const PRE_UPDATE_BACKUP_KEY='jr_level13_backup_before_last_update';
+try{
+ if(state.buildVersion && state.buildVersion!==BUILD_VERSION){
+  const hadWork=!!(state.onboarded||(state.scheduleLogs&&Object.keys(state.scheduleLogs).length)||(state.day&&state.day>1));
+  if(hadWork) localStorage.setItem(PRE_UPDATE_BACKUP_KEY, JSON.stringify({from:state.buildVersion,to:BUILD_VERSION,at:Date.now(),data:state},(k,v)=>k==='photos'?undefined:v));
+ }
+}catch(e){}
+function hasPreUpdateBackup(){ try{ return !!localStorage.getItem(PRE_UPDATE_BACKUP_KEY); }catch(e){ return false; } }
+function preUpdateBackupInfo(){ try{ const o=JSON.parse(localStorage.getItem(PRE_UPDATE_BACKUP_KEY)||'null'); return o?{from:o.from,at:o.at}:null; }catch(e){ return null; } }
+function restorePreUpdateBackup(){
+ let o=null; try{ o=JSON.parse(localStorage.getItem(PRE_UPDATE_BACKUP_KEY)||'null'); }catch(e){}
+ if(!o||!o.data){ alert('No saved copy was found on this device.'); return; }
+ if(!confirm('Go back to the saved copy from just before the last update ('+(o.from||'earlier version')+')? Anything entered since then will be replaced.')) return;
+ try{ localStorage.setItem(STORE, JSON.stringify(o.data)); location.reload(); }catch(e){ alert('Could not restore the saved copy.'); }
+}
 if(state.freshStartId!==FRESH_START_ID){
  const hadData=!!(state.onboarded || state.age || (state.scheduleLogs && Object.keys(state.scheduleLogs).length) || (state.day && state.day>1));
  if(hadData){
@@ -766,6 +787,9 @@ state.age = state.age || '';
 state.musicQuery = state.musicQuery || '';
 state.nutriUnit = state.nutriUnit==='g' ? 'g' : 'oz';
 state.nutriPicks = state.nutriPicks || {carb:'',protein:'',veggie:'',fat:''};
+state.mealDraft = (state.mealDraft&&typeof state.mealDraft==='object') ? state.mealDraft : {};
+state.foodRecent = Array.isArray(state.foodRecent) ? state.foodRecent : [];
+state.usdaKey = state.usdaKey || '';
 state.skipped = state.skipped || {};
 state.checkinDraft = state.checkinDraft || {};
 state.checkinHistory = state.checkinHistory || [];
@@ -2515,7 +2539,8 @@ function renderNutrition(){
  if(!nt){
    document.getElementById('screen_nutrition').innerHTML=`<div class="row" style="justify-content:space-between"><div><div class="small">Required setup</div><h2>Enter Athlete Weight</h2></div><span class="badge bad">Locked</span></div>
    <div class="coachBubble"><strong>Fuel starts with body weight</strong><p>Before the app recommends calories, carbs, protein, fat, and water, save the athlete's current body weight. This keeps the numbers based on the athlete instead of a random default.</p></div>
-   <div class="inner"><div class="label">Current body weight in pounds</div><input id="profileWeightInput" type="number" min="60" max="350" placeholder="Example 145"><button class="green full" style="margin-top:10px" onclick="saveProfileWeight()">Save Athlete Weight</button></div>`;
+   <div class="inner"><div class="label">Current body weight in pounds</div><input id="profileWeightInput" type="number" min="60" max="350" placeholder="Example 145"><button class="green full" style="margin-top:10px" onclick="saveProfileWeight()">Save Athlete Weight</button></div>
+   ${nutriProfileHTML()}`;
    return;
  }
  const rem=nutritionRemaining();
@@ -2530,7 +2555,8 @@ function renderNutrition(){
  </div>
  ${remainingTodayHTML(rem)}
  <details class="clean"><summary>Today's full targets</summary><div class="detailBody"><table class="dataTable"><tr><td>Calories</td><td>${nt.calLow} to ${nt.calHigh}</td></tr><tr><td>Water</td><td>${nt.water} oz</td></tr><tr><td>Protein</td><td>${nt.proteinLow} to ${nt.proteinHigh} g</td></tr><tr><td>Carbs</td><td>${nt.carbLow} to ${nt.carbHigh} g</td></tr><tr><td>Fat</td><td>${nt.fatLow} to ${nt.fatHigh} g</td></tr></table><p class="small">These are training targets built for strong, big, fast, and mobile all at once — not a medical diet. Hard days push calories and carbs higher.</p></div></details>
- ${mealBuilderHTML()}
+ ${nutriProfileHTML()}
+ ${nutriMealBuilderHTML()}
  ${waterHTML(l,nt)}
  ${twoADayPlanHTML()}
  ${suppChecklistHTML()}
@@ -2770,6 +2796,7 @@ function renderSettings(){
  <button class="orange full" onclick="skipToday()">Skip Today (injury or unavailable)</button></div>
  <details class="clean"><summary>Sync With Mom ${syncConnected()?'🔗':''}</summary><div class="detailBody">${syncPanelHTML()}</div></details>
  <details class="clean"><summary>Film Study</summary><div class="detailBody"><p class="small">Start Film Study over from the beginning: positions are chosen again, and the teaching cards and questions start fresh. School work and everything else stay as they are. A backup copy is kept.</p><button class="orange full" onclick="frRestartFilmStudy()">🔄 Restart Film Study From The Beginning</button>${hasFilmBackup()?'<button class="chip full" style="margin-top:8px" onclick="frRestoreFilmBackup()">Bring back my earlier Film Study progress</button>':''}</div></details>
+ ${hasPreUpdateBackup()?`<details class="clean"><summary>Saved copy from before the last update</summary><div class="detailBody"><p class="small">Every update keeps his progress as is. As a safety net the app also keeps a copy of his data from just before the update (${escapeHTML((preUpdateBackupInfo()||{}).from||'earlier version')}). Use this only if something looks wrong.</p><button class="orange full" onclick="restorePreUpdateBackup()">Restore the copy from before the update</button></div></details>`:''}
  ${hasBackupBeforeFreshStart()?`<details class="clean"><summary>Fresh Start Backup</summary><div class="detailBody"><p class="small">When this version was installed, everything except school work was cleared. A copy of the old data is still stored on this device.</p><button class="red full" onclick="restoreBackupBeforeFreshStart()">Restore My Old Data</button></div></details>`:''}
  <details class="clean"><summary>Parent Logs ${parentLogsUnlocked?'🔓':'🔒'}</summary><div class="detailBody">${parentLogsHTML()}</div></details>
  <details class="clean"><summary>Progress — Data Lab</summary><div class="detailBody">${dataLabHTML()}</div></details>
@@ -3017,6 +3044,9 @@ function showerAfterTask(name){
 }
 
 /* ----- Wash Dishes (quick, breakfast) / Clean Kitchen (lunch) ----- */
+function recoveryShakeTask(){
+ return task('recoveryShake','Recovery Shake','Meal','6:00',10,{priority:2,instructions:['Mix and drink your recovery shake within an hour of training','Log it below and take the vitamins listed']});
+}
 function washDishesTask(id){
  const e=peekScheduleEntry(id);
  if(e.escalated) return task(id,'Wash Dishes — Full Kitchen Clean','Responsibility','6:00',45,{priority:2,completionType:'kitchen',guide:'cleanKitchen',deep:true,instructions:['Sent back — do the full Clean Kitchen routine, in order, including the deep-clean steps.']});
@@ -3154,11 +3184,9 @@ function normalHomeDayTasks(d,dev){
  d=asDate(d);
  return flow([
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
-  ...suppTasksFor('am'),
   task('movement','Speed, Agility & Footwork Training','Training','6:00',45,{priority:1,completionType:'training',trainingFocus:'morning',instructions:[dev?'No trainer this week — Speed & Agility still happens every weekday morning. Footwork, lateral quickness, and quick feet, with the ladder and cones.':'Every weekday morning (not Saturday or Sunday) starts with Speed & Agility — footwork, lateral quickness, and quick feet, with the ladder and cones.','Opens the Speed, Agility & Plyos module.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
-  ...suppTasksFor('morning'),
+  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
   washDishesTask('washDishesBreakfast'),
   task('schoolPrep','School Preparation','Hygiene','6:00',10,{instructions:SCHOOL_PREP_CHECKLIST}),
   task('fastMath','Fast Math','Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Addition, subtraction, and multiplication facts — division when ready.','This builds automaticity, not new instruction.','Short and focused on purpose — fluency drills work best in quick, frequent bursts, not a long stretch.']}),
@@ -3174,10 +3202,9 @@ function normalHomeDayTasks(d,dev){
   ...histTasksFor(d),
   filmStudyTask(30),
   prepTask('snackPrep','home',20),
-  ...suppTasksFor('pre'),
   task('training','Workout & Football Touches','Training','6:00',80,{priority:1,completionType:'training',trainingFocus:'afternoon',instructions:['Speed & Agility already happened this morning — this block is Workout (strength) and Football Touches.']}),
   showerAfterTask('Shower After Training'),
-  ...suppTasksFor('post'),
+  recoveryShakeTask(),
   task('dinner','Dinner','Meal','6:00',40,{instructions:['Family dinner']}),
   responsibilityBlock(dev?'Responsibility Project':'Responsibility Block'),
   houseInspectionTask(),
@@ -3206,21 +3233,19 @@ function trainerDayTasks(d){
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   task('movement','Mobility And Recovery','Training','6:00',20,{completionType:'timer',instructions:['Light mobility and recovery work only — save legs for the trainer.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
-  ...suppTasksFor('morning'),
+  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
   washDishesTask('washDishesBreakfast'),
   task('fastMath',tsa('Fast Math'),'Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
   task('math',tsa('Math'),'Academic','6:00',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
   task('break1','Break','Recovery','6:00',10,{priority:3,instructions:['Short reset.']}),
   writingTaskDef('6:00',40,d),
   task('science',tsa('Science'),'Academic','6:00',35,{completionType:'academic',sub:'science',instructions:['Short science block — finishes after training if needed.']}),
-  ...suppTasksFor('pre'),
   prepTask('trainPrep','training',prepMin,'Snack And Training Preparation'),
   task('leaveHome','Leave House For Trainer','Travel',minToHHMM(leaveMin),0,{priority:1,fixed:true,instructions:['Be there at '+clock12(ti.start)+'. Drive is about '+ti.driveMinutes+' minutes.','Do not be late — this does not move.']}),
   task('trainer','Trainer Session','Training',ti.start,ti.durationMin,{priority:1,fixed:true,completionType:'training',instructions:['Follow the assigned trainer session.']}),
   task('travelHome','Travel Home','Travel',minToHHMM(endMin),ti.driveMinutes,{priority:1,fixed:true,instructions:['Ride home, hydrate, cool down. Have your post-workout snack in the car.']}),
   showerAfterTask('Shower After Training'),
-  ...suppTasksFor('post'),
+  recoveryShakeTask(),
   task('lunch','Lunch And Recovery','Meal','6:00',40,{instructions:['Eat a real lunch with protein and carbs','Hydrate','Light stretch or rest']}),
   cleanKitchenTask(),
   task('reading',tsa('Reading And Comprehension'),'Academic','6:00',30,{completionType:'academic',sub:'reading',instructions:['Challenging material. Log the start and end chapter and page, write the synopsis, and answer the comprehension questions.']}),
@@ -3256,8 +3281,7 @@ function practiceDayTasks(d){
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   task('movement','Mobility And Activation','Training','6:00',20,{completionType:'timer',instructions:['Practice is tonight — light mobility and activation only. Save your legs.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
-  ...suppTasksFor('morning'),
+  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
   washDishesTask('washDishesBreakfast'),
   task('schoolPrep','School Preparation','Hygiene','6:00',15,{instructions:SCHOOL_PREP_CHECKLIST}),
   task('fastMath',tsa('Fast Math'),'Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
@@ -3280,13 +3304,11 @@ function practiceDayTasks(d){
   indepReadingTask(20),
   task('tomorrowPrep','Tomorrow Preparation','Hygiene','6:00',10,{instructions:TOMORROW_PREP_CHECKLIST}),
   task('screenTime','Screen Time (TV Only)','Recovery','6:00',15,{priority:2,instructions:['Practice nights run late, so Screen Time happens BEFORE you leave, from everything you have already earned today.','TV only, nothing else. It is a privilege, not a right — it locks if anything from today is waiting on a correction.']}),
-  ...suppTasksFor('pre'),
   Object.assign(prepTask('snackPrep','practice',prepMin),{startAt:minToHHMM(leaveMin-prepMin)}),
   task('leaveHome','Leave House For Practice','Travel',minToHHMM(leaveMin),0,{priority:1,fixed:true,instructions:['Be there at '+clock12(pi.start)+'. Drive is about '+pi.driveMinutes+' minutes.','Do not be late — this does not move.']}),
   task('practice','Team Practice','Training',pi.start,pi.durationMin,{priority:1,fixed:true,instructions:['Team practice. Be coachable, give full effort, and sip water every 15–20 minutes.']}),
   task('travelHome','Travel Home','Travel',minToHHMM(endMin),pi.driveMinutes,{priority:1,fixed:true,instructions:['Ride home. Eat your post-practice snack and drink water.']}),
   task('postSnack','Post-Practice Recovery Snack','Meal','6:00',15,{priority:2,instructions:SG.prep.post}),
-  ...suppTasksFor('post'),
   showerAfterTask('Shower After Practice'),
   task('nightRoutine','Night Routine','Hygiene','6:00',15,{instructions:NIGHT_CHECKLIST}),
   nightlyGradeTask(),
@@ -3305,8 +3327,7 @@ function gameDayTasks(d){
   task('wake','Wake Up','Hygiene','6:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   task('movement','Mobility Only','Training','6:00',20,{completionType:'timer',instructions:['No hard conditioning today — mobility only, protect the legs for tonight.']}),
   ...morningShowerTasks(d),
-  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
-  ...suppTasksFor('morning'),
+  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
   washDishesTask('washDishesBreakfast'),
   task('fastMath',tsa('Fast Math'),'Academic','6:00',25,{completionType:'academic',sub:'fastMath',instructions:['Accuracy first, then speed.']}),
   task('math',tsa('Math'),'Academic','6:00',60,{priority:1,completionType:'academic',sub:'math',instructions:['Continue the current step on the skill ladder.']}),
@@ -3337,8 +3358,7 @@ function saturdayTasks(d){
   task('wake','Wake Up','Hygiene','7:00',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   ...morningShowerTasks(d),
   task('hygieneRoom','Hygiene And Room','Hygiene','6:00',15,{instructions:['Get ready for the day','Quick room tidy']}),
-  task('breakfast','Breakfast','Meal','6:00',25,{instructions:BREAKFAST_CHECKLIST}),
-  ...suppTasksFor('morning'),
+  task('breakfast','Breakfast','Meal','6:00',30,{instructions:BREAKFAST_CHECKLIST}),
   washDishesTask('washDishesBreakfast'),
   task('deepClean','Deep Clean And Laundry','Responsibility','6:00',60,{priority:1,completionType:'responsibility'}),
   task('fastMath','Fast Math','Academic','6:00',20,{completionType:'academic',sub:'fastMath',instructions:['Weekend pace: facts and fluency, short and sharp.']}),
@@ -3367,7 +3387,6 @@ function sundayTasks(d){
   task('wake','Wake Up','Hygiene','7:30',15,{priority:1,fixed:true,instructions:WAKE_CHECKLIST}),
   ...morningShowerTasks(d),
   task('hygieneBreakfast','Hygiene And Breakfast','Meal','6:00',40,{instructions:BREAKFAST_CHECKLIST}),
-  ...suppTasksFor('morning'),
   washDishesTask('washDishesBreakfast'),
   task('familyChurch','Family, Church, Or Recovery','Family','6:00',205,{instructions:['Church or youth activities, family time, and recovery.']}),
   task('lunch','Lunch','Meal','6:00',40,{instructions:['Eat']}),
@@ -5292,7 +5311,7 @@ const TASK_ICONS={
  travel:'🚗',weakest:'🎯',weeklyPlanning:'📝',
  washDishesBreakfast:'🧽',washDishesLunch:'🧽',washDishesDinner:'🧽',
  cleanKitchen:'🧽',houseInspection:'🔍',filmStudy:'🎬',nightlyGrade:'⭐',videoGames:'🎮',
- postSnack:'🥛',practice:'🏈',weakReview:'📘',values:'🌟',supp_am:'💧',supp_morning:'💊',supp_pre:'⚡',supp_post:'🥤'
+ postSnack:'🥛',practice:'🏈',weakReview:'📘',values:'🌟',supp_am:'💧',supp_morning:'💊',supp_pre:'⚡',supp_post:'🥤',recoveryShake:'🥤'
 };
 function taskHeroIcon(t){ if(String(t.id).indexOf('watch_')===0) return '🏈'; return TASK_ICONS[t.id]||categoryIcon(t.category); }
 
@@ -7713,7 +7732,7 @@ function evoPre(taskId,opts){
   return false;
  }
  if(opts.soft) return {tracked:true,soft:true};
- const miss=i.xp?evoMissing(t2):[];
+ const miss=(i.xp?evoMissing(t2):[]).concat(mealMissing(t2));
  const late=(i.phase==='late');
  const pw=peekScheduleEntry(taskId).win; let lateStartMin=0;
  if(pw && pw.ready!=null){ const st=(peekScheduleEntry(taskId).actualStart!=null)?peekScheduleEntry(taskId).actualStart:pw.s; lateStartMin=Math.round(st-pw.ready); }
@@ -7864,7 +7883,7 @@ function filmDayStats(key,sched){
  return {key,right:0,answered:0,den:FILM_MIN,pct:0,required:true,done:false};
 }
 function nutriDueMin(slot,sched){
- const ids={breakfast:['breakfast','hygieneBreakfast'],lunch:['lunch'],dinner:['dinner']};
+ const ids={breakfast:['breakfast','hygieneBreakfast'],lunch:['lunch'],dinner:['dinner'],shake1:['snackPrep','trainPrep'],shake2:['postSnack','recoveryShake']};
  if(ids[slot]&&sched){ for(let i=0;i<ids[slot].length;i++){ const t=sched.tasks.find(x=>x.id===ids[slot][i]&&x.schedEnd!=null); if(t) return t.schedEnd+45; } }
  return {breakfast:570,lunch:840,dinner:1170,shake1:960,shake2:1230}[slot];
 }
@@ -8225,10 +8244,8 @@ function evoPickerHTML(taskId,kind){
  return '<label class="chip photoBtn">📷<input type="file" accept="image/*" capture="environment" hidden onchange="addXpPhoto(\''+taskId+'\',\''+kind+'\',this)"></label><label class="chip photoBtn">🖼<input type="file" accept="image/*" hidden onchange="addXpPhoto(\''+taskId+'\',\''+kind+'\',this)"></label>';
 }
 function nutriHintHTML(t){
- const map={breakfast:'breakfast',hygieneBreakfast:'breakfast',lunch:'lunch',dinner:'dinner'};
- const slot=t&&map[t.id]; if(!slot) return '';
- const logged=!!((state.nutriDays[localDateKey()]||{})[slot]);
- return '<div class="evoShrunk" style="border-style:solid">🍽️ '+(logged?'✅ '+slotLabel(slot)+' is logged in Nutrition — counted in your grade.':'Log this meal in Nutrition. It counts '+evoWeights().raw.nutri+'% of your grade.')+(logged?'':' <button class="chip" style="margin-left:6px" onclick="showScreen(\'nutrition\')">Open Nutrition</button>')+'</div>';
+ const slot=mealSlotForTask(t); if(!slot) return '';
+ return mealPanelHTML(slot);
 }
 function shrunkNoteHTML(t){
  if(!t||!t.shrunk) return '';
@@ -8705,9 +8722,10 @@ function tutSteps(){
    '<p>You earn bonus points for staying on schedule and doing things right: cards submitted on time, Film Study, meals logged, your history and character scores, and Mom and Dad’s nightly grade.</p>'
    +'<p><b>Cash them in</b> for <b>phone call time</b> or <b>extra video game time</b>. Open <b>Grades → My Bonus Points</b>, pick what you want, and Mom or Dad types the parent code. Prices: '+state.points.rate.call+' points for 10 minutes of phone, '+state.points.rate.game+' points for 10 minutes of games.</p>'
    +'<p class="tiny">Responsibility and accountability are what earn the points: be on time, fill in everything, and finish the whole day.</p>'},
-  {icon:'💊',title:'Vitamin cards and a flexible day',html:
-   '<p><b>💊 Vitamin and supplement cards</b> show up on your schedule at the right times: <b>water</b> when you wake up, <b>vitamins with breakfast</b>, <b>training fuel</b> before your afternoon session, and <b>recovery fuel</b> after it. Each card tells you what to take, how much, and with what. Tick each one, then submit.</p>'
-   +'<p><b>⏱ Your day follows you.</b> Tap <b>Start</b> when a block begins and its clock starts then. The next block begins when you finish. If breakfast runs long, the rest of the day moves with you. Tap Start within <b>10 minutes</b> of a block being ready to keep it on time. Training, practice, games and lights-out stay fixed.</p>'},
+  {icon:'🍽️',title:'Meals, vitamins and a flexible day',html:
+   '<p><b>🍽️ Every meal card</b> (breakfast, pre-training fuel, recovery shake, lunch, dinner) is where you log what you ate. Search a food, pick <b>how much</b> (grams, ounces, cups or pounds) and add it. The app estimates calories, protein, carbs and sugar, and the same meal shows up in <b>Nutrition</b>.</p>'
+   +'<p><b>💊 Your vitamins</b> are listed right inside the meal they go with, with how much and with what. Tick each one, then submit the card.</p>'
+   +'<p><b>⏱ Your day follows you.</b> Tap <b>Start</b> when a block begins and its clock starts then. The next block begins when you finish. Tap Start within <b>10 minutes</b> of a block being ready to keep it on time. Training, practice, games and lights-out stay fixed.</p>'},
   {icon:'🌤️',title:'Weekends are lighter on school',html:
    '<p>Saturday and Sunday have <b>no new lessons</b>. You still do a little <b>Fast Math, Math, Reading and Film Study</b>.</p>'
    +'<p>The weekend is a bit more relaxed on school, but not on <b>responsibility and accountability</b>. Stay on schedule and finish your cards: <b>everything you earn on Saturday and Sunday counts double</b> in bonus points.</p>'}
@@ -8725,7 +8743,7 @@ function tutorialRender(){
   +'<div class="tutBtns">'+(tutIdx>0?'<button class="tutBack" onclick="tutorialOpen('+(tutIdx-1)+')">Back</button>':'<span></span>')
   +(tutIdx<n-1?'<button class="gold" onclick="tutorialOpen('+(tutIdx+1)+')">Next</button>':'<button class="green" onclick="tutorialClose()">Got it</button>')+'</div></div></div>';
 }
-const TUT_VER=28, TUT_NEW_FROM=10; // v26 added steps 7+, v28 added the vitamin/flexible-day step
+const TUT_VER=29, TUT_NEW_FROM=10; // v26 added steps 7+, v28 added the vitamin/flexible-day step
 function tutorialClose(){ tutIdx=-1; tutorialRender(); if(!state.tutorialSeen||state.tutorialVer<TUT_VER){ state.tutorialSeen=true; state.tutorialVer=TUT_VER; save(); } }
 function tutorialMaybeAuto(){
  if(tutIdx>=0||!appEntered||!state.onboarded) return;
@@ -9094,19 +9112,21 @@ function ptsVoucherSet(id,status){ const v=state.points.vouchers.find(function(x
    and add their own items. Nothing here replaces the pediatrician's advice.
    ===================================================================== */
 const SUPP_SLOTS=[
- {id:'am',icon:'💧',name:'Wake-Up Water',short:'Before Speed & Agility',when:'Right now, before your morning session'},
- {id:'morning',icon:'💊',name:'Morning Vitamins',short:'With breakfast',when:'With breakfast'},
- {id:'pre',icon:'⚡',name:'Training Fuel',short:'Before the afternoon session',when:'30 to 45 minutes before training'},
- {id:'post',icon:'🥤',name:'Recovery Fuel',short:'After the afternoon session',when:'Within an hour after training'}
+ {id:'morning',icon:'🥣',name:'Meal 1 (breakfast)',short:'with the first meal',when:'With your first meal'},
+ {id:'pre',icon:'⚡',name:'Pre-training fuel',short:'before the afternoon session',when:'30 to 45 minutes before training'},
+ {id:'post',icon:'🥤',name:'Recovery shake',short:'after the afternoon session',when:'Within an hour after training'},
+ {id:'lunch',icon:'🥪',name:'Lunch',short:'with lunch',when:'With lunch'},
+ {id:'dinner',icon:'🍽️',name:'Dinner',short:'with dinner',when:'With dinner'}
 ];
-function suppSlot(id){ return SUPP_SLOTS.find(function(s){return s.id===id;})||SUPP_SLOTS[1]; }
+function suppNormSlot(id){ return id==='am'?'morning':id; }
+function suppSlot(id){ id=suppNormSlot(id); return SUPP_SLOTS.find(function(s){return s.id===id;})||SUPP_SLOTS[0]; }
 function suppDefaults(){
  const age=Number(state.age)||13, A=age, d=supplementDoses(age), w=(function(){ try{ return athleteWeight(); }catch(e){ return null; } })();
  const shakeG=w?Math.max(15,Math.min(30,Math.round(w*0.136/5)*5)):20; // about 0.3 g of protein per kg after training
  const preOz=w?Math.max(8,Math.min(20,Math.round(w*0.11))):16;
  const amOz=w?Math.max(6,Math.min(16,Math.round(w*0.07))):10;
  const items=[
-  {id:'h2oAM',slot:'am',name:'Water',dose:'about '+amOz+' oz (a big glass)',withWhat:'plain water, before you move',why:'You wake up a little dry. Starting hydrated keeps your legs and focus sharp for the first session.',on:true},
+  {id:'h2oAM',slot:'morning',name:'Water',dose:'about '+amOz+' oz (a big glass)',withWhat:'plain water, first thing, before you eat',why:'You wake up a little dry. Starting hydrated keeps your legs and focus sharp for the first session.',on:true},
   {id:'vitD',slot:'morning',name:'Vitamin D',dose:driText('vitD',A)+' a day total, from food and any supplement together',withWhat:'with breakfast, with some fat (eggs, milk, peanut butter) so it absorbs',why:'Bones, muscles and the immune system. Many young athletes run low, especially when they train indoors.',on:true},
   {id:'mvi',slot:'morning',name:'Multivitamin',dose:'1 serving made for the athlete’s age, exactly as the label says (no mega-doses)',withWhat:'with breakfast and a full glass of water',why:'Fills small gaps on a two-a-day training load. Food still does the heavy lifting.',on:true},
   {id:'omega',slot:'morning',name:'Omega-3 (fish oil or fish)',dose:'1 serving per the label, or a fish meal (salmon, tuna) a couple of times this week',withWhat:'with a meal so it sits well',why:'Helps recovery and joint comfort after hard training days.',on:true},
@@ -9122,19 +9142,14 @@ function suppItems(){
  const over=state.supp.over||{};
  const base=suppDefaults().map(function(it){
   const o=over[it.id]||{};
-  return {id:it.id,slot:it.slot,name:(o.name||it.name),dose:(o.dose||it.dose),withWhat:(o.withWhat||it.withWhat),why:it.why,on:(o.on==null?it.on:!!o.on),custom:false};
+  return {id:it.id,slot:suppNormSlot(it.slot),name:(o.name||it.name),dose:(o.dose||it.dose),withWhat:(o.withWhat||it.withWhat),why:it.why,on:(o.on==null?it.on:!!o.on),custom:false};
  });
- const cust=(state.supp.custom||[]).map(function(c){ return {id:c.id,slot:c.slot,name:c.name,dose:c.dose||'',withWhat:c.withWhat||'',why:c.why||'Added by a parent.',on:c.on!==false,custom:true}; });
+ const cust=(state.supp.custom||[]).map(function(c){ return {id:c.id,slot:suppNormSlot(c.slot),name:c.name,dose:c.dose||'',withWhat:c.withWhat||'',why:c.why||'Added by a parent.',on:c.on!==false,custom:true}; });
  return base.concat(cust);
 }
 function suppItemsForSlot(slot){ return suppItems().filter(function(i){return i.slot===slot&&i.on;}); }
 // schedule tasks (empty when nothing is switched on for that slot, or the whole feature is off)
-function suppTasksFor(slot){
- if(!state.supp.enabled) return [];
- if(!suppItemsForSlot(slot).length) return [];
- const s=suppSlot(slot);
- return [task('supp_'+slot,s.icon+' '+s.name+' ('+s.short+')','Meal','6:00',(slot==='pre'||slot==='post')?3:5,{priority:2,completionType:'suppReminder',slot:slot,instructions:['Take what the card lists, with what it says, then tick each one.']})];
-}
+function suppTasksFor(slot){ return []; } // v29: vitamins ride inside the meal cards, not separate cards
 function suppDay(key){ key=key||localDateKey(); state.suppDays[key]=state.suppDays[key]||{}; return state.suppDays[key]; }
 function suppTick(id){
  const d=suppDay(); if(d[id]) delete d[id]; else d[id]=Date.now();
@@ -9161,7 +9176,7 @@ function suppTaskHTML(t){
 // parent editor
 function suppBoxHTML(){
  const items=suppItems();
- let h='<p class="small">These cards show up on his schedule around his two training sessions a day and tell him what to take, how much, and with what. Doses are scaled to his age and weight from the Settings screen. Always confirm vitamins and supplements with the pediatrician. Creatine stays off for adolescents unless the doctor approves it.</p>';
+ let h='<p class="small">These vitamins show up inside his meal cards (breakfast, pre-training fuel, recovery shake, lunch, dinner) and tell him what to take with that meal, how much, and with what. Doses are scaled to his age and weight from the Settings screen. Always confirm vitamins and supplements with the pediatrician. Creatine stays off for adolescents unless the doctor approves it.</p>';
  h+='<div class="checkItem"><span><b>Show these cards on his schedule</b></span><button class="chip" onclick="suppToggleAll()">'+(state.supp.enabled?'On':'Off')+'</button></div>';
  SUPP_SLOTS.forEach(function(s){
   const list=items.filter(function(i){return i.slot===s.id;});
@@ -9176,8 +9191,10 @@ function suppBoxHTML(){
  h+='<div class="label" style="margin-top:14px">Add your own</div><div class="inner"><select id="suppNewSlot">'+SUPP_SLOTS.map(function(s){return '<option value="'+s.id+'">'+escapeHTML(s.name)+' ('+escapeHTML(s.short)+')</option>';}).join('')+'</select>'
   +'<input type="text" id="suppNewName" placeholder="Name (for example Magnesium)" style="margin-top:6px"><input type="text" id="suppNewDose" placeholder="Dose" style="margin-top:6px"><input type="text" id="suppNewWith" placeholder="With what (food, water, time)" style="margin-top:6px">'
   +'<button class="gold full" style="margin-top:8px" onclick="suppAdd()">Add to his schedule</button></div>';
+ h+='<div class="label" style="margin-top:14px">Food search key (optional)</div><div class="inner"><p class="tiny">The “Search USDA online” button in his meal cards uses a shared key with a small daily limit. A free personal key from fdc.nal.usda.gov/api-key-signup removes the limit.</p><input type="text" id="usdaKeyInput" value="'+escapeHTML(state.usdaKey||'')+'" placeholder="Paste your USDA key (leave empty to use the shared one)"><button class="chip" style="margin-top:6px" onclick="saveUsdaKey()">Save key</button></div>';
  return h;
 }
+function saveUsdaKey(){ const e=document.getElementById('usdaKeyInput'); state.usdaKey=String(e&&e.value||'').trim(); save(); alert(state.usdaKey?'Key saved.':'Using the shared key.'); }
 function suppToggleAll(){ state.supp.enabled=!state.supp.enabled; save(); evoDirty=true; render(); }
 function suppToggleItem(id){
  const it=suppItems().find(function(i){return i.id===id;}); if(!it) return;
@@ -9199,6 +9216,286 @@ function suppAdd(){
  const name=g('suppNewName'); if(!name){ alert('Type a name first.'); return; }
  state.supp.custom.push({id:'c'+Date.now(),slot:g('suppNewSlot')||'morning',name:name,dose:g('suppNewDose'),withWhat:g('suppNewWith'),on:true});
  save(); evoDirty=true; render();
+}
+
+/* =====================================================================
+   v29 — meals are the center of the day.
+   * Each meal card on the schedule (breakfast, lunch, dinner, pre-training fuel, recovery shake)
+     now holds: (1) what he ate, typed from a searchable food list with an amount and a unit, with an
+     estimated calories / protein / carbs / sugar / fat total, and (2) that meal's vitamins to tick.
+   * Everything he logs also feeds the Nutrition screen (same state.l.mealLog the old builder used).
+   * Foods: built-in list (food-db.js, per 100 g), a USDA online search, and his own numbers from a label.
+   ===================================================================== */
+const MEAL_MAP={breakfast:'breakfast',hygieneBreakfast:'breakfast',lunch:'lunch',dinner:'dinner',snackPrep:'shake1',trainPrep:'shake1',postSnack:'shake2',recoveryShake:'shake2'};
+const MEAL_GROUP={breakfast:'morning',lunch:'lunch',dinner:'dinner',shake1:'pre',shake2:'post'};
+const MEAL_INFO={
+ breakfast:{icon:'🥣',name:'Meal 1',tip:'A liquid or high-protein first meal fuels fastest: a shake or smoothie, eggs and oats, or Greek yogurt with fruit.'},
+ lunch:{icon:'🥪',name:'Lunch',tip:'Protein, a carb, a veggie and a fruit.'},
+ dinner:{icon:'🍽️',name:'Dinner',tip:'Protein, a carb and a veggie. Rebuild what training used.'},
+ shake1:{icon:'⚡',name:'Pre-training fuel',tip:'Something light and easy to digest 30 to 45 minutes before training: a banana, toast with peanut butter, or a small shake.'},
+ shake2:{icon:'🥤',name:'Recovery shake',tip:'Protein plus a carb within an hour after training.'}
+};
+function mealSlotForTask(t){ return t?(MEAL_MAP[t.id]||null):null; }
+let mealUI={}; // per slot: {q,res,sel,qty,unit,msg,online,custom}
+function mealU(slot){ return mealUI[slot]||(mealUI[slot]={q:'',res:[],sel:null,qty:'',unit:'g',msg:'',online:false,custom:false}); }
+function mealNum(v){ const n=parseFloat(String(v==null?'':v).replace(',','.')); return isFinite(n)&&n>0?n:0; }
+function r1(v){ return Math.round(v*10)/10; }
+/* ---------- foods ---------- */
+let _foodAll=null;
+function foodAll(){
+ if(_foodAll) return _foodAll;
+ _foodAll=(typeof FOOD_DB!=='undefined'?FOOD_DB:[]).map(function(r){ return {name:r[0],per:{cal:r[1],p:r[2],c:r[3],f:r[4],s:r[5],fi:r[6]},cupG:r[7]||0,pcG:r[8]||0,pcName:r[9]||'',tb:r[10].indexOf('t')!==-1,dish:r[10].indexOf('d')!==-1,words:(r[0]+' '+r[11]).toLowerCase(),src:'db'}; });
+ return _foodAll;
+}
+function foodRecentList(){ return Array.isArray(state.foodRecent)?state.foodRecent:[]; }
+const FOOD_STOP=['with','and','of','the','a','an','in','on','some','my','for','plus'];
+function foodSearch(q){
+ const toks=String(q||'').toLowerCase().split(/[^a-z0-9%]+/).filter(function(t){return t&&FOOD_STOP.indexOf(t)===-1;});
+ if(!toks.length) return {list:[],exact:true};
+ const pool=foodRecentList().map(function(r){ return Object.assign({},r,{words:(r.name||'').toLowerCase(),recent:true}); }).concat(foodAll());
+ const seen={}; const scored=[];
+ pool.forEach(function(f){
+  const key=f.name; if(seen[key]) return; seen[key]=1;
+  let hit=0; toks.forEach(function(t){ if(f.words.indexOf(t)!==-1) hit++; });
+  if(!hit) return;
+  scored.push({f:f,hit:hit,start:(f.name.toLowerCase().indexOf(toks[0])===0?1:0),len:f.name.length});
+ });
+ scored.sort(function(a,b){ return b.hit-a.hit||b.start-a.start||a.len-b.len; });
+ const best=scored.length?scored[0].hit:0;
+ return {list:scored.slice(0,6).map(function(s){return s.f;}),exact:best===toks.length};
+}
+function foodUnits(f){
+ const u=[['g','grams'],['oz','ounces'],['lb','pounds']];
+ if(f.cupG){ u.push(['cup','cups']); if(f.tb) u.push(['tbsp','tablespoons']); }
+ if(f.pcG) u.push(['each',(f.pcName||'each')]);
+ return u;
+}
+function unitGrams(f,u){
+ return u==='g'?1:u==='oz'?28.3495:u==='lb'?453.592:u==='cup'?(f.cupG||0):u==='tbsp'?((f.cupG||0)/16):u==='each'?(f.pcG||0):1;
+}
+function unitShort(f,u){ return u==='each'?(f.pcName||'each'):u; }
+function mealItemFrom(f,qty,unit){
+ const g=qty*unitGrams(f,unit); const k=g/100;
+ return {n:f.name,q:qty,u:unitShort(f,unit),g:Math.round(g),cal:f.per.cal*k,p:f.per.p*k,c:f.per.c*k,f:f.per.f*k,s:(f.per.s||0)*k,fi:(f.per.fi||0)*k,src:f.src||'db',est:!!f.dish};
+}
+function mealTotals(items){
+ const t={cal:0,protein:0,carb:0,fat:0,sugar:0,fiber:0};
+ (items||[]).forEach(function(i){ t.cal+=i.cal; t.protein+=i.p; t.carb+=i.c; t.fat+=i.f; t.sugar+=(i.s||0); t.fiber+=(i.fi||0); });
+ return t;
+}
+function mealTotalLine(t){
+ return '≈ '+Math.round(t.cal)+' cal · '+Math.round(t.protein)+'g protein · '+Math.round(t.carb)+'g carbs ('+Math.round(t.sugar||0)+'g sugar) · '+Math.round(t.fat)+'g fat'+((t.fiber||0)>=0.5?' · '+Math.round(t.fiber)+'g fiber':'');
+}
+/* ---------- drafts (a meal he is still building) ---------- */
+function mealDraft(slot){
+ const k=localDateKey(); state.mealDraft=state.mealDraft||{};
+ Object.keys(state.mealDraft).forEach(function(d){ if(d<k) delete state.mealDraft[d]; });
+ state.mealDraft[k]=state.mealDraft[k]||{};
+ return (state.mealDraft[k][slot]=state.mealDraft[k][slot]||[]);
+}
+/* ---------- the panel ---------- */
+function mealIsLogged(slot){ return !!mealLogFor()[slot]; }
+function mealSuppItems(slot){ return suppItemsForSlot(MEAL_GROUP[slot]); }
+function mealSuppsDone(slot){ const d=suppDay(); return mealSuppItems(slot).every(function(i){return !!d[i.id];}); }
+function mealMissing(t){
+ const slot=mealSlotForTask(t); if(!slot||!state.supp.enabled) return [];
+ return mealSuppsDone(slot)?[]:['Vitamins and supplements for this meal not ticked'];
+}
+function mealPanelHTML(slot,opts){
+ opts=opts||{}; const info=MEAL_INFO[slot]; const m=mealLogFor()[slot]; const u=mealU(slot);
+ return '<div class="lsWrap"><div class="mealPanel" data-slot="'+slot+'">'+mealPanelInner(slot,opts)+'</div></div>';
+}
+function mealPanelInner(slot,opts){
+ opts=opts||{}; const info=MEAL_INFO[slot]; const logged=mealLogFor()[slot]; const u=mealU(slot);
+ let h='<div class="inner mlHead"><div class="tiny">'+(opts.fromNutrition?'Log what you ate':'Eat, log it, take your vitamins')+'</div><h3 style="margin:2px 0">'+info.icon+' '+escapeHTML(info.name)+'</h3><div class="tiny" style="opacity:.85">'+escapeHTML(info.tip)+'</div></div>';
+ // ---- what he ate
+ h+='<div class="inner"><div class="label" style="margin-top:0">🍽️ What did you eat or drink?</div>';
+ if(logged){
+  const its=logged.items||[];
+  h+='<div class="coachBubble" style="margin-top:6px"><strong>Logged ✅ — counted in Nutrition</strong>'
+   +(its.length?its.map(mealItemRowHTML).join(''):'<p class="small" style="margin-top:4px">'+escapeHTML(logged.summary||'')+'</p>')
+   +'<p class="tiny" style="margin-top:6px">'+mealTotalLine({cal:logged.macros.cal,protein:logged.macros.protein,carb:logged.macros.carb,fat:logged.macros.fat,sugar:logged.macros.sugar||0,fiber:logged.macros.fiber||0})+'</p></div>'
+   +'<button class="chip" style="margin-top:8px" onclick="mealEdit(\''+slot+'\')">Change what I ate</button>';
+ } else {
+  const items=mealDraft(slot);
+  if(items.length) h+=items.map(function(i,ix){ return mealItemRowHTML(i,ix,slot); }).join('')+'<p class="tiny" style="margin-top:6px"><b>Total so far:</b> '+mealTotalLine(mealTotals(items))+'</p>';
+  else h+='<p class="tiny">Nothing added yet. Search a food, choose how much, and add it.</p>';
+  h+=mealAddFormHTML(slot,u);
+  h+='<button class="green full" style="margin-top:8px" onclick="mealCommit(\''+slot+'\')"'+(items.length?'':' disabled')+'>Save this meal</button>';
+ }
+ h+='</div>';
+ // ---- vitamins that go with this meal
+ h+=mealSuppsHTML(slot);
+ return h;
+}
+function mealItemRowHTML(i,ix,slot){
+ const amt=(i.q!=null?r1(i.q)+' '+i.u:'')+(i.g?' · '+i.g+' g':'');
+ return '<div class="mlItem"><div style="flex:1"><div class="small"><b>'+escapeHTML(i.n)+'</b>'+(i.est?' <span class="tiny">(estimate)</span>':'')+'</div><div class="tiny">'+escapeHTML(amt)+' · '+Math.round(i.cal)+' cal · '+Math.round(i.p)+'g protein · '+Math.round(i.c)+'g carbs ('+Math.round(i.s||0)+'g sugar) · '+Math.round(i.f)+'g fat</div></div>'
+  +(slot?'<button class="chip" onclick="mealRemove(\''+slot+'\','+ix+')">✕</button>':'')+'</div>';
+}
+function mealAddFormHTML(slot,u){
+ let h='<div style="margin-top:10px"><input type="text" class="mlSearch" data-slot="'+slot+'" value="'+escapeHTML(u.q)+'" placeholder="Type a food: ground turkey, rice, teriyaki bowl…" oninput="mealSearchInput(\''+slot+'\',this.value)" autocomplete="off">';
+ h+='<div class="mlRes" data-slot="'+slot+'">'+mealResultsHTML(slot)+'</div>';
+ if(u.sel) h+=mealAmountHTML(slot,u);
+ h+='<div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><button class="chip" onclick="mealToggleCustom(\''+slot+'\')">'+(u.custom?'Close':'Enter my own numbers')+'</button><button class="chip" onclick="mealOnlineSearch(\''+slot+'\')">🔎 Search USDA online</button></div>';
+ if(u.msg) h+='<p class="tiny" style="margin-top:6px">'+escapeHTML(u.msg)+'</p>';
+ if(u.custom) h+=mealCustomHTML(slot);
+ h+='</div>';
+ return h;
+}
+function mealResultsHTML(slot){
+ const u=mealU(slot); let list=u.res;
+ if(!u.q.trim()){
+  const rc=foodRecentList().slice(0,6);
+  if(!rc.length) return '';
+  return '<div class="tiny" style="margin-top:6px">Recent</div><div class="scrollPicker">'+rc.map(function(f,i){ return '<button class="scrollChip" onclick="mealPickRecent(\''+slot+'\','+i+')">'+escapeHTML(f.name)+'</button>'; }).join('')+'</div>';
+ }
+ if(!list.length) return '<p class="tiny" style="margin-top:6px">No match. Try fewer words, search USDA online, or enter your own numbers.</p>';
+ return (u.exact?'':'<p class="tiny" style="margin-top:6px">No exact match. Closest foods:</p>')+'<div class="mlList">'+list.map(function(f,i){
+  return '<button class="mlPick" onclick="mealPick(\''+slot+'\','+i+')"><b>'+escapeHTML(f.name)+'</b><span class="tiny"> '+Math.round(f.per.cal)+' cal · '+Math.round(f.per.p)+'g P · '+Math.round(f.per.c)+'g C per 100 g'+(f.dish?' · estimate':'')+(f.src==='usda'?' · USDA':'')+'</span></button>';
+ }).join('')+'</div>';
+}
+function mealAmountHTML(slot,u){
+ const f=u.sel; const units=foodUnits(f);
+ if(!units.some(function(x){return x[0]===u.unit;})) u.unit=units[0][0];
+ let h='<div class="inner" style="margin-top:8px"><div class="small"><b>'+escapeHTML(f.name)+'</b></div><div class="row" style="gap:6px;margin-top:6px"><input type="number" inputmode="decimal" step="any" min="0" id="mlQty_'+slot+'" value="'+escapeHTML(u.qty)+'" placeholder="How much?" oninput="mealQty(\''+slot+'\',this.value)" style="flex:1"><select onchange="mealUnit(\''+slot+'\',this.value)">'+units.map(function(x){return '<option value="'+x[0]+'"'+(x[0]===u.unit?' selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div>';
+ h+='<div class="tiny mlEst" data-slot="'+slot+'" style="margin-top:6px">'+mealEstHTML(slot)+'</div>';
+ h+='<button class="gold full" style="margin-top:8px" onclick="mealAdd(\''+slot+'\')">Add to this meal</button></div>';
+ return h;
+}
+function mealEstHTML(slot){
+ const u=mealU(slot); if(!u.sel) return '';
+ const q=mealNum(u.qty); if(!q) return 'Enter how much and the estimate shows here.';
+ const it=mealItemFrom(u.sel,q,u.unit);
+ return '≈ '+it.g+' g · '+Math.round(it.cal)+' cal · '+Math.round(it.p)+'g protein · '+Math.round(it.c)+'g carbs ('+Math.round(it.s)+'g sugar) · '+Math.round(it.f)+'g fat'+(u.sel.dish?' · prepared dishes are rough estimates':'');
+}
+function mealCustomHTML(slot){
+ const f=function(id,ph){ return '<input type="text" inputmode="decimal" id="mlC_'+id+'_'+slot+'" placeholder="'+ph+'" style="margin-top:6px">'; };
+ return '<div class="inner" style="margin-top:8px"><div class="small"><b>Your own numbers</b></div><div class="tiny">Use the label (per serving) or a restaurant estimate. Total for the amount he ate.</div>'
+  +'<input type="text" id="mlC_name_'+slot+'" placeholder="Name (for example Mom’s teriyaki bowl)" style="margin-top:6px">'
+  +f('g','Total weight in grams (optional)')+f('cal','Calories')+f('p','Protein (g)')+f('c','Carbs (g)')+f('s','Sugar (g, optional)')+f('f','Fat (g)')
+  +'<button class="gold full" style="margin-top:8px" onclick="mealAddCustom(\''+slot+'\')">Add to this meal</button></div>';
+}
+function mealSuppsHTML(slot){
+ if(!state.supp.enabled) return '';
+ const items=mealSuppItems(slot); if(!items.length) return '';
+ const d=suppDay(); const all=items.every(function(i){return !!d[i.id];});
+ let h='<div class="inner"><div class="label" style="margin-top:0">💊 Take with this meal</div><div class="tiny">Based on your age'+((function(){ try{ return athleteWeight(); }catch(e){ return null; } })()?' and weight':'')+' for a twice-a-day athlete. Check anything new with the doctor.'+(state.age?'':' <b>Add your age in Nutrition so the amounts fit you.</b>')+'</div>';
+ h+=items.map(function(i){
+  const on=!!d[i.id];
+  return '<div class="suppRow'+(on?' on':'')+'" onclick="mealSuppTick(\''+slot+'\',\''+i.id+'\')"><span class="suppBox">'+(on?'✅':'⬜')+'</span><div><div class="small"><b>'+escapeHTML(i.name)+'</b> · '+escapeHTML(i.dose)+'</div><div class="tiny">🥛 '+escapeHTML(i.withWhat)+'</div><div class="tiny" style="opacity:.8">Why: '+escapeHTML(i.why)+'</div></div></div>';
+ }).join('');
+ h+='<p class="tiny" style="margin-top:6px">'+(all?'✅ All done for this meal.':'Tap each one as you take it. They count when you submit this card.')+'</p></div>';
+ return h;
+}
+/* ---------- actions ---------- */
+function mealRefresh(slot){
+ document.querySelectorAll('.mealPanel[data-slot="'+slot+'"]').forEach(function(el){
+  const fromN=el.getAttribute('data-from')==='nutrition';
+  el.innerHTML=mealPanelInner(slot,{fromNutrition:fromN});
+ });
+}
+function mealSearchInput(slot,v){
+ const u=mealU(slot); u.q=v; u.msg=''; u.res=foodSearch(v).list; u.exact=foodSearch(v).exact;
+ document.querySelectorAll('.mlRes[data-slot="'+slot+'"]').forEach(function(el){ el.innerHTML=mealResultsHTML(slot); });
+}
+function mealPick(slot,i){ const u=mealU(slot); const f=u.res[i]; if(!f) return; u.sel=f; u.qty=''; u.unit='g'; u.msg=''; mealRefresh(slot); setTimeout(function(){ const e=document.getElementById('mlQty_'+slot); if(e) e.focus(); },30); }
+function mealPickRecent(slot,i){ const u=mealU(slot); const f=foodRecentList()[i]; if(!f) return; u.sel=Object.assign({},f); u.qty=''; u.unit='g'; u.msg=''; mealRefresh(slot); }
+function mealQty(slot,v){ const u=mealU(slot); u.qty=v; document.querySelectorAll('.mlEst[data-slot="'+slot+'"]').forEach(function(el){ el.innerHTML=mealEstHTML(slot); }); }
+function mealUnit(slot,v){ const u=mealU(slot); u.unit=v; document.querySelectorAll('.mlEst[data-slot="'+slot+'"]').forEach(function(el){ el.innerHTML=mealEstHTML(slot); }); }
+function mealRememberFood(f){
+ const list=foodRecentList().filter(function(x){return x.name!==f.name;});
+ list.unshift({name:f.name,per:f.per,cupG:f.cupG||0,pcG:f.pcG||0,pcName:f.pcName||'',tb:!!f.tb,dish:!!f.dish,src:f.src||'db'});
+ state.foodRecent=list.slice(0,12);
+}
+function mealAdd(slot){
+ const u=mealU(slot); if(!u.sel) return; const q=mealNum(u.qty);
+ if(!q){ u.msg='Enter how much first.'; mealRefresh(slot); return; }
+ mealDraft(slot).push(mealItemFrom(u.sel,q,u.unit));
+ mealRememberFood(u.sel);
+ u.sel=null; u.qty=''; u.q=''; u.res=[]; u.msg=''; save(); mealRefresh(slot);
+}
+function mealRemove(slot,ix){ mealDraft(slot).splice(ix,1); save(); mealRefresh(slot); }
+function mealToggleCustom(slot){ const u=mealU(slot); u.custom=!u.custom; mealRefresh(slot); }
+function mealAddCustom(slot){
+ const g=function(id){ const e=document.getElementById('mlC_'+id+'_'+slot); return e?String(e.value||'').trim():''; };
+ const u=mealU(slot);
+ const name=g('name')||'My own food'; const cal=mealNum(g('cal')), p=mealNum(g('p')), c=mealNum(g('c')), f=mealNum(g('f')), s=mealNum(g('s')), gr=mealNum(g('g'));
+ if(!(cal||p||c||f)){ u.msg='Enter at least the calories or the protein, carbs and fat.'; mealRefresh(slot); return; }
+ const calc=cal||(p*4+c*4+f*9);
+ mealDraft(slot).push({n:name,q:gr||null,u:gr?'g':'',g:Math.round(gr),cal:calc,p:p,c:c,f:f,s:s,fi:0,src:'custom',est:true});
+ if(gr){ const k=100/gr; mealRememberFood({name:name,per:{cal:calc*k,p:p*k,c:c*k,f:f*k,s:s*k,fi:0},src:'custom'}); }
+ u.custom=false; u.msg=''; save(); mealRefresh(slot);
+}
+function mealCommit(slot){
+ const items=mealDraft(slot); if(!items.length) return;
+ const t=mealTotals(items);
+ mealLogFor()[slot]={macros:{cal:t.cal,protein:t.protein,carb:t.carb,fat:t.fat,sugar:t.sugar,fiber:t.fiber},summary:items.map(function(i){ return (i.q!=null&&i.q!==''?r1(i.q)+' '+i.u+' ':'')+i.n; }).join(', ')+'.',items:items.slice()};
+ state.mealDraft[localDateKey()][slot]=[];
+ nutriStamp(slot,true); recalcNutritionRollup(); save(); render();
+}
+function mealEdit(slot){
+ const e=mealLogFor()[slot]; if(!e) return;
+ const items=(e.items&&e.items.length)?e.items.slice():[];
+ unlogMeal(slot);               // removes the entry + the grade stamp and re-rolls the totals
+ mealDraft(slot); state.mealDraft[localDateKey()][slot]=items;
+ save(); render();
+}
+function mealSuppTick(slot,id){
+ const d=suppDay(); if(d[id]) delete d[id]; else d[id]=Date.now();
+ save(); mealRefresh(slot);
+}
+/* USDA FoodData Central search (online only). Falls back to a clear message when offline or rate-limited. */
+function usdaKey(){ return (state.usdaKey||'DEMO_KEY').trim()||'DEMO_KEY'; }
+async function mealOnlineSearch(slot){
+ const u=mealU(slot); const q=u.q.trim();
+ if(!q){ u.msg='Type a food above first, then tap Search USDA online.'; mealRefresh(slot); return; }
+ u.msg='Searching USDA…'; mealRefresh(slot);
+ try{
+  const url='https://api.nal.usda.gov/fdc/v1/foods/search?api_key='+encodeURIComponent(usdaKey())+'&query='+encodeURIComponent(q)+'&pageSize=10&dataType='+encodeURIComponent('Foundation,SR Legacy,Survey (FNDDS)');
+  const r=await fetch(url);
+  if(!r.ok) throw new Error(r.status===429?'rate':'http '+r.status);
+  const j=await r.json();
+  const get=function(f,ids){ const n=(f.foodNutrients||[]); for(let a=0;a<ids.length;a++){ const x=n.find(function(y){ return String(y.nutrientId)===ids[a]||String(y.nutrientNumber)===ids[a]; }); if(x&&x.value!=null) return Number(x.value); } return null; };
+  const list=(j.foods||[]).map(function(f){
+   const p=get(f,['1003','203'])||0, c=get(f,['1005','205'])||0, fa=get(f,['1004','204'])||0;
+   let cal=get(f,['1008','208','2047','957','2048','958']); if(cal==null) cal=p*4+c*4+fa*9;
+   return {name:String(f.description||'USDA food').replace(/\s+/g,' ').trim(),per:{cal:cal,p:p,c:c,f:fa,s:get(f,['2000','269'])||0,fi:get(f,['1079','291'])||0},cupG:0,pcG:0,pcName:'',tb:false,dish:false,src:'usda'};
+  });
+  u.res=list; u.exact=true; u.msg=list.length?'USDA results (values per 100 g). Tap one to choose an amount.':'USDA had no match. Try other words or enter your own numbers.';
+  const box=document.querySelector('.mlSearch[data-slot="'+slot+'"]');
+  mealRefresh(slot);
+ }catch(err){
+  u.msg=(String(err.message)==='rate')?'USDA is busy (the shared key has a small daily limit). A parent can add a free key under Parent → Vitamins & supplements, or enter your own numbers.':'Could not reach USDA right now (offline?). Use the built-in list or enter your own numbers.';
+  mealRefresh(slot);
+ }
+}
+/* ---------- age / profile inside Nutrition ---------- */
+function nutriProfileHTML(){
+ const a=state.age||'';
+ return '<details class="clean"'+(a?'':' open')+'><summary>👤 Athlete profile · age '+(a?escapeHTML(a):'not set')+'</summary><div class="detailBody">'
+  +'<p class="small">Age sets the vitamin, mineral and supplement amounts on his meal cards and in the tables below. Weight and height set the calorie, protein and water targets.</p>'
+  +'<div class="label">Age (4 to 24)</div><div class="row" style="gap:6px"><input type="number" inputmode="numeric" min="4" max="24" id="nutAgeInput" value="'+escapeHTML(a)+'" placeholder="Age" style="flex:1"><button class="gold" onclick="saveNutriAge()">Save age</button></div>'
+  +'<p class="tiny" style="margin-top:8px">Weight: '+(state.profileWeight?escapeHTML(state.profileWeight)+' lb':'not saved')+' · Height: '+escapeHTML(formatHeight(state.height))+' <button class="chip" style="margin-left:6px" onclick="openNutritionGate(true)">Change</button></p></div></details>';
+}
+function saveNutriAge(){
+ const e=document.getElementById('nutAgeInput'); const a=Number(e&&e.value);
+ if(!a||a<4||a>24){ alert('Enter a realistic age (4 to 24).'); return; }
+ state.age=String(a); _foodAll=_foodAll; save(); render();
+}
+function nutriMealBuilderHTML(){
+ const ml=mealLogFor(); const slots=mealSlots();
+ const chips=slots.map(function(s){ return '<button class="scrollChip '+(nutriActiveSlot===s?'active':'')+'" onclick="selectNutriSlot(\''+s+'\')">'+(ml[s]?'✅ ':'')+MEAL_INFO[s].name+'</button>'; }).join('');
+ let body='';
+ if(nutriActiveSlot){
+  const s=nutriActiveSlot;
+  body='<div class="mealPanel" data-slot="'+s+'" data-from="nutrition">'+mealPanelInner(s,{fromNutrition:true})+'</div>';
+  if(!ml[s]) body+='<details class="clean" style="margin-top:8px"><summary>Need an idea? Get a suggested plate</summary><div class="detailBody">'+(isShakeSlot(s)?shakeBuilderHTML(s):solidMealBuilderHTML(s))+'</div></details>';
+ }
+ const tot=mealTotals(Object.keys(ml).map(function(k){ const m=ml[k].macros; return {cal:m.cal,p:m.protein,c:m.carb,f:m.fat,s:m.sugar||0,fi:m.fiber||0}; }));
+ return '<div class="inner"><h3>Today’s Meals</h3><p class="small">5 meals a day. Tap one, search what he ate, choose how much, and it adds up here. The same meals show on his schedule cards.</p>'
+  +'<div class="scrollPicker">'+chips+'</div>'+body
+  +'<p class="tiny" style="margin-top:10px"><b>Logged today:</b> '+mealTotalLine(tot)+'</p></div>';
 }
 
 boot();
